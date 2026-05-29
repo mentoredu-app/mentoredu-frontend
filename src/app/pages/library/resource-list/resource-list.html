@@ -1,5 +1,6 @@
 <div class="library-page">
 
+  <!-- Encabezado -->
   <div class="page-header">
     <div class="page-header__text">
       <h1 class="page-title">Biblioteca</h1>
@@ -13,6 +14,58 @@
     }
   </div>
 
+  <!-- Barra de búsqueda y filtros -->
+  <div class="filters-bar">
+    <div class="search-field">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por título..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+      />
+      @if (searchQuery) {
+        <button class="search-clear" (click)="searchQuery = ''; onSearchChange()" aria-label="Limpiar búsqueda">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      }
+    </div>
+
+    <div class="filter-selects">
+      <select class="filter-select" [(ngModel)]="selectedUniversityId" (ngModelChange)="onUniversityChange()">
+        <option value="">Universidad</option>
+        @for (uni of universities(); track uni.id) {
+          <option [value]="uni.id">{{ uni.name }}</option>
+        }
+      </select>
+
+      <select class="filter-select" [(ngModel)]="selectedAreaId" (ngModelChange)="onFilterChange()"
+        [disabled]="areas().length === 0">
+        <option value="">Área</option>
+        @for (area of areas(); track area.id) {
+          <option [value]="area.id">{{ area.name }}</option>
+        }
+      </select>
+
+      <select class="filter-select" [(ngModel)]="selectedType" (ngModelChange)="onFilterChange()">
+        <option value="">Tipo</option>
+        @for (rt of resourceTypes; track rt) {
+          <option [value]="rt">{{ typeLabels[rt] }}</option>
+        }
+      </select>
+
+      @if (hasActiveFilters()) {
+        <button class="btn-clear-filters" (click)="clearFilters()">
+          Limpiar filtros
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Contenido -->
   @if (isLoading()) {
     <div class="loading-center">
       <app-loading-spinner size="lg" />
@@ -20,28 +73,51 @@
   } @else if (loadError()) {
     <div class="error-banner" role="alert">{{ loadError() }}</div>
   } @else if (resources().length === 0) {
-    <app-empty-state message="Aún no hay recursos publicados" />
+    <app-empty-state
+      [message]="hasActiveFilters() ? 'No hay recursos que coincidan con tu búsqueda' : 'Aún no hay recursos publicados'"
+    />
   } @else {
     <div class="resource-grid">
-      @for (resource of resources(); track resource.id) {
-        <article class="resource-card">
+      @for (resource of resources(); track resource.id; let i = $index) {
+        <article class="resource-card" [style.--index]="i % 12">
+
           <div class="resource-card__top">
-            <span class="resource-type-badge">{{ typeLabel(resource.resourceType) }}</span>
-            <div class="resource-card__top-right">
+            <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
+              {{ typeLabel(resource.resourceType) }}
+            </span>
+            <div class="resource-card__badges">
               @if (resource.authorId === authState.user()?.id) {
                 <span class="mine-badge">Mío</span>
               }
               <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
             </div>
           </div>
+
           <h2 class="resource-card__title">{{ resource.title }}</h2>
-          <p class="resource-card__meta">{{ resource.fileName }}</p>
+
+          @if (resource.description) {
+            <p class="resource-card__desc">{{ resource.description }}</p>
+          }
+
           <div class="resource-card__footer">
             <span class="resource-card__author">{{ resource.authorName }}</span>
+            <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
           </div>
+
         </article>
       }
     </div>
+
+    @if (hasMore()) {
+      <div class="load-more">
+        <button class="btn-load-more" (click)="loadMore()" [disabled]="isLoadingMore()">
+          @if (isLoadingMore()) {
+            <app-loading-spinner size="sm" />
+          }
+          Cargar más
+        </button>
+      </div>
+    }
   }
 
 </div>

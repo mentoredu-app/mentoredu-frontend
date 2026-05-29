@@ -25,7 +25,7 @@ export class LibraryService {
     return this.http.post<ResourceResponse>(this.base, request);
   }
 
-  search(params: SearchResourceParams): Observable<PagedResponse<ResourceResponse>> {
+  search(params: SearchResourceParams | Record<string, string | number>): Observable<PagedResponse<ResourceResponse>> {
     const httpParams: Record<string, string | number> = {};
     Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== '') httpParams[k] = v; });
     return this.http.get<PagedResponse<ResourceResponse>>(this.base, { params: httpParams });
