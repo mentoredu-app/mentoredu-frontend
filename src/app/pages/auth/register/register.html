@@ -1,1 +1,115 @@
-<p>register works!</p>
+<div class="register-page">
+  <div class="register-card">
+
+    <div class="register-card__header">
+      <h1 class="register-card__title">Crear cuenta</h1>
+      <p class="register-card__subtitle">Únete a MentorEdu y accede a recursos académicos</p>
+    </div>
+
+    <form class="register-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="firstName">Nombre</label>
+          <input
+            id="firstName"
+            class="form-input"
+            [class.form-input--error]="fieldError('firstName')"
+            type="text"
+            formControlName="firstName"
+            placeholder="Juan"
+            autocomplete="given-name"
+          />
+          @if (fieldError('firstName')) {
+            <span class="form-error">{{ fieldError('firstName') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="lastName">Apellido</label>
+          <input
+            id="lastName"
+            class="form-input"
+            [class.form-input--error]="fieldError('lastName')"
+            type="text"
+            formControlName="lastName"
+            placeholder="Pérez"
+            autocomplete="family-name"
+          />
+          @if (fieldError('lastName')) {
+            <span class="form-error">{{ fieldError('lastName') }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="email">Correo electrónico</label>
+        <input
+          id="email"
+          class="form-input"
+          [class.form-input--error]="fieldError('email')"
+          type="email"
+          formControlName="email"
+          placeholder="juan@ejemplo.com"
+          autocomplete="email"
+        />
+        @if (fieldError('email')) {
+          <span class="form-error">{{ fieldError('email') }}</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="password">Contraseña</label>
+        <input
+          id="password"
+          class="form-input"
+          [class.form-input--error]="fieldError('password')"
+          type="password"
+          formControlName="password"
+          placeholder="Mínimo 8 caracteres"
+          autocomplete="new-password"
+        />
+        @if (fieldError('password')) {
+          <span class="form-error">{{ fieldError('password') }}</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="role">Soy</label>
+        <select
+          id="role"
+          class="form-input form-select"
+          formControlName="role"
+        >
+          <option value="STUDENT">Estudiante</option>
+          <option value="TEACHER">Docente</option>
+          <option value="ACADEMY">Academia</option>
+        </select>
+      </div>
+
+      @if (serverError()) {
+        <div class="form-server-error" role="alert">{{ serverError() }}</div>
+      }
+
+      <button
+        type="submit"
+        class="btn-primary"
+        [disabled]="isLoading()"
+      >
+        @if (isLoading()) {
+          <app-loading-spinner size="sm" />
+          <span>Creando cuenta...</span>
+        } @else {
+          <span>Crear cuenta</span>
+        }
+      </button>
+
+    </form>
+
+    <p class="register-card__footer">
+      ¿Ya tienes cuenta?
+      <a routerLink="/login" class="register-card__link">Inicia sesión</a>
+    </p>
+
+  </div>
+</div>
