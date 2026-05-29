@@ -2,13 +2,13 @@ import { Role } from './auth.model';
 
 // GET /profiles/me
 export interface ProfileMeResponse {
-  id: string;
+  id: string | null;   // null for system users (ADMIN/MOD) without a profile record
   userId: string;
   displayName: string;
   avatarUrl?: string;
   city?: string;
   bio?: string;
-  profileType: 'STUDENT' | 'TEACHER' | 'ACADEMY';
+  profileType: 'STUDENT' | 'TEACHER' | 'ACADEMY' | 'ADMIN' | 'MODERATOR' | null;
   isProfileComplete: boolean;
   createdAt: string;
 }
