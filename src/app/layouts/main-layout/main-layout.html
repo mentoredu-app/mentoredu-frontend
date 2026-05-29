@@ -1,5 +1,26 @@
 <div class="main-layout">
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a routerLink="/library" class="topbar__brand">MentorEdu</a>
+
+      <nav class="topbar__nav" aria-label="Navegación principal">
+        <a routerLink="/library"       routerLinkActive="topbar__link--active" class="topbar__link">Biblioteca</a>
+        <a routerLink="/forum"         routerLinkActive="topbar__link--active" class="topbar__link">Foro</a>
+        <a routerLink="/profiles/edit" routerLinkActive="topbar__link--active" class="topbar__link">Mi perfil</a>
+      </nav>
+
+      <div class="topbar__actions">
+        <span class="topbar__user">
+          {{ authState.user()?.firstName }} {{ authState.user()?.lastName }}
+        </span>
+        <button class="topbar__logout" (click)="logout()">Salir</button>
+      </div>
+    </div>
+  </header>
+
   <main class="main-layout__content">
     <router-outlet />
   </main>
+
 </div>

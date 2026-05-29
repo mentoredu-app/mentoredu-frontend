@@ -1,1 +1,221 @@
-<p>profile-edit works!</p>
+<div class="profile-edit-page">
+  <div class="page-header">
+    <h1 class="page-title">Mi perfil</h1>
+    <p class="page-subtitle">Actualiza tu información personal y académica</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  } @else if (loadError()) {
+    <div class="error-banner" role="alert">{{ loadError() }}</div>
+  } @else {
+
+    <!-- SECCIÓN: Datos básicos (todos los roles) -->
+    <section class="profile-section">
+      <div class="section-header">
+        <h2 class="section-title">Datos básicos</h2>
+      </div>
+      <form class="profile-form" [formGroup]="baseForm" (ngSubmit)="saveBase()" novalidate>
+
+        <div class="form-field">
+          <label class="form-label" for="displayName">Nombre a mostrar</label>
+          <input id="displayName" class="form-input"
+            [class.form-input--error]="fieldError('base','displayName')"
+            type="text" formControlName="displayName"
+            placeholder="Tu nombre completo" />
+          @if (fieldError('base','displayName')) {
+            <span class="form-error">{{ fieldError('base','displayName') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="city">Ciudad</label>
+          <input id="city" class="form-input"
+            [class.form-input--error]="fieldError('base','city')"
+            type="text" formControlName="city"
+            placeholder="Lima, Arequipa..." />
+          @if (fieldError('base','city')) {
+            <span class="form-error">{{ fieldError('base','city') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="bio">Sobre mí</label>
+          <textarea id="bio" class="form-input form-textarea" formControlName="bio"
+            placeholder="Cuéntanos algo sobre ti..." rows="3"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="isSaving()">
+            @if (isSaving()) { <app-loading-spinner size="sm" /> }
+            Guardar
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- SECCIÓN: Perfil de Estudiante (US04) -->
+    @if (profileType() === 'STUDENT') {
+      <section class="profile-section">
+        <div class="section-header">
+          <h2 class="section-title">Información académica</h2>
+        </div>
+        <form class="profile-form" [formGroup]="studentForm" (ngSubmit)="saveRoleProfile()" novalidate>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label" for="gradeLevel">Año / Ciclo actual <span class="required">*</span></label>
+              <input id="gradeLevel" class="form-input"
+                [class.form-input--error]="fieldError('student','gradeLevel')"
+                type="text" formControlName="gradeLevel"
+                placeholder="Ej: 3er año, Ciclo 5" />
+              @if (fieldError('student','gradeLevel')) {
+                <span class="form-error">{{ fieldError('student','gradeLevel') }}</span>
+              }
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="studyShift">Turno</label>
+              <select id="studyShift" class="form-input form-select" formControlName="studyShift">
+                <option value="">Seleccionar turno</option>
+                <option value="mañana">Mañana</option>
+                <option value="tarde">Tarde</option>
+                <option value="noche">Noche</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="schoolName">Colegio / Preuniversitaria</label>
+            <input id="schoolName" class="form-input" type="text" formControlName="schoolName"
+              placeholder="Nombre de tu institución actual" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="targetUniversityId">Universidad de interés</label>
+            <select id="targetUniversityId" class="form-input form-select" formControlName="targetUniversityId">
+              <option value="">Selecciona una universidad</option>
+              @for (uni of universities(); track uni.id) {
+                <option [value]="uni.id">{{ uni.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label" for="targetAreaId">Área</label>
+              <select id="targetAreaId" class="form-input form-select" formControlName="targetAreaId"
+                [attr.disabled]="areas().length === 0 ? true : null">
+                <option value="">Selecciona un área</option>
+                @for (area of areas(); track area.id) {
+                  <option [value]="area.id">{{ area.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="targetCareerId">Carrera</label>
+              <select id="targetCareerId" class="form-input form-select" formControlName="targetCareerId"
+                [attr.disabled]="careers().length === 0 ? true : null">
+                <option value="">Selecciona una carrera</option>
+                @for (career of careers(); track career.id) {
+                  <option [value]="career.id">{{ career.name }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="isSaving()">
+              @if (isSaving()) { <app-loading-spinner size="sm" /> }
+              Guardar perfil
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+
+    <!-- SECCIÓN: Perfil de Docente (US05) -->
+    @if (profileType() === 'TEACHER') {
+      <section class="profile-section">
+        <div class="section-header">
+          <h2 class="section-title">Perfil docente</h2>
+        </div>
+        <form class="profile-form" [formGroup]="teacherForm" (ngSubmit)="saveRoleProfile()" novalidate>
+          <div class="form-field">
+            <label class="form-label" for="bioProfessional">Biografía profesional</label>
+            <textarea id="bioProfessional" class="form-input form-textarea"
+              [class.form-input--error]="fieldError('teacher','bioProfessional')"
+              formControlName="bioProfessional"
+              placeholder="Describe tu experiencia, especialidades y logros académicos..."
+              rows="5"></textarea>
+            @if (fieldError('teacher','bioProfessional')) {
+              <span class="form-error">{{ fieldError('teacher','bioProfessional') }}</span>
+            }
+            <span class="char-count">{{ bioLength }} / 2000</span>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="isSaving()">
+              @if (isSaving()) { <app-loading-spinner size="sm" /> }
+              Guardar perfil
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+
+    <!-- SECCIÓN: Perfil de Academia (US06) -->
+    @if (profileType() === 'ACADEMY') {
+      <section class="profile-section">
+        <div class="section-header">
+          <h2 class="section-title">Perfil institucional</h2>
+        </div>
+        <form class="profile-form" [formGroup]="academyForm" (ngSubmit)="saveRoleProfile()" novalidate>
+
+          <div class="form-field">
+            <label class="form-label" for="academyName">Nombre de la academia <span class="required">*</span></label>
+            <input id="academyName" class="form-input"
+              [class.form-input--error]="fieldError('academy','academyName')"
+              type="text" formControlName="academyName"
+              placeholder="Ej: Academia Preuniversitaria San Marcos" />
+            @if (fieldError('academy','academyName')) {
+              <span class="form-error">{{ fieldError('academy','academyName') }}</span>
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label" for="ruc">RUC</label>
+              <input id="ruc" class="form-input" type="text" formControlName="ruc"
+                placeholder="20xxxxxxxxx" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="website">Sitio web</label>
+              <input id="website" class="form-input" type="url" formControlName="website"
+                placeholder="https://miacademia.com" />
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="contactEmail">Email de contacto</label>
+            <input id="contactEmail" class="form-input"
+              [class.form-input--error]="fieldError('academy','contactEmail')"
+              type="email" formControlName="contactEmail"
+              placeholder="contacto@miacademia.com" />
+            @if (fieldError('academy','contactEmail')) {
+              <span class="form-error">{{ fieldError('academy','contactEmail') }}</span>
+            }
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="isSaving()">
+              @if (isSaving()) { <app-loading-spinner size="sm" /> }
+              Guardar perfil
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+
+  }
+</div>
