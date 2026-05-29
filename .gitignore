@@ -1,8 +1,46 @@
-﻿node_modules/
+# Compiled output
 dist/
 tmp/
+out-tsc/
+bazel-out/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code & History
 .vscode/
 .history/
+.history/*
+
+# Miscellaneous
 .angular/cache/
+.sass-cache/
+connect.lock
+coverage/
+libpeerconnection.log
+testem.log
+typings/
+__screenshots__/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Proyecto / Extensiones locales a ignorar
 emil-design-eng/
 impeccable/
+
+design-taste-frontend/
+high-end-visual-design/
+minimalist-ui/
