@@ -1,1 +1,28 @@
-<p>profile-view works!</p>
+<div class="profile-view-page">
+  @if (isLoading()) {
+    <div class="loading-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  } @else if (notFound()) {
+    <app-empty-state
+      message="Perfil no encontrado"
+      description="El usuario que buscas no existe o su perfil no está disponible."
+    />
+  } @else if (profile()) {
+    <div class="profile-card">
+      @if (profile()!.avatarUrl) {
+        <img class="profile-card__avatar profile-card__avatar--img"
+          [src]="profile()!.avatarUrl"
+          [alt]="profile()!.displayName" />
+      } @else {
+        <div class="profile-card__avatar" aria-hidden="true">
+          {{ profile()!.displayName.charAt(0) }}
+        </div>
+      }
+      <div class="profile-card__info">
+        <h1 class="profile-card__name">{{ profile()!.displayName }}</h1>
+        <span class="profile-card__role">{{ roleLabels[profile()!.profileType] }}</span>
+      </div>
+    </div>
+  }
+</div>
