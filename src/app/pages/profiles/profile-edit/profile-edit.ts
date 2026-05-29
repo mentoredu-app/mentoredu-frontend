@@ -66,10 +66,6 @@ export class ProfileEdit implements OnInit {
   });
 
   ngOnInit(): void {
-    if (this.authState.role() === 'STUDENT') {
-      this.loadUniversities();
-      this.watchUniversityChange();
-    }
     this.loadProfile();
   }
 
@@ -77,14 +73,19 @@ export class ProfileEdit implements OnInit {
     this.profileService.getMe().subscribe({
       next: profile => {
         this.currentUserId = profile.userId;
-        // profileType desde el backend: siempre fiable, incluso tras token refresh sin user object
         this.profileType.set(profile.profileType);
         this.baseForm.patchValue({
           displayName: profile.displayName,
           city:        profile.city ?? '',
           bio:         profile.bio ?? '',
         });
-        this.loadRoleProfile(profile.userId, profile.profileType);
+        // Usar profileType del backend: fiable incluso tras page-refresh o token-refresh
+        // donde authState.role() puede ser null (setAccessToken no repopula _user).
+        if (profile.profileType === 'STUDENT') {
+          this.loadUniversities();
+          this.watchUniversityChange();
+        }
+        this.loadRoleProfile(profile.userId, profile.profileType, profile.isProfileComplete);
         this.isLoading.set(false);
       },
       error: () => {
@@ -94,8 +95,9 @@ export class ProfileEdit implements OnInit {
     });
   }
 
-  private loadRoleProfile(userId: string, profileType: string): void {
+  private loadRoleProfile(userId: string, profileType: string | null, isComplete: boolean): void {
     if (profileType === 'STUDENT') {
+      if (!isComplete) { this.hasStudentProfile = false; return; }
       this.profileService.getStudentProfile(userId).subscribe({
         next: sp => {
           this.hasStudentProfile = true;
@@ -117,7 +119,7 @@ export class ProfileEdit implements OnInit {
     }
 
     if (profileType === 'TEACHER') {
-      // GET /profiles/teacher/me — endpoint nuevo agregado al backend
+      if (!isComplete) { this.hasTeacherProfile = false; return; }
       this.profileService.getMyTeacherProfile().subscribe({
         next: tp => {
           this.hasTeacherProfile = true;
@@ -128,7 +130,7 @@ export class ProfileEdit implements OnInit {
     }
 
     if (profileType === 'ACADEMY') {
-      // GET /profiles/academy/me — endpoint nuevo agregado al backend
+      if (!isComplete) { this.hasAcademyProfile = false; return; }
       this.profileService.getMyAcademyProfile().subscribe({
         next: ap => {
           this.hasAcademyProfile = true;
