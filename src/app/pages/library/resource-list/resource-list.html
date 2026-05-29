@@ -87,7 +87,7 @@
   } @else {
     <div class="resource-grid">
       @for (resource of resources(); track resource.id; let i = $index) {
-        <article class="resource-card" [style.--index]="i % 12">
+        <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
 
           <div class="resource-card__top">
             <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { PagedResponse } from '../models/common.model';
 import {
+  DownloadResponse,
   PublishResourceRequest,
   ResourceFileResponse,
   ResourceResponse,
@@ -39,7 +40,7 @@ export class LibraryService {
     return this.http.get<PagedResponse<ResourceResponse>>(`${this.base}/me`, { params: { page, size } });
   }
 
-  getDownloadUrl(id: string): Observable<{ downloadUrl: string }> {
-    return this.http.get<{ downloadUrl: string }>(`${this.base}/${id}/download`);
+  download(id: string): Observable<DownloadResponse> {
+    return this.http.get<DownloadResponse>(`${this.base}/${id}/download`);
   }
 }
