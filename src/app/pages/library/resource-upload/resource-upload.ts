@@ -145,9 +145,13 @@ export class ResourceUpload implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.isUploading.set(false);
         this.selectedFileName.set('');
-        this.uploadError.set(err.status === 415
-          ? 'El archivo no es un PDF válido.'
-          : 'Error al subir el archivo. Intenta de nuevo.');
+        if (err.status === 415) {
+          this.uploadError.set('El archivo no es un PDF válido.');
+        } else if (err.status === 413) {
+          this.uploadError.set('El archivo supera el límite de 20 MB permitido.');
+        } else {
+          this.uploadError.set('Error al subir el archivo. Intenta de nuevo.');
+        }
       },
     });
   }
@@ -187,6 +191,8 @@ export class ResourceUpload implements OnInit {
         this.isPublishing.set(false);
         if (err.status === 400) {
           this.toast.error(err.error?.message ?? 'Verifica los datos del catálogo.');
+        } else if (err.status === 403) {
+          this.toast.error('No tienes permisos para publicar recursos.');
         } else {
           this.toast.error('Error al publicar. Intenta de nuevo.');
         }
