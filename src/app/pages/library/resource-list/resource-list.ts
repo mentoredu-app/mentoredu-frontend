@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { Subject, debounceTime } from 'rxjs';
 import { AuthStateService } from '../../../core/services/auth-state.service';
 import { CatalogService } from '../../../services/catalog.service';
 import { LibraryService } from '../../../services/library.service';
@@ -9,6 +9,13 @@ import { LoadingSpinner } from '../../../shared/components/loading-spinner/loadi
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { ResourceResponse, ResourceType, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
 import { University, Area } from '../../../models/catalog.model';
+
+interface SearchFilters {
+  q: string;
+  universityId: string;
+  areaId: string;
+  type: ResourceType | '';
+}
 
 @Component({
   selector: 'app-resource-list',
@@ -33,11 +40,8 @@ export class ResourceList implements OnInit {
   readonly universities = signal<University[]>([]);
   readonly areas = signal<Area[]>([]);
 
-  // Filtros (bound con ngModel)
-  searchQuery = '';
-  selectedUniversityId = '';
-  selectedAreaId = '';
-  selectedType: ResourceType | '' = '';
+  // Estado de filtros centralizado — única fuente de verdad
+  filters: SearchFilters = { q: '', universityId: '', areaId: '', type: '' };
 
   readonly typeLabels = RESOURCE_TYPE_LABELS;
   readonly resourceTypes = Object.keys(RESOURCE_TYPE_LABELS) as ResourceType[];
@@ -47,57 +51,51 @@ export class ResourceList implements OnInit {
     return r === 'TEACHER' || r === 'ACADEMY' || r === 'ADMIN';
   });
 
-  private searchSubject = new Subject<void>();
+  // Getter en lugar de computed para evitar problemas de reactividad zoneless con no-signals
+  get hasActiveFilters(): boolean {
+    return !!(this.filters.q || this.filters.universityId || this.filters.areaId || this.filters.type);
+  }
+
+  // Pipeline único para TODOS los cambios de filtros — sin distinctUntilChanged
+  private readonly searchTrigger = new Subject<void>();
 
   ngOnInit(): void {
     this.catalogService.getUniversities().subscribe({
       next: unis => this.universities.set(unis),
     });
 
-    // Debounce para búsqueda por texto libre
-    this.searchSubject.pipe(debounceTime(350), distinctUntilChanged()).subscribe(() => {
-      this.resetAndSearch();
-    });
+    this.searchTrigger.pipe(debounceTime(300)).subscribe(() => this.resetAndSearch());
 
-    this.loadResources(0);
+    // Carga inicial
+    this.searchTrigger.next();
   }
 
-  onSearchChange(): void {
-    this.searchSubject.next();
-  }
-
-  onFilterChange(): void {
-    this.resetAndSearch();
+  // Un único método de disparo — cualquier cambio (texto o dropdown) lo llama
+  triggerSearch(): void {
+    this.searchTrigger.next();
   }
 
   onUniversityChange(): void {
-    this.selectedAreaId = '';
+    this.filters.areaId = '';
     this.areas.set([]);
-    if (this.selectedUniversityId) {
-      this.catalogService.getAreasByUniversity(this.selectedUniversityId).subscribe({
+    if (this.filters.universityId) {
+      this.catalogService.getAreasByUniversity(this.filters.universityId).subscribe({
         next: a => this.areas.set(a),
       });
     }
-    this.resetAndSearch();
+    this.searchTrigger.next();
+  }
+
+  clearFilters(): void {
+    this.filters = { q: '', universityId: '', areaId: '', type: '' };
+    this.areas.set([]);
+    this.searchTrigger.next();
   }
 
   loadMore(): void {
     if (this.isLoadingMore() || !this.hasMore()) return;
     this.loadResources(this.currentPage + 1);
   }
-
-  clearFilters(): void {
-    this.searchQuery = '';
-    this.selectedUniversityId = '';
-    this.selectedAreaId = '';
-    this.selectedType = '';
-    this.areas.set([]);
-    this.resetAndSearch();
-  }
-
-  readonly hasActiveFilters = computed(() =>
-    !!(this.searchQuery || this.selectedUniversityId || this.selectedAreaId || this.selectedType)
-  );
 
   private resetAndSearch(): void {
     this.currentPage = 0;
@@ -114,11 +112,12 @@ export class ResourceList implements OnInit {
       this.isLoadingMore.set(true);
     }
 
+    // Solo se envían parámetros con valor — el backend ignora los que no llegan
     const params: Record<string, string | number> = { page, size: 12 };
-    if (this.searchQuery.trim())      params['q']            = this.searchQuery.trim();
-    if (this.selectedUniversityId)    params['universityId'] = this.selectedUniversityId;
-    if (this.selectedAreaId)          params['areaId']       = this.selectedAreaId;
-    if (this.selectedType)            params['type']         = this.selectedType;
+    if (this.filters.q.trim())        params['q']            = this.filters.q.trim();
+    if (this.filters.universityId)    params['universityId'] = this.filters.universityId;
+    if (this.filters.areaId)          params['areaId']       = this.filters.areaId;
+    if (this.filters.type)            params['type']         = this.filters.type;
 
     this.libraryService.search(params).subscribe({
       next: paged => {

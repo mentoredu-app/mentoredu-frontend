@@ -15,10 +15,15 @@ export class AuthStateService {
     this._accessToken.set(accessToken);
     this._user.set(user);
     localStorage.setItem('refreshToken', refreshToken);
+    localStorage.setItem('user', JSON.stringify(user));
   }
 
   setAccessToken(token: string): void {
     this._accessToken.set(token);
+  }
+
+  setUser(user: UserInfo): void {
+    this._user.set(user);
   }
 
   getRefreshToken(): string | null {
@@ -29,5 +34,6 @@ export class AuthStateService {
     this._accessToken.set(null);
     this._user.set(null);
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
   }
 }
