@@ -1,0 +1,45 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { PagedResponse } from '../models/common.model';
+import {
+  PublishResourceRequest,
+  ResourceFileResponse,
+  ResourceResponse,
+  SearchResourceParams,
+} from '../models/resource.model';
+
+@Injectable({ providedIn: 'root' })
+export class LibraryService {
+  private http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/resources`;
+
+  uploadFile(file: File): Observable<ResourceFileResponse> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<ResourceFileResponse>(`${this.base}/files`, form);
+  }
+
+  publish(request: PublishResourceRequest): Observable<ResourceResponse> {
+    return this.http.post<ResourceResponse>(this.base, request);
+  }
+
+  search(params: SearchResourceParams): Observable<PagedResponse<ResourceResponse>> {
+    const httpParams: Record<string, string | number> = {};
+    Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== '') httpParams[k] = v; });
+    return this.http.get<PagedResponse<ResourceResponse>>(this.base, { params: httpParams });
+  }
+
+  getById(id: string): Observable<ResourceResponse> {
+    return this.http.get<ResourceResponse>(`${this.base}/${id}`);
+  }
+
+  getMyResources(page = 0, size = 20): Observable<PagedResponse<ResourceResponse>> {
+    return this.http.get<PagedResponse<ResourceResponse>>(`${this.base}/me`, { params: { page, size } });
+  }
+
+  getDownloadUrl(id: string): Observable<{ downloadUrl: string }> {
+    return this.http.get<{ downloadUrl: string }>(`${this.base}/${id}/download`);
+  }
+}
