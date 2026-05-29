@@ -173,6 +173,7 @@
   flex-direction: column;
   gap: 10px;
   cursor: pointer;
+  cursor: pointer;
   animation: card-in 240ms var(--ease-out) both;
   animation-delay: calc(var(--index, 0) * 40ms);
   transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);

@@ -50,6 +50,15 @@ export interface PublishResourceRequest {
   sizeBytes: number;
 }
 
+export interface DownloadResponse {
+  resourceId: string;
+  title: string;
+  fileUrl: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
 export interface SearchResourceParams {
   q?: string;
   type?: ResourceType;
