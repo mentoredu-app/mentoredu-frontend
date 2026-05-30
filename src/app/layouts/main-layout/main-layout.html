@@ -5,9 +5,12 @@
       <a routerLink="/library" class="topbar__brand">MentorEdu</a>
 
       <nav class="topbar__nav" aria-label="Navegación principal">
-        <a routerLink="/library"       routerLinkActive="topbar__link--active" class="topbar__link">Biblioteca</a>
-        <a routerLink="/forum"         routerLinkActive="topbar__link--active" class="topbar__link">Foro</a>
-        <a routerLink="/profiles/edit" routerLinkActive="topbar__link--active" class="topbar__link">Mi perfil</a>
+        <a routerLink="/library"                routerLinkActive="topbar__link--active" [routerLinkActiveOptions]="{exact:true}" class="topbar__link">Biblioteca</a>
+        @if (authState.role() === 'TEACHER' || authState.role() === 'ACADEMY' || authState.role() === 'ADMIN') {
+          <a routerLink="/library/my-resources" routerLinkActive="topbar__link--active" class="topbar__link">Mis recursos</a>
+        }
+        <a routerLink="/forum"                  routerLinkActive="topbar__link--active" class="topbar__link">Foro</a>
+        <a routerLink="/profiles/edit"          routerLinkActive="topbar__link--active" class="topbar__link">Mi perfil</a>
       </nav>
 
       <div class="topbar__actions">
