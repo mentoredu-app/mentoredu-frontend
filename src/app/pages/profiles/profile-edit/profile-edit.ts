@@ -85,7 +85,7 @@ export class ProfileEdit implements OnInit {
           this.loadUniversities();
           this.watchUniversityChange();
         }
-        this.loadRoleProfile(profile.userId, profile.profileType, profile.isProfileComplete);
+        this.loadRoleProfile(profile.userId, profile.profileType, profile.profileComplete);
         this.isLoading.set(false);
       },
       error: () => {
