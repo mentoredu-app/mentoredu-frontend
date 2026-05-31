@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subject, debounceTime } from 'rxjs';
+import { AuthStateService } from '../../../core/services/auth-state.service';
 import { CatalogService } from '../../../services/catalog.service';
 import { ForumService } from '../../../services/forum.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
@@ -24,6 +25,7 @@ interface ThreadFilters {
 export class ThreadList implements OnInit {
   private forumService = inject(ForumService);
   private catalogService = inject(CatalogService);
+  readonly authState = inject(AuthStateService);
 
   readonly isLoading = signal(true);
   readonly isLoadingMore = signal(false);
@@ -112,5 +114,12 @@ export class ThreadList implements OnInit {
 
   excerpt(body: string, max = 120): string {
     return body.length > max ? body.slice(0, max).trimEnd() + '…' : body;
+  }
+
+  // null = no mostrar badge (no es mío o es anónimo de otro)
+  myThreadBadge(thread: ThreadResponse): 'mine' | 'mine-anon' | null {
+    const myId = this.authState.user()?.id;
+    if (!myId || thread.authorId !== myId) return null;
+    return thread.anonymous ? 'mine-anon' : 'mine';
   }
 }

@@ -70,6 +70,12 @@
               <span class="thread-status-badge" [class.thread-status-badge--closed]="thread.status === 'CLOSED'">
                 {{ thread.status === 'OPEN' ? 'Abierto' : 'Cerrado' }}
               </span>
+              @if (myThreadBadge(thread) === 'mine') {
+                <span class="mine-badge">Mío</span>
+              }
+              @if (myThreadBadge(thread) === 'mine-anon') {
+                <span class="mine-badge mine-badge--anon">Mío (Anónimo)</span>
+              }
               @if (thread.courseName) {
                 <span class="thread-context-tag">{{ thread.courseName }}</span>
               }
