@@ -9,7 +9,7 @@ export interface ProfileMeResponse {
   city?: string;
   bio?: string;
   profileType: 'STUDENT' | 'TEACHER' | 'ACADEMY' | 'ADMIN' | 'MODERATOR' | null;
-  isProfileComplete: boolean;
+  profileComplete: boolean;
   createdAt: string;
 }
 
