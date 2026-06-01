@@ -18,7 +18,7 @@
 
       <select class="filter-select"
         [(ngModel)]="filters.universityId"
-        (ngModelChange)="triggerSearch()">
+        (ngModelChange)="applyFilter()">
         <option value="">Universidad</option>
         @for (uni of universities(); track uni.id) {
           <option [value]="uni.id">{{ uni.name }}</option>
@@ -27,7 +27,7 @@
 
       <select class="filter-select"
         [(ngModel)]="filters.courseId"
-        (ngModelChange)="triggerSearch()">
+        (ngModelChange)="applyFilter()">
         <option value="">Curso</option>
         @for (course of courses(); track course.id) {
           <option [value]="course.id">{{ course.name }}</option>
@@ -36,7 +36,7 @@
 
       <select class="filter-select"
         [(ngModel)]="filters.status"
-        (ngModelChange)="triggerSearch()">
+        (ngModelChange)="applyFilter()">
         <option value="">Estado</option>
         <option value="OPEN">Abiertos</option>
         <option value="CLOSED">Cerrados</option>
@@ -70,14 +70,14 @@
               <span class="thread-status-badge" [class.thread-status-badge--closed]="thread.status === 'CLOSED'">
                 {{ thread.status === 'OPEN' ? 'Abierto' : 'Cerrado' }}
               </span>
-              @if (thread.courseName) {
-                <span class="thread-context-tag">{{ thread.courseName }}</span>
+              @if (myThreadBadge(thread) === 'mine') {
+                <span class="mine-badge">Mío</span>
               }
-              @if (thread.universityName && !thread.courseName) {
-                <span class="thread-context-tag">{{ thread.universityName }}</span>
+              @if (myThreadBadge(thread) === 'mine-anon') {
+                <span class="mine-badge mine-badge--anon">Mío (Anónimo)</span>
               }
-              @if (thread.careerName) {
-                <span class="thread-context-tag">{{ thread.careerName }}</span>
+              @if (contextLabel(thread)) {
+                <span class="thread-context-tag">{{ contextLabel(thread) }}</span>
               }
             </div>
 
@@ -97,7 +97,6 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
-              <span>{{ thread.answerCount }}</span>
             </div>
           </div>
 

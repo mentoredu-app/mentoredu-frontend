@@ -1,7 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Subject, debounceTime } from 'rxjs';
+import { AuthStateService } from '../../../core/services/auth-state.service';
 import { CatalogService } from '../../../services/catalog.service';
 import { ForumService } from '../../../services/forum.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
@@ -24,11 +24,13 @@ interface ThreadFilters {
 export class ThreadList implements OnInit {
   private forumService = inject(ForumService);
   private catalogService = inject(CatalogService);
+  readonly authState = inject(AuthStateService);
 
   readonly isLoading = signal(true);
   readonly isLoadingMore = signal(false);
   readonly loadError = signal('');
-  readonly threads = signal<ThreadResponse[]>([]);
+  // Todos los hilos cargados del servidor (sin filtrar)
+  private readonly allThreads = signal<ThreadResponse[]>([]);
   readonly hasMore = signal(false);
   private currentPage = 0;
 
@@ -36,40 +38,53 @@ export class ThreadList implements OnInit {
   readonly courses = signal<Course[]>([]);
 
   filters: ThreadFilters = { universityId: '', courseId: '', status: '' };
+  // Señal auxiliar para que computed reaccione a cambios en filters (plain object)
+  private readonly _filterTick = signal(0);
 
-  private readonly searchTrigger = new Subject<void>();
+  // Filtrado client-side: el backend solo soporta paginación, los filtros se aplican aquí
+  readonly threads = computed(() => {
+    this._filterTick(); // reactivo al tick
+    const all = this.allThreads();
+    return all.filter(t => {
+      if (this.filters.status && t.status !== this.filters.status) return false;
+      if (this.filters.universityId && t.universityId !== this.filters.universityId) return false;
+      if (this.filters.courseId && t.courseId !== this.filters.courseId) return false;
+      return true;
+    });
+  });
+
+  private myThreadIds = new Set<string>();
 
   get hasActiveFilters(): boolean {
     return !!(this.filters.universityId || this.filters.courseId || this.filters.status);
   }
 
   ngOnInit(): void {
-    this.catalogService.getUniversities().subscribe({ next: unis => this.universities.set(unis) });
-    this.catalogService.getAllCourses().subscribe({ next: courses => this.courses.set(courses) });
+    const userId = this.authState.user()?.id;
+    if (userId) {
+      const raw = localStorage.getItem(`myThreadIds_${userId}`);
+      if (raw) { try { this.myThreadIds = new Set(JSON.parse(raw)); } catch {} }
+    }
 
-    this.searchTrigger.pipe(debounceTime(200)).subscribe(() => this.resetAndSearch());
-    this.searchTrigger.next();
+    this.catalogService.getUniversities().subscribe({ next: unis => this.universities.set(unis) });
+    this.catalogService.getAllCourses().subscribe({ next: cs => this.courses.set(cs) });
+
+    this.loadThreads(0);
   }
 
-  triggerSearch(): void {
-    this.searchTrigger.next();
+  applyFilter(): void {
+    // Incrementar el tick hace que el computed `threads` se recalcule
+    this._filterTick.update(v => v + 1);
   }
 
   clearFilters(): void {
     this.filters = { universityId: '', courseId: '', status: '' };
-    this.searchTrigger.next();
+    this._filterTick.update(v => v + 1);
   }
 
   loadMore(): void {
     if (this.isLoadingMore() || !this.hasMore()) return;
     this.loadThreads(this.currentPage + 1);
-  }
-
-  private resetAndSearch(): void {
-    this.currentPage = 0;
-    this.threads.set([]);
-    this.hasMore.set(false);
-    this.loadThreads(0);
   }
 
   private loadThreads(page: number): void {
@@ -80,18 +95,12 @@ export class ThreadList implements OnInit {
       this.isLoadingMore.set(true);
     }
 
-    this.forumService.getThreads({
-      universityId: this.filters.universityId || undefined,
-      courseId:     this.filters.courseId     || undefined,
-      status:       this.filters.status       || undefined,
-      page,
-      size: 15,
-    }).subscribe({
+    this.forumService.getThreads(page, 15).subscribe({
       next: paged => {
         if (page === 0) {
-          this.threads.set(paged.content);
+          this.allThreads.set(paged.content);
         } else {
-          this.threads.update(prev => [...prev, ...paged.content]);
+          this.allThreads.update(prev => [...prev, ...paged.content]);
         }
         this.currentPage = paged.page;
         this.hasMore.set(!paged.last);
@@ -104,6 +113,22 @@ export class ThreadList implements OnInit {
         this.isLoadingMore.set(false);
       },
     });
+  }
+
+  myThreadBadge(thread: ThreadResponse): 'mine' | 'mine-anon' | null {
+    if (!this.authState.user() || !this.myThreadIds.has(thread.id)) return null;
+    return thread.anonymous ? 'mine-anon' : 'mine';
+  }
+
+  contextLabel(thread: ThreadResponse): string | null {
+    if (thread.courseId) {
+      return this.courses().find(c => c.id === thread.courseId)?.name ?? null;
+    }
+    if (thread.universityId) {
+      return this.universities().find(u => u.id === thread.universityId)?.name ?? null;
+    }
+    if (thread.careerId) return 'Carrera';
+    return null;
   }
 
   formatDate(iso: string): string {

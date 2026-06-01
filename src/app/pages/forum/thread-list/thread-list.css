@@ -167,6 +167,24 @@
   background: var(--color-bg);
 }
 
+.mine-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  color: #346538;
+  background: #EDF3EC;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mine-badge--anon {
+  color: #956400;
+  background: #FBF3DB;
+}
+
 .thread-context-tag {
   font-size: 0.75rem;
   font-weight: 500;
