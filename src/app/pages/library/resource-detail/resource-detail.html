@@ -123,6 +123,16 @@
           </button>
         </div>
 
+        @if (r.aceptaResoluciones && authState.role() === 'STUDENT') {
+          <div class="divider"></div>
+          <a [routerLink]="['/pedagogy', r.id, 'submit']" class="btn-submit-solution">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            Enviar mi resolución
+          </a>
+        }
+
         @if (r.authorId === authState.user()?.id) {
           <p class="owner-note">Publicado por ti</p>
           @if (r.aceptaResoluciones) {
