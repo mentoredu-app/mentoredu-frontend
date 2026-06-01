@@ -2,7 +2,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { catchError, forkJoin, of } from 'rxjs';
 import { LibraryService } from '../../../services/library.service';
 import { PedagogyService } from '../../../services/pedagogy.service';
 import { AuthStateService } from '../../../core/services/auth-state.service';
@@ -54,41 +53,31 @@ export class SolutionSubmit implements OnInit {
   ngOnInit(): void {
     const resourceId = this.route.snapshot.paramMap.get('resourceId')!;
 
-    forkJoin({
-      resource: this.libraryService.getById(resourceId),
-      existing: this.pedagogyService.getMySolution(resourceId).pipe(
-        catchError((err: HttpErrorResponse) => of(err.status === 404 ? null : null))
-      ),
-    }).subscribe({
-      next: ({ resource, existing }) => {
+    this.libraryService.getById(resourceId).subscribe({
+      next: resource => {
         this.resource.set(resource);
 
-        if (!resource.aceptaResoluciones) {
+        if (!resource.aceptaResoluciones || this.authState.role() !== 'STUDENT') {
           this.pageState.set('not-allowed');
           return;
         }
 
-        const role = this.authState.role();
-        if (role !== 'STUDENT') {
-          this.pageState.set('not-allowed');
-          return;
-        }
-
-        if (existing) {
-          this.existing.set(existing);
-          this.pageState.set('already-submitted');
+        if (resource.mySubmission) {
+          // El recurso ya trae el estado de la resolución — cargamos el detalle completo.
+          // getMySolution devuelve 200 aquí porque sabemos que la resolución existe.
+          this.pedagogyService.getMySolution(resourceId).subscribe({
+            next: existing => {
+              this.existing.set(existing);
+              this.pageState.set('already-submitted');
+            },
+            error: () => this.pageState.set('form'),
+          });
         } else {
           this.pageState.set('form');
         }
       },
       error: (err: HttpErrorResponse) => {
-        if (err.status === 403) {
-          this.loadError.set('Este recurso no acepta resoluciones o no tienes permiso para verlo.');
-        } else if (err.status === 404) {
-          this.loadError.set('El ejercicio no existe.');
-        } else {
-          this.loadError.set('No se pudo cargar el ejercicio. Intenta de nuevo.');
-        }
+        this.loadError.set(err.status === 404 ? 'El ejercicio no existe.' : 'No se pudo cargar el ejercicio.');
         this.pageState.set('load-error');
       },
     });

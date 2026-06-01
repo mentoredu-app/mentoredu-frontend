@@ -18,6 +18,12 @@ export interface ResourceFileResponse {
   sizeBytes: number;
 }
 
+export interface SubmissionStatus {
+  id: string;
+  status: 'SUBMITTED' | 'REVIEWED';
+  submittedAt: string;
+}
+
 export interface ResourceResponse {
   id: string;
   title: string;
@@ -35,6 +41,7 @@ export interface ResourceResponse {
   authorId: string;
   authorName: string;
   createdAt: string;
+  mySubmission?: SubmissionStatus | null;
 }
 
 export interface PublishResourceRequest {

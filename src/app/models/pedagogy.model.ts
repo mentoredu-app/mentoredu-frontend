@@ -4,7 +4,7 @@ export interface SolutionResponse {
   id: string;
   resourceId: string;
   studentId: string;
-  studentName: string;
+  studentName?: string;
   status: SolutionStatus;
   fileUrl?: string;
   content?: string;
@@ -21,12 +21,12 @@ export interface FeedbackResponse {
   solutionId: string;
   authorId: string;
   authorName: string;
-  comment: string;
+  body: string;
   score?: number;
   createdAt: string;
 }
 
 export interface CreateFeedbackRequest {
-  comment: string;
+  body: string;
   score?: number;
 }
