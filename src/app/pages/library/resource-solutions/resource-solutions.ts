@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { LibraryService } from '../../../services/library.service';
 import { PedagogyService } from '../../../services/pedagogy.service';
+import { AuthStateService } from '../../../core/services/auth-state.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
@@ -23,6 +24,7 @@ export class ResourceSolutions implements OnInit, OnDestroy {
   private libraryService  = inject(LibraryService);
   private pedagogyService = inject(PedagogyService);
   private toast           = inject(ToastService);
+  readonly authState      = inject(AuthStateService);
 
   readonly isLoading    = signal(true);
   readonly loadError    = signal('');
@@ -102,7 +104,7 @@ export class ResourceSolutions implements OnInit, OnDestroy {
         this.blobUrls.push(blobUrl);
         const a = document.createElement('a');
         a.href = blobUrl;
-        a.download = `resolucion-${solution.studentName.replace(/\s+/g, '-')}.pdf`;
+        a.download = `resolucion-${(solution.studentName ?? 'estudiante').replace(/\s+/g, '-')}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

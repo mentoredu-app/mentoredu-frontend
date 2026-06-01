@@ -69,7 +69,7 @@
         @if (existing()?.feedback; as fb) {
           <div class="feedback-preview">
             <p class="feedback-preview__label">Feedback recibido</p>
-            <p class="feedback-preview__comment">{{ fb.comment }}</p>
+            <p class="feedback-preview__comment">{{ fb.body }}</p>
             @if (fb.score !== null && fb.score !== undefined) {
               <p class="feedback-preview__score">Nota: <strong>{{ fb.score }} / 10</strong></p>
             }
