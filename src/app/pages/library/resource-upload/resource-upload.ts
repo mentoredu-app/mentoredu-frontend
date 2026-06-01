@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -28,6 +29,7 @@ export class ResourceUpload implements OnInit {
   private catalogService = inject(CatalogService);
   private toast = inject(ToastService);
   readonly authState = inject(AuthStateService);
+  private destroyRef = inject(DestroyRef);
 
   readonly step = signal<1 | 2>(1);
   readonly isUploading = signal(false);
@@ -69,7 +71,7 @@ export class ResourceUpload implements OnInit {
       next: unis => this.universities.set(unis),
     });
 
-    this.metaForm.get('resourceType')!.valueChanges.subscribe(type => {
+    this.metaForm.get('resourceType')!.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(type => {
       this.selectedType.set(type as ResourceType | '');
       const courseCtrl = this.metaForm.get('courseId')!;
       if (TYPES_REQUIRING_COURSE.includes(type as ResourceType)) {
@@ -81,7 +83,7 @@ export class ResourceUpload implements OnInit {
       courseCtrl.updateValueAndValidity();
     });
 
-    this.metaForm.get('universityId')!.valueChanges.subscribe(id => {
+    this.metaForm.get('universityId')!.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(id => {
       this.areas.set([]);
       this.careers.set([]);
       this.courses.set([]);
@@ -92,7 +94,7 @@ export class ResourceUpload implements OnInit {
       }
     });
 
-    this.metaForm.get('areaId')!.valueChanges.subscribe(id => {
+    this.metaForm.get('areaId')!.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(id => {
       this.courses.set([]);
       this.metaForm.patchValue({ courseId: '' });
       if (id) {

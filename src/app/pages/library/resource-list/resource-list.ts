@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subject, debounceTime } from 'rxjs';
@@ -27,6 +28,7 @@ export class ResourceList implements OnInit {
   private libraryService = inject(LibraryService);
   private catalogService = inject(CatalogService);
   readonly authState = inject(AuthStateService);
+  private destroyRef = inject(DestroyRef);
 
   // Estado de datos
   readonly isLoading = signal(true);
@@ -64,7 +66,10 @@ export class ResourceList implements OnInit {
       next: unis => this.universities.set(unis),
     });
 
-    this.searchTrigger.pipe(debounceTime(300)).subscribe(() => this.resetAndSearch());
+    this.searchTrigger.pipe(
+      debounceTime(300),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => this.resetAndSearch());
 
     // Carga inicial
     this.searchTrigger.next();

@@ -6,7 +6,7 @@ import { AuthStateService } from '../../../core/services/auth-state.service';
 import { ForumService } from '../../../services/forum.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
-import { AnswerResponse, ReactionType, ThreadResponse } from '../../../models/forum.model';
+import { AnswerResponse, CommentResponse, ReactionType, ThreadResponse } from '../../../models/forum.model';
 
 @Component({
   selector: 'app-thread-detail',
@@ -35,6 +35,13 @@ export class ThreadDetail implements OnInit {
   private readonly reactions = signal<Record<string, ReactionType | null>>({});
   // Botones en proceso de envío para evitar doble click
   private readonly reacting = signal<Set<string>>(new Set());
+
+  // ── Comentarios ───────────────────────────────────────────────
+  private readonly commentsByAnswer = signal<Record<string, CommentResponse[]>>({});
+  private readonly loadingComments = signal<Set<string>>(new Set());
+  private readonly openComments = signal<Set<string>>(new Set());
+  private readonly submittingComment = signal<Set<string>>(new Set());
+  private readonly commentTexts = signal<Record<string, string>>({});
 
   readonly answerForm = this.fb.nonNullable.group({
     body: ['', [Validators.required, Validators.maxLength(5000)]],
@@ -96,6 +103,10 @@ export class ThreadDetail implements OnInit {
         this.answersPage = paged.page;
         this.hasMoreAnswers.set(!paged.last);
         this.isLoadingAnswers.set(false);
+        // Pre-cargar comentarios de cada respuesta para que el botón muestre el conteo correcto
+        for (const answer of paged.content) {
+          this.fetchComments(answer.id);
+        }
       },
       error: () => { this.isLoadingAnswers.set(false); },
     });
@@ -236,6 +247,84 @@ export class ThreadDetail implements OnInit {
         dislikeCount: delta(a.dislikeCount, 'DISLIKE'),
       })));
     }
+  }
+
+  // ── Comentarios ───────────────────────────────────────────────
+
+  isCommentsOpen(answerId: string): boolean {
+    return this.openComments().has(answerId);
+  }
+
+  commentsFor(answerId: string): CommentResponse[] {
+    return this.commentsByAnswer()[answerId] ?? [];
+  }
+
+  isLoadingComments(answerId: string): boolean {
+    return this.loadingComments().has(answerId);
+  }
+
+  isSubmittingComment(answerId: string): boolean {
+    return this.submittingComment().has(answerId);
+  }
+
+  getCommentText(answerId: string): string {
+    return this.commentTexts()[answerId] ?? '';
+  }
+
+  setCommentText(answerId: string, value: string): void {
+    this.commentTexts.update(t => ({ ...t, [answerId]: value }));
+  }
+
+  toggleComments(answerId: string): void {
+    const isOpen = this.openComments().has(answerId);
+    if (isOpen) {
+      this.openComments.update(s => { const n = new Set(s); n.delete(answerId); return n; });
+    } else {
+      this.openComments.update(s => new Set([...s, answerId]));
+      // Carga lazy: solo pide si no se cargaron aún
+      if (!(answerId in this.commentsByAnswer())) {
+        this.fetchComments(answerId);
+      }
+    }
+  }
+
+  private fetchComments(answerId: string): void {
+    this.loadingComments.update(s => new Set([...s, answerId]));
+    this.forumService.getComments(answerId).subscribe({
+      next: comments => {
+        this.commentsByAnswer.update(m => ({ ...m, [answerId]: comments }));
+        this.loadingComments.update(s => { const n = new Set(s); n.delete(answerId); return n; });
+      },
+      error: () => {
+        this.loadingComments.update(s => { const n = new Set(s); n.delete(answerId); return n; });
+      },
+    });
+  }
+
+  submitComment(answerId: string): void {
+    const body = this.getCommentText(answerId).trim();
+    if (!body || this.isSubmittingComment(answerId)) return;
+
+    this.submittingComment.update(s => new Set([...s, answerId]));
+    this.forumService.createComment(answerId, { body }).subscribe({
+      next: comment => {
+        this.commentsByAnswer.update(m => ({
+          ...m,
+          [answerId]: [...(m[answerId] ?? []), comment],
+        }));
+        this.setCommentText(answerId, '');
+        this.submittingComment.update(s => { const n = new Set(s); n.delete(answerId); return n; });
+        this.toast.success('Comentario publicado');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.submittingComment.update(s => { const n = new Set(s); n.delete(answerId); return n; });
+        if (err.status === 404) {
+          this.toast.error('La respuesta ya no existe.');
+        } else {
+          this.toast.error('Error al publicar el comentario. Intenta de nuevo.');
+        }
+      },
+    });
   }
 
   // ── Formato ───────────────────────────────────────────────────

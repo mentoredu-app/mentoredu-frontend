@@ -110,6 +110,61 @@
               </button>
             </div>
 
+            <!-- Sección de comentarios -->
+            <div class="comments-section">
+              <button class="btn-toggle-comments" (click)="toggleComments(answer.id)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                @if (commentsFor(answer.id).length > 0) {
+                  {{ isCommentsOpen(answer.id) ? 'Ocultar' : 'Ver' }} {{ commentsFor(answer.id).length }} {{ commentsFor(answer.id).length === 1 ? 'comentario' : 'comentarios' }}
+                } @else {
+                  {{ isCommentsOpen(answer.id) ? 'Ocultar comentarios' : 'Comentar' }}
+                }
+              </button>
+
+              @if (isCommentsOpen(answer.id)) {
+                <div class="comments-body">
+
+                  @if (isLoadingComments(answer.id)) {
+                    <div class="comments-loading">
+                      <app-loading-spinner size="sm" />
+                    </div>
+                  } @else {
+                    @for (comment of commentsFor(answer.id); track comment.id) {
+                      <div class="comment-item">
+                        <div class="comment-header">
+                          <span class="comment-author">{{ comment.authorDisplay }}</span>
+                          <span class="comment-date">{{ formatDateShort(comment.createdAt) }}</span>
+                        </div>
+                        <p class="comment-body">{{ comment.body }}</p>
+                      </div>
+                    }
+                  }
+
+                  @if (!isClosed()) {
+                    <div class="comment-form">
+                      <textarea
+                        class="comment-textarea"
+                        [value]="getCommentText(answer.id)"
+                        (input)="setCommentText(answer.id, $any($event.target).value)"
+                        placeholder="Escribe un comentario..."
+                        rows="2"
+                      ></textarea>
+                      <div class="comment-form-actions">
+                        <button
+                          class="btn-comment-submit"
+                          [disabled]="!getCommentText(answer.id).trim() || isSubmittingComment(answer.id)"
+                          (click)="submitComment(answer.id)">
+                          @if (isSubmittingComment(answer.id)) { <app-loading-spinner size="sm" /> }
+                          Publicar
+                        </button>
+                      </div>
+                    </div>
+                  }
+
+                </div>
+              }
+            </div>
+
             <div class="answer-footer">
               <span class="answer-author">{{ answer.authorDisplay }}</span>
               <span class="answer-date">{{ formatDateShort(answer.createdAt) }}</span>

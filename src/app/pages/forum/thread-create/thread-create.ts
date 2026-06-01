@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -23,6 +24,7 @@ export class ThreadCreate implements OnInit {
   private catalogService = inject(CatalogService);
   private toast = inject(ToastService);
   private authState = inject(AuthStateService);
+  private destroyRef = inject(DestroyRef);
 
   readonly isSubmitting = signal(false);
 
@@ -49,7 +51,7 @@ export class ThreadCreate implements OnInit {
     this.catalogService.getUniversities().subscribe({ next: unis => this.universities.set(unis) });
     this.catalogService.getAllCourses().subscribe({ next: cs => this.courses.set(cs) });
 
-    this.form.get('universityId')!.valueChanges.subscribe(id => {
+    this.form.get('universityId')!.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(id => {
       this.areas.set([]);
       this.careers.set([]);
       this.form.patchValue({ areaId: '', careerId: '' });
