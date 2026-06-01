@@ -48,6 +48,11 @@ export interface PublishResourceRequest {
   fileName: string;
   mimeType: string;
   sizeBytes: number;
+  aceptaResoluciones?: boolean;
+}
+
+export interface UpdateResourceSettingsRequest {
+  aceptaResoluciones: boolean;
 }
 
 export interface DownloadResponse {

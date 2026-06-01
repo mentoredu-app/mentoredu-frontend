@@ -37,8 +37,26 @@
               {{ typeLabel(resource.resourceType) }}
             </span>
             <div class="resource-card__meta">
-              @if (resource.aceptaResoluciones) {
-                <span class="resoluciones-badge" title="Acepta resoluciones de estudiantes">Resoluciones</span>
+              @if (resource.resourceType === 'PRACTICA') {
+                <button
+                  type="button"
+                  class="btn-resolutions"
+                  [class.btn-resolutions--active]="resource.aceptaResoluciones"
+                  [disabled]="isUpdating(resource.id)"
+                  (click)="toggleSettings(resource, $event)"
+                  [title]="resource.aceptaResoluciones ? 'Desactivar resoluciones' : 'Activar resoluciones'"
+                >
+                  @if (isUpdating(resource.id)) {
+                    <app-loading-spinner size="sm" />
+                  } @else if (resource.aceptaResoluciones) {
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Resoluciones
+                  } @else {
+                    + Resoluciones
+                  }
+                </button>
+              } @else if (resource.aceptaResoluciones) {
+                <span class="resoluciones-badge">Resoluciones</span>
               }
               <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
             </div>

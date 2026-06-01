@@ -9,6 +9,7 @@ import {
   ResourceFileResponse,
   ResourceResponse,
   SearchResourceParams,
+  UpdateResourceSettingsRequest,
 } from '../models/resource.model';
 
 @Injectable({ providedIn: 'root' })
@@ -42,5 +43,9 @@ export class LibraryService {
 
   download(id: string): Observable<DownloadResponse> {
     return this.http.get<DownloadResponse>(`${this.base}/${id}/download`);
+  }
+
+  updateSettings(id: string, request: UpdateResourceSettingsRequest): Observable<ResourceResponse> {
+    return this.http.patch<ResourceResponse>(`${this.base}/${id}/settings`, request);
   }
 }
