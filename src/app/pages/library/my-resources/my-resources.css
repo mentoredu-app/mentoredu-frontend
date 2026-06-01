@@ -216,6 +216,21 @@
   gap: 8px;
 }
 
+.resource-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.resource-card__solutions-link {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #4338ca;
+  text-decoration: none;
+  transition: color 160ms var(--ease-out);
+}
+.resource-card__solutions-link:hover { color: #3730a3; }
+
 .resource-card__date {
   font-size: 0.75rem;
   color: var(--color-text-subtle);

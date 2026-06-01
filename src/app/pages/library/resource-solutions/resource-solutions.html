@@ -1,0 +1,128 @@
+<div class="solutions-page">
+
+  <!-- Encabezado -->
+  <div class="page-header">
+    @if (resource()) {
+      <a [routerLink]="['/library', resource()!.id]" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Volver al recurso
+      </a>
+    } @else {
+      <a routerLink="/library/my-resources" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Mis recursos
+      </a>
+    }
+
+    <div class="page-header__text">
+      <h1 class="page-title">Resoluciones recibidas</h1>
+      @if (resource()) {
+        <p class="page-subtitle">{{ resource()!.title }}</p>
+      }
+    </div>
+  </div>
+
+  <!-- Estados -->
+  @if (isLoading()) {
+    <div class="loading-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  } @else if (loadError()) {
+    <div class="error-banner" role="alert">{{ loadError() }}</div>
+  } @else if (solutions().length === 0) {
+    <app-empty-state message="Ningún estudiante ha enviado una resolución aún">
+      <p class="empty-hint">Las resoluciones aparecerán aquí cuando los estudiantes las envíen.</p>
+    </app-empty-state>
+  } @else {
+
+    <div class="solutions-summary">
+      <span class="solutions-count">{{ solutions().length }} {{ solutions().length === 1 ? 'resolución' : 'resoluciones' }}</span>
+    </div>
+
+    <ul class="solutions-list">
+      @for (sol of solutions(); track sol.id; let i = $index) {
+        <li class="solution-card" [class.solution-card--expanded]="isExpanded(sol.id)" [style.--index]="i">
+
+          <!-- Cabecera de la card (siempre visible) -->
+          <div class="solution-card__header" (click)="toggleExpand(sol)" role="button" tabindex="0" (keydown.enter)="toggleExpand(sol)" (keydown.space)="toggleExpand(sol)">
+
+            <div class="solution-card__identity">
+              <div class="solution-avatar">{{ sol.studentName.charAt(0).toUpperCase() }}</div>
+              <div class="solution-card__info">
+                <span class="solution-student">{{ sol.studentName }}</span>
+                <span class="solution-date">{{ formatDate(sol.submittedAt) }}</span>
+              </div>
+            </div>
+
+            <div class="solution-card__right">
+              <span class="status-badge status-badge--{{ sol.status.toLowerCase() }}">
+                {{ statusLabel(sol.status) }}
+              </span>
+              <svg class="expand-icon" [class.expand-icon--open]="isExpanded(sol.id)"
+                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+
+          </div>
+
+          <!-- Detalle expandible -->
+          @if (isExpanded(sol.id)) {
+            <div class="solution-card__detail">
+              @if (isLoadingDetail(sol.id)) {
+                <div class="detail-loading">
+                  <app-loading-spinner size="sm" />
+                  <span>Cargando detalle…</span>
+                </div>
+              } @else if (detailCache()[sol.id]; as detail) {
+
+                @if (detail.content) {
+                  <div class="detail-content">
+                    <h3 class="detail-label">Respuesta del estudiante</h3>
+                    <p class="detail-text">{{ detail.content }}</p>
+                  </div>
+                }
+
+                @if (detail.fileUrl) {
+                  <div class="detail-file">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span>Resolución en PDF</span>
+                    <button type="button" class="btn-download-pdf"
+                      [disabled]="isDownloading(sol.id)"
+                      (click)="downloadSolutionPdf(sol)">
+                      @if (isDownloading(sol.id)) {
+                        <app-loading-spinner size="sm" />
+                      } @else {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="7 10 12 15 17 10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                      }
+                      Descargar
+                    </button>
+                  </div>
+                }
+
+                @if (!detail.content && !detail.fileUrl) {
+                  <p class="detail-empty">Esta resolución no contiene contenido visible.</p>
+                }
+
+              }
+            </div>
+          }
+
+        </li>
+      }
+    </ul>
+
+  }
+
+</div>

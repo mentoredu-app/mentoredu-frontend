@@ -70,11 +70,20 @@
 
           <div class="resource-card__footer">
             <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
-            <a class="resource-card__view-link"
-               [routerLink]="['/library', resource.id]"
-               (click)="$event.stopPropagation()">
-              Ver detalle
-            </a>
+            <div class="resource-card__actions">
+              @if (resource.aceptaResoluciones) {
+                <a class="resource-card__solutions-link"
+                   [routerLink]="['/library', resource.id, 'solutions']"
+                   (click)="$event.stopPropagation()">
+                  Resoluciones
+                </a>
+              }
+              <a class="resource-card__view-link"
+                 [routerLink]="['/library', resource.id]"
+                 (click)="$event.stopPropagation()">
+                Ver detalle
+              </a>
+            </div>
           </div>
 
         </article>
