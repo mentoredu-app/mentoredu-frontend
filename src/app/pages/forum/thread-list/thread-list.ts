@@ -40,14 +40,22 @@ export class ThreadList implements OnInit {
   filters: ThreadFilters = { universityId: '', courseId: '', status: '' };
 
   private readonly searchTrigger = new Subject<void>();
+  // IDs de hilos creados por este usuario en este dispositivo, keyeados por userId
+  private myThreadIds = new Set<string>();
 
   get hasActiveFilters(): boolean {
     return !!(this.filters.universityId || this.filters.courseId || this.filters.status);
   }
 
   ngOnInit(): void {
+    const userId = this.authState.user()?.id;
+    if (userId) {
+      const raw = localStorage.getItem(`myThreadIds_${userId}`);
+      if (raw) { try { this.myThreadIds = new Set(JSON.parse(raw)); } catch {} }
+    }
+
     this.catalogService.getUniversities().subscribe({ next: unis => this.universities.set(unis) });
-    this.catalogService.getAllCourses().subscribe({ next: courses => this.courses.set(courses) });
+    this.catalogService.getAllCourses().subscribe({ next: cs => this.courses.set(cs) });
 
     this.searchTrigger.pipe(debounceTime(200)).subscribe(() => this.resetAndSearch());
     this.searchTrigger.next();
@@ -108,18 +116,29 @@ export class ThreadList implements OnInit {
     });
   }
 
+  // Badge "Mío" / "Mío (Anónimo)" basado en localStorage, no en authorId (que el backend no expone)
+  myThreadBadge(thread: ThreadResponse): 'mine' | 'mine-anon' | null {
+    if (!this.authState.user() || !this.myThreadIds.has(thread.id)) return null;
+    return thread.anonymous ? 'mine-anon' : 'mine';
+  }
+
+  // Resuelve el nombre de contexto a partir de los IDs y los catálogos ya cargados
+  contextLabel(thread: ThreadResponse): string | null {
+    if (thread.courseId) {
+      return this.courses().find(c => c.id === thread.courseId)?.name ?? null;
+    }
+    if (thread.universityId) {
+      return this.universities().find(u => u.id === thread.universityId)?.name ?? null;
+    }
+    if (thread.careerId) return 'Carrera';
+    return null;
+  }
+
   formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('es-PE', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
   excerpt(body: string, max = 120): string {
     return body.length > max ? body.slice(0, max).trimEnd() + '…' : body;
-  }
-
-  // null = no mostrar badge (no es mío o es anónimo de otro)
-  myThreadBadge(thread: ThreadResponse): 'mine' | 'mine-anon' | null {
-    const myId = this.authState.user()?.id;
-    if (!myId || thread.authorId !== myId) return null;
-    return thread.anonymous ? 'mine-anon' : 'mine';
   }
 }

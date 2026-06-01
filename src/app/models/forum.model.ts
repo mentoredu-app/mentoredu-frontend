@@ -9,17 +9,12 @@ export interface ThreadResponse {
   status: ThreadStatus;
   anonymous: boolean;
   authorDisplay: string;
-  authorId: string;
   universityId?: string;
-  universityName?: string;
   areaId?: string;
-  areaName?: string;
   careerId?: string;
-  careerName?: string;
   courseId?: string;
-  courseName?: string;
-  answerCount: number;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateThreadRequest {

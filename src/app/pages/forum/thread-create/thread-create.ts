@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AuthStateService } from '../../../core/services/auth-state.service';
 import { CatalogService } from '../../../services/catalog.service';
 import { ForumService } from '../../../services/forum.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
@@ -21,6 +22,7 @@ export class ThreadCreate implements OnInit {
   private forumService = inject(ForumService);
   private catalogService = inject(CatalogService);
   private toast = inject(ToastService);
+  private authState = inject(AuthStateService);
 
   readonly isSubmitting = signal(false);
 
@@ -95,6 +97,7 @@ export class ThreadCreate implements OnInit {
     }).subscribe({
       next: thread => {
         this.isSubmitting.set(false);
+        this.saveMyThreadId(thread.id);
         this.toast.success('Hilo publicado exitosamente');
         this.router.navigate(['/forum', thread.id]);
       },
@@ -107,6 +110,14 @@ export class ThreadCreate implements OnInit {
         }
       },
     });
+  }
+
+  private saveMyThreadId(threadId: string): void {
+    const userId = this.authState.user()?.id;
+    if (!userId) return;
+    const key = `myThreadIds_${userId}`;
+    const existing: string[] = JSON.parse(localStorage.getItem(key) ?? '[]');
+    localStorage.setItem(key, JSON.stringify([...existing, threadId]));
   }
 
   fieldError(field: string): string {
