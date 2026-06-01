@@ -49,17 +49,19 @@ export class ResourceUpload implements OnInit {
   readonly resourceTypes = Object.keys(RESOURCE_TYPE_LABELS) as ResourceType[];
 
   readonly metaForm = this.fb.nonNullable.group({
-    title:        ['', [Validators.required, Validators.maxLength(200)]],
-    resourceType: ['' as ResourceType, [Validators.required]],
-    universityId: ['', [Validators.required]],
-    areaId:       ['', [Validators.required]],
-    careerId:     [''],
-    courseId:     [''],
+    title:              ['', [Validators.required, Validators.maxLength(200)]],
+    resourceType:       ['' as ResourceType, [Validators.required]],
+    universityId:       ['', [Validators.required]],
+    areaId:             ['', [Validators.required]],
+    careerId:           [''],
+    courseId:           [''],
+    aceptaResoluciones: [false],
   });
 
   // Signal actualizado via valueChanges para que funcione en zoneless Angular
   readonly selectedType = signal<ResourceType | ''>('');
   readonly requiresCourse = computed(() => TYPES_REQUIRING_COURSE.includes(this.selectedType() as ResourceType));
+  readonly isPractica = computed(() => this.selectedType() === 'PRACTICA');
 
   readonly isAllowedRole = computed(() => {
     const r = this.authState.role();
@@ -81,6 +83,9 @@ export class ResourceUpload implements OnInit {
         courseCtrl.setValue('');
       }
       courseCtrl.updateValueAndValidity();
+      if (type !== 'PRACTICA') {
+        this.metaForm.get('aceptaResoluciones')!.setValue(false);
+      }
     });
 
     this.metaForm.get('universityId')!.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(id => {
@@ -173,16 +178,17 @@ export class ResourceUpload implements OnInit {
     const raw = this.metaForm.getRawValue();
     this.isPublishing.set(true);
     this.libraryService.publish({
-      title:        raw.title,
-      resourceType: raw.resourceType,
-      universityId: raw.universityId,
-      areaId:       raw.areaId,
-      careerId:     raw.careerId  || undefined,
-      courseId:     raw.courseId  || undefined,
-      fileUrl:      fileInfo.fileUrl,
-      fileName:     fileInfo.fileName,
-      mimeType:     fileInfo.mimeType,
-      sizeBytes:    fileInfo.sizeBytes,
+      title:              raw.title,
+      resourceType:       raw.resourceType,
+      universityId:       raw.universityId,
+      areaId:             raw.areaId,
+      careerId:           raw.careerId  || undefined,
+      courseId:           raw.courseId  || undefined,
+      fileUrl:            fileInfo.fileUrl,
+      fileName:           fileInfo.fileName,
+      mimeType:           fileInfo.mimeType,
+      sizeBytes:          fileInfo.sizeBytes,
+      aceptaResoluciones: raw.resourceType === 'PRACTICA' ? raw.aceptaResoluciones : undefined,
     }).subscribe({
       next: () => {
         this.isPublishing.set(false);

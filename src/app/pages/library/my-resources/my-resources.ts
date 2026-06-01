@@ -1,7 +1,9 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthStateService } from '../../../core/services/auth-state.service';
 import { LibraryService } from '../../../services/library.service';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { ResourceResponse, ResourceType, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
@@ -14,6 +16,7 @@ import { ResourceResponse, ResourceType, RESOURCE_TYPE_LABELS } from '../../../m
 })
 export class MyResources implements OnInit {
   private libraryService = inject(LibraryService);
+  private toast = inject(ToastService);
   readonly authState = inject(AuthStateService);
 
   readonly isLoading = signal(true);
@@ -22,6 +25,38 @@ export class MyResources implements OnInit {
   readonly resources = signal<ResourceResponse[]>([]);
   readonly hasMore = signal(false);
   private currentPage = 0;
+  readonly updatingIds = signal<Set<string>>(new Set());
+
+  isUpdating(id: string): boolean {
+    return this.updatingIds().has(id);
+  }
+
+  toggleSettings(resource: ResourceResponse, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.isUpdating(resource.id)) return;
+
+    this.updatingIds.update(s => new Set([...s, resource.id]));
+    const newValue = !resource.aceptaResoluciones;
+
+    this.libraryService.updateSettings(resource.id, { aceptaResoluciones: newValue }).subscribe({
+      next: updated => {
+        this.resources.update(list => list.map(r => r.id === updated.id ? updated : r));
+        this.updatingIds.update(s => { const ns = new Set(s); ns.delete(resource.id); return ns; });
+        this.toast.success(newValue ? 'Ejercicio activado: ya acepta resoluciones' : 'Resoluciones desactivadas');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.updatingIds.update(s => { const ns = new Set(s); ns.delete(resource.id); return ns; });
+        if (err.status === 400) {
+          this.toast.error(err.error?.message ?? 'Solo los recursos de tipo PRACTICA aceptan resoluciones.');
+        } else if (err.status === 403) {
+          this.toast.error('No tienes permiso para modificar este recurso.');
+        } else {
+          this.toast.error('Error al actualizar la configuración. Intenta de nuevo.');
+        }
+      },
+    });
+  }
 
   readonly totalLabel = computed(() => {
     const count = this.resources().length;

@@ -200,6 +200,20 @@
             }
           </div>
 
+          <!-- Acepta resoluciones (solo para PRACTICA) -->
+          @if (isPractica()) {
+            <div class="toggle-field">
+              <div class="toggle-field__text">
+                <span class="toggle-field__label">Acepta resoluciones de estudiantes</span>
+                <span class="toggle-field__hint">Los estudiantes podrán subir su solución a este ejercicio para que la evalúes</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" class="toggle-switch__input" formControlName="aceptaResoluciones" />
+                <span class="toggle-switch__track"></span>
+              </label>
+            </div>
+          }
+
           <div class="form-actions">
             <button type="button" class="btn-secondary" (click)="goBackToStep1()">
               Atrás
