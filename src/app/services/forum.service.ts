@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { PagedResponse } from '../models/common.model';
-import { AnswerResponse, CreateAnswerRequest, CreateThreadRequest, ReactionResponse, ReactionType, SearchThreadParams, ThreadResponse } from '../models/forum.model';
+import { AnswerResponse, CommentResponse, CreateAnswerRequest, CreateCommentRequest, CreateThreadRequest, ReactionResponse, ReactionType, SearchThreadParams, ThreadResponse } from '../models/forum.model';
 
 @Injectable({ providedIn: 'root' })
 export class ForumService {
@@ -43,5 +43,13 @@ export class ForumService {
   reactToAnswer(answerId: string, reactionType: ReactionType) {
     const base = `${environment.apiUrl}/answers`;
     return this.http.post<ReactionResponse | null>(`${base}/${answerId}/reactions`, { reactionType }, { observe: 'response' });
+  }
+
+  getComments(answerId: string) {
+    return this.http.get<CommentResponse[]>(`${environment.apiUrl}/answers/${answerId}/comments`);
+  }
+
+  createComment(answerId: string, request: CreateCommentRequest) {
+    return this.http.post<CommentResponse>(`${environment.apiUrl}/answers/${answerId}/comments`, request);
   }
 }

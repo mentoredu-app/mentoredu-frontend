@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
@@ -36,6 +37,7 @@ export class ProfileEdit implements OnInit {
 
   // profileType viene del backend — no depende de authState.role() que puede ser null tras token refresh
   readonly profileType = signal<string | null>(null);
+  private destroyRef = inject(DestroyRef);
 
   private currentUserId = '';
 
@@ -165,7 +167,7 @@ export class ProfileEdit implements OnInit {
   }
 
   private watchUniversityChange(): void {
-    this.studentForm.get('targetUniversityId')!.valueChanges.subscribe(universityId => {
+    this.studentForm.get('targetUniversityId')!.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(universityId => {
       this.areas.set([]);
       this.careers.set([]);
       this.studentForm.patchValue({ targetAreaId: '', targetCareerId: '' });

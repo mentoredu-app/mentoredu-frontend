@@ -58,6 +58,20 @@ export interface CreateAnswerRequest {
   body: string;
 }
 
+export interface CommentResponse {
+  id: string;
+  answerId: string;
+  threadId: string;
+  body: string;
+  authorDisplay: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateCommentRequest {
+  body: string;
+}
+
 export type ReactionType = 'LIKE' | 'DISLIKE';
 
 export interface ReactionResponse {
