@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { PagedResponse } from '../models/common.model';
-import { AnswerResponse, CreateAnswerRequest, CreateThreadRequest, SearchThreadParams, ThreadResponse } from '../models/forum.model';
+import { AnswerResponse, CreateAnswerRequest, CreateThreadRequest, ReactionResponse, ReactionType, SearchThreadParams, ThreadResponse } from '../models/forum.model';
 
 @Injectable({ providedIn: 'root' })
 export class ForumService {
@@ -33,5 +33,15 @@ export class ForumService {
 
   createAnswer(threadId: string, request: CreateAnswerRequest) {
     return this.http.post<AnswerResponse>(`${this.base}/${threadId}/answers`, request);
+  }
+
+  // 201 = reacción añadida/cambiada; 204 = toggle off (sin body)
+  reactToThread(threadId: string, reactionType: ReactionType) {
+    return this.http.post<ReactionResponse | null>(`${this.base}/${threadId}/reactions`, { reactionType }, { observe: 'response' });
+  }
+
+  reactToAnswer(answerId: string, reactionType: ReactionType) {
+    const base = `${environment.apiUrl}/answers`;
+    return this.http.post<ReactionResponse | null>(`${base}/${answerId}/reactions`, { reactionType }, { observe: 'response' });
   }
 }

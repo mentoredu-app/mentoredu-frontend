@@ -13,6 +13,9 @@ export interface ThreadResponse {
   areaId?: string;
   careerId?: string;
   courseId?: string;
+  likeCount: number;
+  dislikeCount: number;
+  myReaction: ReactionType | null;
   createdAt: string;
   updatedAt?: string;
 }
@@ -44,10 +47,24 @@ export interface AnswerResponse {
   body: string;
   accepted: boolean;
   authorDisplay: string;
+  likeCount: number;
+  dislikeCount: number;
+  myReaction: ReactionType | null;
   createdAt: string;
   updatedAt?: string;
 }
 
 export interface CreateAnswerRequest {
   body: string;
+}
+
+export type ReactionType = 'LIKE' | 'DISLIKE';
+
+export interface ReactionResponse {
+  id: string;
+  targetType: string;
+  targetId: string;
+  reactionType: ReactionType;
+  userId: string;
+  createdAt: string;
 }
