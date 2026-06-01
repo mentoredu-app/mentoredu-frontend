@@ -1,1 +1,127 @@
-<p>thread-detail works!</p>
+<div class="detail-page">
+
+  @if (isLoading()) {
+    <div class="loading-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  } @else if (loadError()) {
+    <div class="error-banner" role="alert">{{ loadError() }}</div>
+  } @else if (thread()) {
+
+    <!-- Encabezado -->
+    <div class="detail-header">
+      <a routerLink="/forum" class="back-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Volver al foro
+      </a>
+
+      <div class="header-actions">
+        <span class="status-badge" [class.status-badge--closed]="isClosed()">
+          {{ isClosed() ? 'Cerrado' : 'Abierto' }}
+        </span>
+        @if (canClose()) {
+          <button class="btn-close-thread" (click)="closeThread()" [disabled]="isClosing()">
+            @if (isClosing()) { <app-loading-spinner size="sm" /> }
+            Cerrar hilo
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Hilo principal -->
+    <article class="thread-post">
+      <h1 class="thread-title">{{ thread()!.title }}</h1>
+
+      <div class="post-meta">
+        <span class="post-author">{{ thread()!.authorDisplay }}</span>
+        <span class="post-date">{{ formatDate(thread()!.createdAt) }}</span>
+      </div>
+
+      <div class="post-body">{{ thread()!.body }}</div>
+    </article>
+
+    <!-- Separador de respuestas -->
+    <div class="answers-header">
+      <h2 class="answers-title">
+        {{ answers().length }} {{ answers().length === 1 ? 'respuesta' : 'respuestas' }}
+      </h2>
+    </div>
+
+    <!-- Lista de respuestas -->
+    @if (isLoadingAnswers() && answers().length === 0) {
+      <div class="loading-center">
+        <app-loading-spinner size="md" />
+      </div>
+    } @else {
+      <div class="answers-list">
+        @for (answer of answers(); track answer.id; let i = $index) {
+          <article class="answer-card" [style.--index]="i % 30" [class.answer-card--accepted]="answer.accepted">
+
+            @if (answer.accepted) {
+              <div class="accepted-mark">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Respuesta aceptada
+              </div>
+            }
+
+            <p class="answer-body">{{ answer.body }}</p>
+
+            <div class="answer-footer">
+              <span class="answer-author">{{ answer.authorDisplay }}</span>
+              <span class="answer-date">{{ formatDateShort(answer.createdAt) }}</span>
+            </div>
+
+          </article>
+        }
+      </div>
+
+      @if (hasMoreAnswers()) {
+        <div class="load-more">
+          <button class="btn-load-more" (click)="loadMoreAnswers()" [disabled]="isLoadingAnswers()">
+            @if (isLoadingAnswers()) { <app-loading-spinner size="sm" /> }
+            Cargar más respuestas
+          </button>
+        </div>
+      }
+    }
+
+    <!-- Formulario de respuesta -->
+    @if (!isClosed()) {
+      <section class="reply-section">
+        <h3 class="reply-title">Tu respuesta</h3>
+        <form [formGroup]="answerForm" (ngSubmit)="submitAnswer()" novalidate>
+          <div class="reply-field">
+            <textarea
+              class="reply-textarea"
+              [class.reply-textarea--error]="answerForm.get('body')!.invalid && answerForm.get('body')!.touched"
+              formControlName="body"
+              placeholder="Escribe tu respuesta..."
+              rows="5"
+            ></textarea>
+            <div class="reply-field-footer">
+              @if (answerForm.get('body')!.invalid && answerForm.get('body')!.touched) {
+                <span class="field-error">La respuesta no puede estar vacía</span>
+              } @else {
+                <span></span>
+              }
+              <span class="char-count">{{ bodyLength() }}/5000</span>
+            </div>
+          </div>
+          <div class="reply-actions">
+            <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
+              @if (isSubmitting()) { <app-loading-spinner size="sm" /> }
+              Publicar respuesta
+            </button>
+          </div>
+        </form>
+      </section>
+    } @else {
+      <div class="closed-notice">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        Este hilo está cerrado y no acepta nuevas respuestas.
+      </div>
+    }
+
+  }
+
+</div>

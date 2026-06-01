@@ -37,3 +37,17 @@ export interface SearchThreadParams {
 }
 
 export type ThreadContextMode = 'course' | 'university' | 'career';
+
+export interface AnswerResponse {
+  id: string;
+  threadId: string;
+  body: string;
+  accepted: boolean;
+  authorDisplay: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateAnswerRequest {
+  body: string;
+}

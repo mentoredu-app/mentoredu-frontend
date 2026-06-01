@@ -2,23 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { PagedResponse } from '../models/common.model';
-import { CreateThreadRequest, SearchThreadParams, ThreadResponse } from '../models/forum.model';
+import { AnswerResponse, CreateAnswerRequest, CreateThreadRequest, SearchThreadParams, ThreadResponse } from '../models/forum.model';
 
 @Injectable({ providedIn: 'root' })
 export class ForumService {
   private http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/threads`;
 
-  getThreads(params: SearchThreadParams) {
-    const query: Record<string, string | number> = {
-      page: params.page ?? 0,
-      size: params.size ?? 15,
-    };
-    if (params.universityId) query['universityId'] = params.universityId;
-    if (params.courseId)     query['courseId']     = params.courseId;
-    if (params.careerId)     query['careerId']      = params.careerId;
-    if (params.status)       query['status']        = params.status;
-    return this.http.get<PagedResponse<ThreadResponse>>(this.base, { params: query });
+  getThreads(page = 0, size = 15) {
+    return this.http.get<PagedResponse<ThreadResponse>>(this.base, { params: { page, size } });
   }
 
   getThread(id: string) {
@@ -27,5 +19,19 @@ export class ForumService {
 
   createThread(request: CreateThreadRequest) {
     return this.http.post<ThreadResponse>(this.base, request);
+  }
+
+  closeThread(threadId: string) {
+    return this.http.patch<ThreadResponse>(`${this.base}/${threadId}/close`, {});
+  }
+
+  getAnswers(threadId: string, page = 0, size = 30) {
+    return this.http.get<PagedResponse<AnswerResponse>>(`${this.base}/${threadId}/answers`, {
+      params: { page, size },
+    });
+  }
+
+  createAnswer(threadId: string, request: CreateAnswerRequest) {
+    return this.http.post<AnswerResponse>(`${this.base}/${threadId}/answers`, request);
   }
 }

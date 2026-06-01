@@ -18,7 +18,7 @@
 
       <select class="filter-select"
         [(ngModel)]="filters.universityId"
-        (ngModelChange)="triggerSearch()">
+        (ngModelChange)="applyFilter()">
         <option value="">Universidad</option>
         @for (uni of universities(); track uni.id) {
           <option [value]="uni.id">{{ uni.name }}</option>
@@ -27,7 +27,7 @@
 
       <select class="filter-select"
         [(ngModel)]="filters.courseId"
-        (ngModelChange)="triggerSearch()">
+        (ngModelChange)="applyFilter()">
         <option value="">Curso</option>
         @for (course of courses(); track course.id) {
           <option [value]="course.id">{{ course.name }}</option>
@@ -36,7 +36,7 @@
 
       <select class="filter-select"
         [(ngModel)]="filters.status"
-        (ngModelChange)="triggerSearch()">
+        (ngModelChange)="applyFilter()">
         <option value="">Estado</option>
         <option value="OPEN">Abiertos</option>
         <option value="CLOSED">Cerrados</option>
