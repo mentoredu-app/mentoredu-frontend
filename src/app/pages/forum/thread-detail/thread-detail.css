@@ -126,6 +126,59 @@
   word-break: break-word;
 }
 
+/* Reacciones */
+.reactions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: border-color 150ms var(--ease-out), color 150ms var(--ease-out),
+              background 150ms var(--ease-out), transform 150ms var(--ease-out);
+}
+.reaction-btn:hover:not(:disabled) {
+  border-color: #1F6C9F;
+  color: #1F6C9F;
+  background: #E1F3FE;
+}
+.reaction-btn:active:not(:disabled) { transform: scale(0.95); }
+.reaction-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.reaction-btn--active {
+  border-color: #1F6C9F;
+  color: #1F6C9F;
+  background: #E1F3FE;
+  font-weight: 600;
+}
+
+.reaction-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 14px;
+  text-align: center;
+}
+
+.reaction-btn--dislike:hover:not(:disabled),
+.reaction-btn--dislike.reaction-btn--active {
+  border-color: #9F2F2D;
+  color: #9F2F2D;
+  background: #FDEBEC;
+}
+
 /* Cabecera de respuestas */
 .answers-header {
   margin-bottom: 16px;

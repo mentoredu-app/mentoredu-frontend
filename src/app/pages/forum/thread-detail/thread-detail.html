@@ -38,6 +38,28 @@
       </div>
 
       <div class="post-body">{{ thread()!.body }}</div>
+
+      <!-- Reacciones al hilo -->
+      <div class="reactions">
+        <button class="reaction-btn"
+          [class.reaction-btn--active]="getReaction('thread_' + thread()!.id) === 'LIKE'"
+          [disabled]="isReacting('thread_' + thread()!.id)"
+          (click)="reactThread('LIKE')"
+          title="Me gusta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          Me gusta
+          @if (thread()!.likeCount > 0) { <span class="reaction-count">{{ thread()!.likeCount }}</span> }
+        </button>
+        <button class="reaction-btn reaction-btn--dislike"
+          [class.reaction-btn--active]="getReaction('thread_' + thread()!.id) === 'DISLIKE'"
+          [disabled]="isReacting('thread_' + thread()!.id)"
+          (click)="reactThread('DISLIKE')"
+          title="No me gusta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+          No me gusta
+          @if (thread()!.dislikeCount > 0) { <span class="reaction-count">{{ thread()!.dislikeCount }}</span> }
+        </button>
+      </div>
     </article>
 
     <!-- Separador de respuestas -->
@@ -65,6 +87,28 @@
             }
 
             <p class="answer-body">{{ answer.body }}</p>
+
+            <!-- Reacciones a la respuesta -->
+            <div class="reactions">
+              <button class="reaction-btn"
+                [class.reaction-btn--active]="getReaction('answer_' + answer.id) === 'LIKE'"
+                [disabled]="isReacting('answer_' + answer.id)"
+                (click)="reactAnswer(answer.id, 'LIKE')"
+                title="Me gusta">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                Me gusta
+                @if (answer.likeCount > 0) { <span class="reaction-count">{{ answer.likeCount }}</span> }
+              </button>
+              <button class="reaction-btn reaction-btn--dislike"
+                [class.reaction-btn--active]="getReaction('answer_' + answer.id) === 'DISLIKE'"
+                [disabled]="isReacting('answer_' + answer.id)"
+                (click)="reactAnswer(answer.id, 'DISLIKE')"
+                title="No me gusta">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                No me gusta
+                @if (answer.dislikeCount > 0) { <span class="reaction-count">{{ answer.dislikeCount }}</span> }
+              </button>
+            </div>
 
             <div class="answer-footer">
               <span class="answer-author">{{ answer.authorDisplay }}</span>
