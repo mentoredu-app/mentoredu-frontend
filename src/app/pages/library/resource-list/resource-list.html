@@ -64,6 +64,19 @@
         }
       </select>
 
+      @if (isStudent()) {
+        <button
+          class="filter-toggle"
+          [class.filter-toggle--active]="showMySubmissions()"
+          (click)="showMySubmissions.set(!showMySubmissions())"
+          type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Mis resoluciones
+        </button>
+      }
+
       @if (hasActiveFilters) {
         <button class="btn-clear-filters" (click)="clearFilters()">
           Limpiar filtros
@@ -80,41 +93,56 @@
     </div>
   } @else if (loadError()) {
     <div class="error-banner" role="alert">{{ loadError() }}</div>
-  } @else if (resources().length === 0) {
-    <app-empty-state
-      [message]="hasActiveFilters ? 'No hay recursos que coincidan con tu búsqueda' : 'Aún no hay recursos publicados'"
-    />
   } @else {
-    <div class="resource-grid">
-      @for (resource of resources(); track resource.id; let i = $index) {
-        <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
 
-          <div class="resource-card__top">
-            <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
-              {{ typeLabel(resource.resourceType) }}
-            </span>
-            <div class="resource-card__badges">
-              @if (resource.authorId === authState.user()?.id) {
-                <span class="mine-badge">Mío</span>
-              }
-              <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
+    @if (displayedResources().length === 0) {
+      <app-empty-state
+        [message]="showMySubmissions()
+          ? 'No enviaste resoluciones entre los recursos cargados'
+          : hasActiveFilters
+            ? 'No hay recursos que coincidan con tu búsqueda'
+            : 'Aún no hay recursos publicados'"
+      />
+    } @else {
+      <div class="resource-grid">
+        @for (resource of displayedResources(); track resource.id; let i = $index) {
+          <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
+
+            <div class="resource-card__top">
+              <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
+                {{ typeLabel(resource.resourceType) }}
+              </span>
+              <div class="resource-card__badges">
+                @if (resource.mySubmission) {
+                  <span class="resolved-badge">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    {{ resource.mySubmission.status === 'REVIEWED' ? 'Revisada' : 'Resuelta' }}
+                  </span>
+                }
+                @if (resource.authorId === authState.user()?.id) {
+                  <span class="mine-badge">Mío</span>
+                }
+                <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
+              </div>
             </div>
-          </div>
 
-          <h2 class="resource-card__title">{{ resource.title }}</h2>
+            <h2 class="resource-card__title">{{ resource.title }}</h2>
 
-          @if (resource.description) {
-            <p class="resource-card__desc">{{ resource.description }}</p>
-          }
+            @if (resource.description) {
+              <p class="resource-card__desc">{{ resource.description }}</p>
+            }
 
-          <div class="resource-card__footer">
-            <span class="resource-card__author">{{ resource.authorName }}</span>
-            <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
-          </div>
+            <div class="resource-card__footer">
+              <span class="resource-card__author">{{ resource.authorName }}</span>
+              <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
+            </div>
 
-        </article>
-      }
-    </div>
+          </article>
+        }
+      </div>
+    }
 
     @if (hasMore()) {
       <div class="load-more">
@@ -124,6 +152,7 @@
         </button>
       </div>
     }
+
   }
 
 </div>
