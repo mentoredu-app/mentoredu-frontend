@@ -128,6 +128,36 @@
 .filter-select:focus { border-color: var(--color-primary); }
 .filter-select:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 160ms var(--ease-out), color 160ms var(--ease-out),
+              background 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+.filter-toggle:hover:not(.filter-toggle--active) {
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+.filter-toggle:active { transform: scale(0.97); }
+
+.filter-toggle--active {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+.filter-toggle--active:hover {
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
 .btn-clear-filters {
   padding: 8px 14px;
   font-size: 0.8125rem;
@@ -218,6 +248,20 @@
 .resource-type-badge--practica   { color: #346538; background: #EDF3EC; }
 .resource-type-badge--guia       { color: #956400; background: #FBF3DB; }
 .resource-type-badge--apuntes    { color: #9F2F2D; background: #FDEBEC; }
+
+.resolved-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  padding: 3px 8px;
+  border-radius: 9999px;
+}
 
 .mine-badge {
   font-size: 0.68rem;

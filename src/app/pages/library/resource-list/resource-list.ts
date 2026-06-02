@@ -53,6 +53,16 @@ export class ResourceList implements OnInit {
     return r === 'TEACHER' || r === 'ACADEMY' || r === 'ADMIN';
   });
 
+  readonly isStudent = computed(() => this.authState.role() === 'STUDENT');
+
+  readonly showMySubmissions = signal(false);
+
+  readonly displayedResources = computed(() => {
+    const all = this.resources();
+    if (!this.showMySubmissions()) return all;
+    return all.filter(r => !!r.mySubmission);
+  });
+
   // Getter en lugar de computed para evitar problemas de reactividad zoneless con no-signals
   get hasActiveFilters(): boolean {
     return !!(this.filters.q || this.filters.universityId || this.filters.areaId || this.filters.type);

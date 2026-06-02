@@ -1,0 +1,123 @@
+<div class="my-solution-page">
+
+  <!-- Back -->
+  @if (resource()) {
+    <a [routerLink]="['/library', resource()!.id]" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+      </svg>
+      Volver al ejercicio
+    </a>
+  }
+
+  <!-- Loading -->
+  @if (pageState() === 'loading') {
+    <div class="loading-center"><app-loading-spinner size="lg" /></div>
+  }
+
+  <!-- Error de carga -->
+  @else if (pageState() === 'load-error') {
+    <div class="error-banner" role="alert">{{ loadError() }}</div>
+  }
+
+  <!-- Sin resolución enviada -->
+  @else if (pageState() === 'no-solution') {
+    <div class="page-header">
+      <h1 class="page-title">Mi resolución</h1>
+      @if (resource()) {
+        <p class="page-subtitle">{{ resource()!.title }}</p>
+      }
+    </div>
+    <div class="empty-card">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/>
+        <polyline points="9 15 12 12 15 15"/>
+      </svg>
+      <p class="empty-card__title">Aún no enviaste una resolución</p>
+      <p class="empty-card__hint">Envía tu resolución para que el docente pueda revisarla y darte feedback.</p>
+      @if (resource()) {
+        <a [routerLink]="['/pedagogy', resource()!.id, 'submit']" class="btn-submit-now">Enviar resolución</a>
+      }
+    </div>
+  }
+
+  <!-- Resolución cargada -->
+  @else if (pageState() === 'ready') {
+    @if (data(); as result) {
+      <div class="page-header">
+        <div class="page-header__top">
+          <h1 class="page-title">Mi resolución</h1>
+          <span class="status-badge status-badge--{{ result.solution.status.toLowerCase() }}">
+            {{ result.solution.status === 'REVIEWED' ? 'Revisada' : 'Pendiente de revisión' }}
+          </span>
+        </div>
+        @if (resource()) {
+          <p class="page-subtitle">{{ resource()!.title }}</p>
+        }
+        <p class="page-date">Enviada el {{ formatDate(result.solution.submittedAt) }}</p>
+      </div>
+
+      <!-- Contenido de la resolución -->
+      <div class="solution-card">
+        <h2 class="card-label">Tu resolución</h2>
+
+        @if (result.solution.content) {
+          <p class="solution-text">{{ result.solution.content }}</p>
+        }
+
+        @if (result.solution.fileUrl) {
+          <div class="file-row">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span>Resolución en PDF</span>
+            <button type="button" class="btn-download" [disabled]="isDownloading()" (click)="downloadPdf()">
+              @if (isDownloading()) { <app-loading-spinner size="sm" /> } @else { Descargar }
+            </button>
+          </div>
+        }
+
+        @if (!result.solution.content && !result.solution.fileUrl) {
+          <p class="empty-hint">Sin contenido visible.</p>
+        }
+      </div>
+
+      <!-- Feedback recibido -->
+      @if (result.feedback; as fb) {
+        <div class="feedback-card">
+          <h2 class="card-label">Feedback del docente</h2>
+
+          @if (fb.score !== null && fb.score !== undefined) {
+            <div class="score-display">
+              <span class="score-display__label">Nota</span>
+              <span class="score-display__value">{{ fb.score }}<span class="score-display__max"> / 10</span></span>
+            </div>
+          }
+
+          <p class="feedback-body">{{ fb.body }}</p>
+
+          <div class="feedback-meta">
+            <span class="feedback-meta__author">{{ fb.authorName }}</span>
+            <span class="feedback-meta__dot">·</span>
+            <span class="feedback-meta__date">{{ formatDate(fb.createdAt) }}</span>
+          </div>
+        </div>
+      } @else {
+        <div class="pending-feedback-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <div>
+            <p class="pending-feedback-card__title">Esperando feedback</p>
+            <p class="pending-feedback-card__hint">El docente aún no ha revisado tu resolución. Recibirás una notificación cuando lo haga.</p>
+          </div>
+        </div>
+      }
+    }
+  }
+
+</div>
