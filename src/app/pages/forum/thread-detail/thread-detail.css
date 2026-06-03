@@ -111,7 +111,9 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text);
+  text-decoration: none;
 }
+.post-author--link:hover { color: var(--color-primary); text-decoration: underline; }
 
 .post-date {
   font-size: 0.8rem;
@@ -252,7 +254,9 @@
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--color-text-muted);
+  text-decoration: none;
 }
+.answer-author--link:hover { color: var(--color-primary); text-decoration: underline; }
 
 .answer-date {
   font-size: 0.75rem;
@@ -428,7 +432,9 @@
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-text);
+  text-decoration: none;
 }
+.comment-author--link:hover { color: var(--color-primary); text-decoration: underline; }
 
 .comment-date {
   font-size: 0.75rem;

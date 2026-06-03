@@ -135,7 +135,11 @@
             }
 
             <div class="resource-card__footer">
-              <span class="resource-card__author">{{ resource.authorName }}</span>
+              <a class="resource-card__author resource-card__author--link"
+                [routerLink]="['/profiles', resource.authorId]"
+                (click)="$event.stopPropagation()">
+                {{ resource.authorName }}
+              </a>
               <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
             </div>
 

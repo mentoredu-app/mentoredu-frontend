@@ -1,5 +1,30 @@
 export type SolutionStatus = 'SUBMITTED' | 'REVIEWED';
 
+export interface MySolutionSummaryResponse {
+  id: string;
+  resourceId: string;
+  resourceTitle: string;
+  resourceType: string;
+  status: SolutionStatus;
+  submittedAt: string;
+  feedbackScore: number | null;
+  feedbackBody: string | null;
+  feedbackAt: string | null;
+}
+
+export interface ReceivedSolutionResponse {
+  id: string;
+  resourceId: string;
+  resourceTitle: string;
+  resourceType: string;
+  studentId: string;
+  studentName: string;
+  status: SolutionStatus;
+  submittedAt: string;
+  hasFeedback: boolean;
+  feedbackScore: number | null;
+}
+
 export interface SolutionResponse {
   id: string;
   resourceId: string;

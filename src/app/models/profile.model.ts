@@ -22,6 +22,10 @@ export interface ProfileResponse {
   city?: string;
   bio?: string;
   profileType: 'STUDENT' | 'TEACHER' | 'ACADEMY' | 'MODERATOR' | 'ADMIN';
+  followerCount: number;
+  followingCount: number;
+  isFollowing: boolean;
+  hasStudentProfile: boolean;
   createdAt: string;
   updatedAt: string;
 }

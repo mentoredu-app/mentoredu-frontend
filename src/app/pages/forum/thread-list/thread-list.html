@@ -85,9 +85,15 @@
             <p class="thread-card__body">{{ excerpt(thread.body) }}</p>
 
             <div class="thread-card__footer">
-              <span class="thread-card__author">
-                {{ thread.authorDisplay }}
-              </span>
+              @if (thread.authorId) {
+                <a class="thread-card__author thread-card__author--link"
+                  [routerLink]="['/profiles', thread.authorId]"
+                  (click)="$event.stopPropagation()">
+                  {{ thread.authorDisplay }}
+                </a>
+              } @else {
+                <span class="thread-card__author">{{ thread.authorDisplay }}</span>
+              }
               <span class="thread-card__date">{{ formatDate(thread.createdAt) }}</span>
             </div>
           </div>

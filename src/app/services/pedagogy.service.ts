@@ -5,9 +5,12 @@ import { environment } from '../../environments/environment';
 import {
   CreateFeedbackRequest,
   FeedbackResponse,
+  MySolutionSummaryResponse,
   MySolutionWithFeedbackResponse,
+  ReceivedSolutionResponse,
   SolutionResponse,
 } from '../models/pedagogy.model';
+import { PagedResponse } from '../models/common.model';
 
 @Injectable({ providedIn: 'root' })
 export class PedagogyService {
@@ -37,5 +40,13 @@ export class PedagogyService {
 
   getFeedback(solutionId: string): Observable<FeedbackResponse> {
     return this.http.get<FeedbackResponse>(`${this.solBase}/${solutionId}/feedback`);
+  }
+
+  getMySolutions(page = 0, size = 10): Observable<PagedResponse<MySolutionSummaryResponse>> {
+    return this.http.get<PagedResponse<MySolutionSummaryResponse>>(`${this.solBase}/mine`, { params: { page, size } });
+  }
+
+  getReceivedSolutions(page = 0, size = 10): Observable<PagedResponse<ReceivedSolutionResponse>> {
+    return this.http.get<PagedResponse<ReceivedSolutionResponse>>(`${this.solBase}/received`, { params: { page, size } });
   }
 }

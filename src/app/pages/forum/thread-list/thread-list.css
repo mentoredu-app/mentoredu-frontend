@@ -235,6 +235,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-decoration: none;
+}
+
+.thread-card__author--link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
 }
 
 .thread-card__date {

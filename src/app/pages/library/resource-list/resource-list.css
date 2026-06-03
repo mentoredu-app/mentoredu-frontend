@@ -318,6 +318,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-decoration: none;
+}
+
+.resource-card__author--link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
 }
 
 .resource-card__date {
