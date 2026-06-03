@@ -8,6 +8,7 @@ export interface ThreadResponse {
   body: string;
   status: ThreadStatus;
   anonymous: boolean;
+  authorId: string | null;   // null when anonymous
   authorDisplay: string;
   universityId?: string;
   areaId?: string;
@@ -34,6 +35,7 @@ export interface SearchThreadParams {
   universityId?: string;
   courseId?: string;
   careerId?: string;
+  authorId?: string;
   status?: ThreadStatus;
   page?: number;
   size?: number;
@@ -46,6 +48,7 @@ export interface AnswerResponse {
   threadId: string;
   body: string;
   accepted: boolean;
+  authorId: string;
   authorDisplay: string;
   likeCount: number;
   dislikeCount: number;
@@ -63,6 +66,7 @@ export interface CommentResponse {
   answerId: string;
   threadId: string;
   body: string;
+  authorId: string;
   authorDisplay: string;
   createdAt: string;
   updatedAt?: string;

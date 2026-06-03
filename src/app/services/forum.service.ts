@@ -13,6 +13,10 @@ export class ForumService {
     return this.http.get<PagedResponse<ThreadResponse>>(this.base, { params: { page, size } });
   }
 
+  getThreadsByUser(authorId: string, page = 0, size = 10) {
+    return this.http.get<PagedResponse<ThreadResponse>>(this.base, { params: { page, size, authorId } });
+  }
+
   getThread(id: string) {
     return this.http.get<ThreadResponse>(`${this.base}/${id}`);
   }

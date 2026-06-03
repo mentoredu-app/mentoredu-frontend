@@ -78,6 +78,7 @@ export interface SearchResourceParams {
   areaId?: string;
   careerId?: string;
   courseId?: string;
+  authorId?: string;
   page?: number;
   size?: number;
 }

@@ -25,6 +25,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           return http.post<AuthResponse>(`${environment.apiUrl}/auth/refresh`, { refreshToken }).pipe(
             switchMap(res => {
               authState.setAccessToken(res.accessToken);
+              // Restaurar usuario si se perdió tras refresh de página
+              if (!authState.user()) {
+                const stored = localStorage.getItem('user');
+                if (stored) {
+                  try { authState.setUser(JSON.parse(stored)); } catch {}
+                }
+              }
               return next(req.clone({ setHeaders: { Authorization: `Bearer ${res.accessToken}` } }));
             }),
             catchError(() => {

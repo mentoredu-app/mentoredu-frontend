@@ -33,7 +33,13 @@
       <h1 class="thread-title">{{ thread()!.title }}</h1>
 
       <div class="post-meta">
-        <span class="post-author">{{ thread()!.authorDisplay }}</span>
+        @if (thread()!.authorId) {
+          <a class="post-author post-author--link" [routerLink]="['/profiles', thread()!.authorId]">
+            {{ thread()!.authorDisplay }}
+          </a>
+        } @else {
+          <span class="post-author">{{ thread()!.authorDisplay }}</span>
+        }
         <span class="post-date">{{ formatDate(thread()!.createdAt) }}</span>
       </div>
 
@@ -132,7 +138,10 @@
                     @for (comment of commentsFor(answer.id); track comment.id) {
                       <div class="comment-item">
                         <div class="comment-header">
-                          <span class="comment-author">{{ comment.authorDisplay }}</span>
+                          <a class="comment-author comment-author--link"
+                            [routerLink]="['/profiles', comment.authorId]">
+                            {{ comment.authorDisplay }}
+                          </a>
                           <span class="comment-date">{{ formatDateShort(comment.createdAt) }}</span>
                         </div>
                         <p class="comment-body">{{ comment.body }}</p>
@@ -166,7 +175,10 @@
             </div>
 
             <div class="answer-footer">
-              <span class="answer-author">{{ answer.authorDisplay }}</span>
+              <a class="answer-author answer-author--link"
+                [routerLink]="['/profiles', answer.authorId]">
+                {{ answer.authorDisplay }}
+              </a>
               <span class="answer-date">{{ formatDateShort(answer.createdAt) }}</span>
             </div>
 
