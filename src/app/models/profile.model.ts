@@ -25,6 +25,7 @@ export interface ProfileResponse {
   followerCount: number;
   followingCount: number;
   isFollowing: boolean;
+  hasStudentProfile: boolean;
   createdAt: string;
   updatedAt: string;
 }

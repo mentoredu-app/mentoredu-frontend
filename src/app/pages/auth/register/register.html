@@ -75,6 +75,22 @@
       </div>
 
       <div class="form-field">
+        <label class="form-label" for="confirmPassword">Confirmar contraseña</label>
+        <input
+          id="confirmPassword"
+          class="form-input"
+          [class.form-input--error]="confirmPasswordError()"
+          type="password"
+          formControlName="confirmPassword"
+          placeholder="Repite tu contraseña"
+          autocomplete="new-password"
+        />
+        @if (confirmPasswordError()) {
+          <span class="form-error">{{ confirmPasswordError() }}</span>
+        }
+      </div>
+
+      <div class="form-field">
         <label class="form-label" for="role">Soy</label>
         <select
           id="role"

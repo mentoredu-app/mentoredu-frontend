@@ -22,11 +22,7 @@ export class AuthService {
   private readonly base = `${environment.apiUrl}/auth`;
 
   register(request: RegisterRequest) {
-    return this.http.post<AuthResponse>(`${this.base}/register`, request).pipe(
-      tap(res => {
-        this.authState.setSession(res.accessToken, res.refreshToken, res.user);
-      })
-    );
+    return this.http.post<AuthResponse>(`${this.base}/register`, request);
   }
 
   login(request: LoginRequest) {

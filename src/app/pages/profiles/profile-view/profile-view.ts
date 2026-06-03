@@ -98,7 +98,7 @@ export class ProfileView implements OnInit {
         this.isFollowing.set(p.isFollowing);
         this.isLoading.set(false);
 
-        if (p.profileType === 'STUDENT') {
+        if (p.profileType === 'STUDENT' && p.hasStudentProfile) {
           this.profileService.getStudentProfile(p.userId).subscribe({
             next: s => this.studentExtra.set(s),
             error: () => {},
