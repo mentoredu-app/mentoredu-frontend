@@ -11,6 +11,7 @@ import { ProfileResponse, StudentProfileResponse } from '../../../models/profile
 import { ResourceResponse, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
 import { ThreadResponse } from '../../../models/forum.model';
 import { MySolutionSummaryResponse, ReceivedSolutionResponse } from '../../../models/pedagogy.model';
+import { AssociationStatus } from '../../../models/association.model';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 
@@ -37,8 +38,10 @@ export class ProfileView implements OnInit {
   readonly profile      = signal<ProfileResponse | null>(null);
   readonly studentExtra = signal<StudentProfileResponse | null>(null);
   readonly notFound     = signal(false);
-  readonly isFollowing  = signal(false);
-  readonly isFollowLoading = signal(false);
+  readonly isFollowing        = signal(false);
+  readonly isFollowLoading    = signal(false);
+  readonly associationStatus  = signal<AssociationStatus | 'NONE' | 'LOADING'>('NONE');
+  readonly isAssocLoading     = signal(false);
 
   // ── Tabs ─────────────────────────────────────────
   readonly activeTab = signal<ProfileTab>('threads');
@@ -54,6 +57,13 @@ export class ProfileView implements OnInit {
     this.isOwnProfile() &&
     (this.profile()?.profileType === 'TEACHER' || this.profile()?.profileType === 'ACADEMY')
   );
+
+  readonly canRequestAssociation = computed(() => {
+    const role = this.authState.user()?.role;
+    return !this.isOwnProfile() &&
+      this.profile()?.profileType === 'ACADEMY' &&
+      role === 'TEACHER';
+  });
 
   // ── Activity data ────────────────────────────────
   readonly tabResources  = signal<ResourceResponse[]>([]);
@@ -188,6 +198,29 @@ export class ProfileView implements OnInit {
     const tab = this.activeTab();
     this.pages[tab]++;
     this.loadTab(tab, this.profile()!.userId);
+  }
+
+  // ── Association ───────────────────────────────────
+  requestAssociation(): void {
+    const profileId = this.profile()?.id;
+    if (!profileId || this.isAssocLoading()) return;
+    this.isAssocLoading.set(true);
+    this.communityService.requestAssociation(profileId).subscribe({
+      next: () => {
+        this.associationStatus.set('PENDING');
+        this.isAssocLoading.set(false);
+        this.toast.success('Solicitud de asociación enviada');
+      },
+      error: (err) => {
+        this.isAssocLoading.set(false);
+        if (err.status === 409) {
+          this.associationStatus.set('PENDING');
+          this.toast.error('Ya tienes una solicitud pendiente con esta academia');
+        } else {
+          this.toast.error('No se pudo enviar la solicitud. Intenta de nuevo.');
+        }
+      },
+    });
   }
 
   // ── Follow ────────────────────────────────────────
