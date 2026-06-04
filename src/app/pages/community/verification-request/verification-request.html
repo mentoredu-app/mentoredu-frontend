@@ -1,0 +1,179 @@
+<div class="verification-page">
+
+  <a routerLink="/profiles/edit" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Volver a perfil
+  </a>
+
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Verificación de identidad</h1>
+      <p class="page-subtitle">
+        Sube documentos oficiales para verificar tu identidad como
+        {{ authState.role() === 'ACADEMY' ? 'academia' : 'docente' }}.
+      </p>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-center"><app-loading-spinner /></div>
+  } @else {
+
+    <!-- Estado actual -->
+    @if (latestRequest(); as req) {
+      <div class="status-card" [class]="'status-card--' + req.status.toLowerCase()">
+        <div class="status-card__left">
+          <div class="status-icon">
+            @if (req.status === 'PENDING') {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            } @else if (req.status === 'APPROVED') {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            } @else {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+            }
+          </div>
+          <div>
+            <p class="status-card__label">{{ statusLabels[req.status] }}</p>
+            <p class="status-card__date">Enviada el {{ formatDate(req.createdAt) }}</p>
+            @if (req.notes) {
+              <p class="status-card__notes">{{ req.notes }}</p>
+            }
+          </div>
+        </div>
+        @if (req.status === 'REJECTED' && !showForm()) {
+          <button class="btn-retry" (click)="openForm()">Volver a solicitar</button>
+        }
+      </div>
+    }
+
+    <!-- Documentos adjuntos de la solicitud actual -->
+    @if (latestRequest(); as req) {
+      <div class="docs-section">
+        <p class="docs-section__title">Documentos adjuntos</p>
+        <ul class="docs-list">
+          @for (doc of req.documents; track doc.documentType) {
+            <li class="doc-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span class="doc-item__type">{{ docTypeLabel(doc.documentType) }}</span>
+              <span class="doc-item__url">{{ doc.fileUrl }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Formulario -->
+    @if (showForm()) {
+      <section class="form-section">
+        <h2 class="form-section__title">
+          {{ latestRequest()?.status === 'REJECTED' ? 'Nueva solicitud' : 'Enviar solicitud' }}
+        </h2>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="verification-form" novalidate>
+
+          <!-- Tipo de entidad (read-only) -->
+          <div class="field-group">
+            <label class="field-label">Tipo de cuenta</label>
+            <div class="entity-type-display">
+              {{ authState.role() === 'ACADEMY' ? 'Academia' : 'Docente' }}
+            </div>
+          </div>
+
+          <!-- Documentos -->
+          <div class="field-group">
+            <label class="field-label">Documentos de respaldo</label>
+            <p class="field-hint">
+              Adjunta el enlace de acceso a cada documento.
+              Puedes subir archivos desde <a routerLink="/library" class="inline-link">Biblioteca</a>
+              y copiar la URL del archivo.
+            </p>
+
+            <div formArrayName="documents" class="documents-list">
+              @for (docGroup of documents.controls; track $index) {
+                <div [formGroupName]="$index" class="doc-row">
+                  <div class="doc-row__fields">
+                    <div class="field">
+                      <label class="field-label--sm">Tipo de documento</label>
+                      <select formControlName="documentType" class="select"
+                        [class.select--error]="isFieldInvalid(getDocGroup($index), 'documentType')">
+                        @for (type of documentTypes; track type) {
+                          <option [value]="type">{{ docTypeLabel(type) }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="field field--grow">
+                      <label class="field-label--sm">URL del documento</label>
+                      <input formControlName="fileUrl" type="text"
+                        class="input" [class.input--error]="isFieldInvalid(getDocGroup($index), 'fileUrl')"
+                        placeholder="https://... o uploads/resources/..." />
+                      @if (isFieldInvalid(getDocGroup($index), 'fileUrl')) {
+                        <span class="field-error">La URL del documento es requerida</span>
+                      }
+                    </div>
+                  </div>
+                  @if (documents.length > 1) {
+                    <button type="button" class="btn-remove" (click)="removeDocument($index)"
+                      aria-label="Quitar documento">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            @if (documents.length < 5) {
+              <button type="button" class="btn-add-doc" (click)="addDocument()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Agregar otro documento
+              </button>
+            }
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
+                <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Enviando...
+              } @else {
+                Enviar solicitud
+              }
+            </button>
+          </div>
+
+        </form>
+      </section>
+    }
+
+  }
+
+</div>

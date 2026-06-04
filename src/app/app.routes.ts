@@ -25,6 +25,7 @@ export const routes: Routes = [
       { path: 'profiles', loadChildren: () => import('./pages/profiles/profiles.routes').then(m => m.PROFILES_ROUTES) },
       { path: 'pedagogy', loadChildren: () => import('./pages/pedagogy/pedagogy.routes').then(m => m.PEDAGOGY_ROUTES) },
       { path: 'notifications', loadChildren: () => import('./pages/notifications/notifications.routes').then(m => m.NOTIFICATIONS_ROUTES) },
+      { path: 'community', loadChildren: () => import('./pages/community/community.routes').then(m => m.COMMUNITY_ROUTES) },
     ],
   },
   { path: '**', redirectTo: 'login' },
