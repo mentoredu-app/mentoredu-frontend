@@ -1,190 +1,246 @@
 <div class="moderation-page">
 
   <header class="page-header">
-    <div>
-      <h1 class="page-title">Moderación</h1>
-      <p class="page-subtitle">Solicitudes de verificación de identidad de docentes y academias.</p>
-    </div>
+    <h1 class="page-title">Moderación</h1>
+    <p class="page-subtitle">Gestión de verificaciones y reportes de contenido.</p>
   </header>
 
-  <!-- Filtros -->
-  <div class="filter-bar">
-    @for (s of statuses; track s.value) {
-      <button class="filter-btn"
-        [class.filter-btn--active]="statusFilter() === s.value"
-        (click)="setFilter(s.value)">
-        {{ s.label }}
-      </button>
-    }
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'verifications'"
+      (click)="switchTab('verifications')">Verificaciones</button>
+    <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'reports'"
+      (click)="switchTab('reports')">Reportes</button>
   </div>
 
-  @if (isLoading()) {
-    <div class="loading-center"><app-loading-spinner /></div>
-  } @else if (loadError()) {
-    <div class="error-banner">{{ loadError() }}</div>
-  } @else if (requests().length === 0) {
-    <app-empty-state message="No hay solicitudes en esta categoría" />
-  } @else {
-
-    <div class="requests-count">
-      {{ requests().length }} solicitud{{ requests().length === 1 ? '' : 'es' }}
+  <!-- ══ TAB: VERIFICACIONES ══════════════════════════════════ -->
+  @if (activeTab() === 'verifications') {
+    <div class="filter-bar">
+      @for (s of verificationStatuses; track s.value) {
+        <button class="filter-btn" [class.filter-btn--active]="statusFilter() === s.value"
+          (click)="setVerifFilter(s.value)">{{ s.label }}</button>
+      }
     </div>
 
-    <ul class="requests-list">
-      @for (req of requests(); track req.id; let i = $index) {
-        <li class="request-card" [class.request-card--expanded]="isExpanded(req.id)"
-          [style.--index]="i">
+    @if (vIsLoading()) {
+      <div class="loading-center"><app-loading-spinner /></div>
+    } @else if (vLoadError()) {
+      <div class="error-banner">{{ vLoadError() }}</div>
+    } @else if (requests().length === 0) {
+      <app-empty-state message="No hay solicitudes en esta categoría" />
+    } @else {
+      <p class="items-count">{{ requests().length }} solicitud{{ requests().length === 1 ? '' : 'es' }}</p>
 
-          <!-- Header (clickable) -->
-          <div class="request-card__header" (click)="toggleExpand(req)">
-            <div class="request-card__identity">
-              <div class="request-avatar">
-                {{ (req.userName ?? 'U').charAt(0).toUpperCase() }}
-              </div>
-              <div class="request-card__info">
-                <span class="request-name">{{ req.userName ?? 'Usuario' }}</span>
-                <span class="request-meta">
-                  {{ entityLabel(req.entityType) }} · {{ formatDate(req.createdAt) }}
-                </span>
-              </div>
-            </div>
+      <ul class="requests-list">
+        @for (req of requests(); track req.id; let i = $index) {
+          <li class="request-card" [class.request-card--expanded]="isExpanded(req.id)" [style.--index]="i">
 
-            <div class="request-card__right">
-              <span class="status-badge" [class]="'status-badge--' + req.status.toLowerCase()">
-                {{ statusLabels[req.status] }}
-              </span>
-              <svg class="expand-icon" [class.expand-icon--open]="isExpanded(req.id)"
-                width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
-          </div>
-
-          <!-- Detail section -->
-          @if (isExpanded(req.id)) {
-            <div class="request-card__detail">
-
-              <!-- Documents -->
-              <div>
-                <p class="detail-label">Documentos adjuntos</p>
-                <ul class="detail-docs">
-                  @for (doc of req.documents; track doc.documentType) {
-                    <li class="detail-doc">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                      </svg>
-                      <span class="detail-doc__type">{{ docTypeLabel(doc.documentType) }}</span>
-                      <a [href]="doc.fileUrl" target="_blank" rel="noopener"
-                        class="detail-doc__url" (click)="$event.stopPropagation()">
-                        {{ doc.fileUrl }}
-                      </a>
-                    </li>
-                  }
-                </ul>
-              </div>
-
-              <!-- Previous review notes -->
-              @if (req.notes) {
-                <div>
-                  <p class="detail-label">Notas de revisión previas</p>
-                  <p class="detail-notes">{{ req.notes }}</p>
+            <div class="request-card__header" (click)="toggleExpand(req)">
+              <div class="request-card__identity">
+                <div class="request-avatar">{{ (req.userName ?? 'U').charAt(0).toUpperCase() }}</div>
+                <div class="request-card__info">
+                  <span class="request-name">{{ req.userName ?? 'Usuario' }}</span>
+                  <span class="request-meta">{{ entityLabel(req.entityType) }} · {{ formatDate(req.createdAt) }}</span>
                 </div>
-              }
+              </div>
+              <div class="request-card__right">
+                <span class="status-badge" [class]="'status-badge--' + req.status.toLowerCase()">
+                  {{ statusLabels[req.status] }}
+                </span>
+                <svg class="expand-icon" [class.expand-icon--open]="isExpanded(req.id)"
+                  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+            </div>
 
-              <!-- Review form (only for PENDING) -->
-              @if (req.status === 'PENDING') {
-                <div class="review-form-section">
-                  <p class="detail-label">Revisar solicitud</p>
-                  <form [formGroup]="getReviewForm(req.id)"
-                    (ngSubmit)="submitReview(req)" class="review-form" (click)="$event.stopPropagation()">
-
-                    <div class="action-toggle">
-                      <label class="action-option"
-                        [class.action-option--approve]="getReviewForm(req.id).get('action')?.value === 'APPROVED'"
-                        [class.action-option--selected]="getReviewForm(req.id).get('action')?.value === 'APPROVED'">
-                        <input type="radio" formControlName="action" value="APPROVED" />
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" stroke-width="2.5"
-                          stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        Aprobar
-                      </label>
-                      <label class="action-option"
-                        [class.action-option--reject]="getReviewForm(req.id).get('action')?.value === 'REJECTED'"
-                        [class.action-option--selected]="getReviewForm(req.id).get('action')?.value === 'REJECTED'">
-                        <input type="radio" formControlName="action" value="REJECTED" />
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" stroke-width="2.5"
-                          stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="18" y1="6" x2="6" y2="18"/>
-                          <line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                        Rechazar
-                      </label>
-                    </div>
-
-                    @if (needsNotes(req.id)) {
-                      <div class="notes-field">
-                        <label class="field-label--sm">
-                          Razón del rechazo <span class="required">*</span>
-                        </label>
-                        <textarea formControlName="notes" class="notes-textarea"
-                          placeholder="Explica por qué se rechaza la solicitud..."
-                          rows="3">
-                        </textarea>
-                        @if (getReviewForm(req.id).get('notes')?.invalid && getReviewForm(req.id).get('notes')?.touched) {
-                          <span class="field-error">La razón del rechazo es obligatoria</span>
-                        }
-                      </div>
+            @if (isExpanded(req.id)) {
+              <div class="request-card__detail">
+                <div>
+                  <p class="detail-label">Documentos adjuntos</p>
+                  <ul class="detail-docs">
+                    @for (doc of req.documents; track doc.documentType) {
+                      <li class="detail-doc">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span class="detail-doc__type">{{ docTypeLabel(doc.documentType) }}</span>
+                        <a [href]="doc.fileUrl" target="_blank" rel="noopener" class="detail-doc__url" (click)="$event.stopPropagation()">{{ doc.fileUrl }}</a>
+                      </li>
                     }
+                  </ul>
+                </div>
 
-                    <button type="submit" class="btn-review"
-                      [class.btn-review--approve]="getReviewForm(req.id).get('action')?.value === 'APPROVED'"
-                      [class.btn-review--reject]="getReviewForm(req.id).get('action')?.value === 'REJECTED'"
-                      [disabled]="isReviewing(req.id)">
-                      @if (isReviewing(req.id)) {
-                        <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" stroke-width="2"
-                          stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                        </svg>
+                @if (req.notes) {
+                  <div>
+                    <p class="detail-label">Notas previas</p>
+                    <p class="detail-notes">{{ req.notes }}</p>
+                  </div>
+                }
+
+                @if (req.status === 'PENDING') {
+                  <div class="review-form-section">
+                    <p class="detail-label">Revisar solicitud</p>
+                    <form [formGroup]="getReviewForm(req.id)" (ngSubmit)="submitReview(req)" class="review-form" (click)="$event.stopPropagation()">
+                      <div class="action-toggle">
+                        <label class="action-option"
+                          [class.action-option--approve]="getReviewForm(req.id).get('action')?.value === 'APPROVED'"
+                          [class.action-option--selected]="getReviewForm(req.id).get('action')?.value === 'APPROVED'">
+                          <input type="radio" formControlName="action" value="APPROVED" />
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          Aprobar
+                        </label>
+                        <label class="action-option"
+                          [class.action-option--reject]="getReviewForm(req.id).get('action')?.value === 'REJECTED'"
+                          [class.action-option--selected]="getReviewForm(req.id).get('action')?.value === 'REJECTED'">
+                          <input type="radio" formControlName="action" value="REJECTED" />
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          Rechazar
+                        </label>
+                      </div>
+
+                      @if (needsNotes(req.id)) {
+                        <div class="notes-field">
+                          <label class="field-label--sm">Razón del rechazo <span class="required">*</span></label>
+                          <textarea formControlName="notes" class="notes-textarea" placeholder="Explica el motivo del rechazo..." rows="3"></textarea>
+                          @if (getReviewForm(req.id).get('notes')?.invalid && getReviewForm(req.id).get('notes')?.touched) {
+                            <span class="field-error">La razón es obligatoria</span>
+                          }
+                        </div>
+                      }
+
+                      <button type="submit" class="btn-review"
+                        [class.btn-review--approve]="getReviewForm(req.id).get('action')?.value === 'APPROVED'"
+                        [class.btn-review--reject]="getReviewForm(req.id).get('action')?.value === 'REJECTED'"
+                        [disabled]="isReviewing(req.id)">
+                        @if (isReviewing(req.id)) {
+                          <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                          Procesando...
+                        } @else if (getReviewForm(req.id).get('action')?.value === 'APPROVED') {
+                          Aprobar solicitud
+                        } @else {
+                          Rechazar solicitud
+                        }
+                      </button>
+                    </form>
+                  </div>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+
+      @if (vHasMore()) {
+        <div class="load-more">
+          <button class="btn-load-more" (click)="loadMoreVerifs()" [disabled]="vIsLoadingMore()">
+            {{ vIsLoadingMore() ? 'Cargando...' : 'Cargar más' }}
+          </button>
+        </div>
+      }
+    }
+  }
+
+  <!-- ══ TAB: REPORTES ════════════════════════════════════════ -->
+  @if (activeTab() === 'reports') {
+    <div class="filter-bar">
+      @for (s of reportStatuses; track s.value) {
+        <button class="filter-btn" [class.filter-btn--active]="reportStatusFilter() === s.value"
+          (click)="setReportFilter(s.value)">{{ s.label }}</button>
+      }
+    </div>
+
+    @if (rIsLoading()) {
+      <div class="loading-center"><app-loading-spinner /></div>
+    } @else if (rLoadError()) {
+      <div class="error-banner">{{ rLoadError() }}</div>
+    } @else if (reports().length === 0) {
+      <app-empty-state message="No hay reportes en esta categoría" />
+    } @else {
+      <p class="items-count">{{ reports().length }} reporte{{ reports().length === 1 ? '' : 's' }}</p>
+
+      <ul class="requests-list">
+        @for (report of reports(); track report.id; let i = $index) {
+          <li class="request-card" [class.request-card--expanded]="isReportExpanded(report.id)" [style.--index]="i">
+
+            <div class="request-card__header" (click)="toggleReport(report)">
+              <div class="request-card__identity">
+                <div class="request-avatar request-avatar--report">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                </div>
+                <div class="request-card__info">
+                  <span class="request-name">
+                    <span class="target-type-badge">{{ targetLabel(report.targetType) }}</span>
+                    {{ report.reason | slice:0:60 }}{{ report.reason.length > 60 ? '...' : '' }}
+                  </span>
+                  <span class="request-meta">
+                    {{ report.reporterName ?? 'Usuario' }} · {{ formatDate(report.createdAt) }}
+                  </span>
+                </div>
+              </div>
+              <div class="request-card__right">
+                <span class="status-badge" [class]="'status-badge--' + report.status.toLowerCase()">
+                  {{ report.status === 'PENDING' ? 'Pendiente' : 'Resuelto' }}
+                </span>
+                <svg class="expand-icon" [class.expand-icon--open]="isReportExpanded(report.id)"
+                  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+            </div>
+
+            @if (isReportExpanded(report.id)) {
+              <div class="request-card__detail">
+                <div>
+                  <p class="detail-label">Motivo del reporte</p>
+                  <p class="detail-notes">{{ report.reason }}</p>
+                </div>
+
+                @if (report.resolutionNote) {
+                  <div>
+                    <p class="detail-label">Nota de resolución</p>
+                    <p class="detail-notes">{{ report.resolutionNote }}</p>
+                  </div>
+                }
+
+                @if (report.status === 'PENDING') {
+                  <div class="review-form-section" (click)="$event.stopPropagation()">
+                    <p class="detail-label">Resolver reporte</p>
+                    <div class="notes-field">
+                      <label class="field-label--sm">Nota de resolución <span class="required">*</span></label>
+                      <textarea class="notes-textarea"
+                        [value]="getNoteFor(report.id)"
+                        (input)="setNoteFor(report.id, $any($event.target).value)"
+                        placeholder="Describe la acción tomada (advertencia, desestimación, etc.)..."
+                        rows="3">
+                      </textarea>
+                    </div>
+                    <button class="btn-review btn-review--approve"
+                      [disabled]="isResolving(report.id)"
+                      (click)="submitResolve(report)">
+                      @if (isResolving(report.id)) {
+                        <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                         Procesando...
-                      } @else if (getReviewForm(req.id).get('action')?.value === 'APPROVED') {
-                        Aprobar solicitud
                       } @else {
-                        Rechazar solicitud
+                        Marcar como resuelto
                       }
                     </button>
+                  </div>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
 
-                  </form>
-                </div>
-              }
-
-            </div>
-          }
-
-        </li>
+      @if (rHasMore()) {
+        <div class="load-more">
+          <button class="btn-load-more" (click)="loadMoreReports()" [disabled]="rIsLoadingMore()">
+            {{ rIsLoadingMore() ? 'Cargando...' : 'Cargar más' }}
+          </button>
+        </div>
       }
-    </ul>
-
-    @if (hasMore()) {
-      <div class="load-more">
-        <button class="btn-load-more" (click)="loadMore()" [disabled]="isLoadingMore()">
-          @if (isLoadingMore()) {
-            Cargando...
-          } @else {
-            Cargar más
-          }
-        </button>
-      </div>
     }
-
   }
 
 </div>

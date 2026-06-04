@@ -8,6 +8,7 @@ import { CatalogService } from '../../../services/catalog.service';
 import { LibraryService } from '../../../services/library.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
+import { ReportButton } from '../../../shared/components/report-button/report-button';
 import { ResourceResponse, ResourceType, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
 import { University, Area } from '../../../models/catalog.model';
 
@@ -20,7 +21,7 @@ interface SearchFilters {
 
 @Component({
   selector: 'app-resource-list',
-  imports: [RouterLink, FormsModule, LoadingSpinner, EmptyState],
+  imports: [RouterLink, FormsModule, LoadingSpinner, EmptyState, ReportButton],
   templateUrl: './resource-list.html',
   styleUrl: './resource-list.css',
 })

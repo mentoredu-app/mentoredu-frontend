@@ -5,7 +5,34 @@
 }
 
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+  margin-bottom: -1px;
+}
+.tab-btn:hover { color: var(--color-text); }
+.tab-btn--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
 }
 
 .page-title {
@@ -19,6 +46,34 @@
 .page-subtitle {
   font-size: 0.9rem;
   color: var(--color-text-muted);
+}
+
+/* Count */
+.items-count {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+/* Report avatar variant */
+.request-avatar--report {
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  color: var(--color-error);
+}
+
+/* Target type badge */
+.target-type-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+  margin-right: 6px;
 }
 
 /* Filter bar */
