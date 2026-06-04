@@ -82,6 +82,18 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
                 Resoluciones recibidas
               </a>
+              <a class="user-menu__item" routerLink="/community/verification" (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Verificación de identidad
+              </a>
+            }
+
+            <!-- Rol: MODERATOR / ADMIN -->
+            @if (authState.role() === 'MODERATOR' || authState.role() === 'ADMIN') {
+              <a class="user-menu__item" routerLink="/community/moderation" (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Moderación
+              </a>
             }
 
             <!-- Rol: ADMIN -->
