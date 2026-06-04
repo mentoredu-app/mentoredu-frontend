@@ -100,11 +100,7 @@
           <!-- Documentos -->
           <div class="field-group">
             <label class="field-label">Documentos de respaldo</label>
-            <p class="field-hint">
-              Adjunta el enlace de acceso a cada documento.
-              Puedes subir archivos desde <a routerLink="/library" class="inline-link">Biblioteca</a>
-              y copiar la URL del archivo.
-            </p>
+            <p class="field-hint">Adjunta una foto o imagen de cada documento (PNG o JPEG, máx 5 MB).</p>
 
             <div formArrayName="documents" class="documents-list">
               @for (docGroup of documents.controls; track $index) {
@@ -112,21 +108,38 @@
                   <div class="doc-row__fields">
                     <div class="field">
                       <label class="field-label--sm">Tipo de documento</label>
-                      <select formControlName="documentType" class="select"
-                        [class.select--error]="isFieldInvalid(getDocGroup($index), 'documentType')">
+                      <select formControlName="documentType" class="select">
                         @for (type of documentTypes; track type) {
                           <option [value]="type">{{ docTypeLabel(type) }}</option>
                         }
                       </select>
                     </div>
                     <div class="field field--grow">
-                      <label class="field-label--sm">URL del documento</label>
-                      <input formControlName="fileUrl" type="text"
-                        class="input" [class.input--error]="isFieldInvalid(getDocGroup($index), 'fileUrl')"
-                        placeholder="https://... o uploads/resources/..." />
-                      @if (isFieldInvalid(getDocGroup($index), 'fileUrl')) {
-                        <span class="field-error">La URL del documento es requerida</span>
-                      }
+                      <label class="field-label--sm">Archivo</label>
+                      <label class="file-input-btn"
+                        [class.file-input-btn--selected]="!!pendingFiles()[$index]"
+                        [class.file-input-btn--missing]="isSubmitting() && !pendingFiles()[$index]">
+                        <input type="file" accept="image/png,image/jpeg"
+                          class="file-input-hidden"
+                          (change)="onFileSelected($index, $event)" />
+                        @if (pendingFiles()[$index]) {
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                          <span class="file-name">{{ fileName($index) }}</span>
+                        } @else {
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                          </svg>
+                          Elegir imagen
+                        }
+                      </label>
                     </div>
                   </div>
                   @if (documents.length > 1) {

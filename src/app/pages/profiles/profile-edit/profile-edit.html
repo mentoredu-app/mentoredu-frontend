@@ -19,6 +19,41 @@
       </div>
       <form class="profile-form" [formGroup]="baseForm" (ngSubmit)="saveBase()" novalidate>
 
+        <!-- Avatar -->
+        <div class="avatar-section">
+          <div class="avatar-wrapper">
+            @if (avatarPreview() || avatarUrl()) {
+              <img class="avatar-img" [src]="resolveUrl(avatarPreview() || avatarUrl())" alt="Foto de perfil" />
+            } @else {
+              <div class="avatar-initials">
+                {{ authState.user()?.firstName?.charAt(0) }}{{ authState.user()?.lastName?.charAt(0) }}
+              </div>
+            }
+            <label class="avatar-overlay" title="Cambiar foto">
+              <input type="file" accept="image/png,image/jpeg" class="avatar-file-input"
+                (change)="onAvatarSelected($event)" />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </label>
+          </div>
+          <div class="avatar-meta">
+            <p class="avatar-hint">PNG o JPEG · máx 5 MB</p>
+            @if (avatarPreview()) {
+              <p class="avatar-pending">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                Se guardará al hacer clic en Guardar
+              </p>
+            }
+          </div>
+        </div>
+
         <div class="form-field">
           <label class="form-label" for="displayName">Nombre a mostrar</label>
           <input id="displayName" class="form-input"

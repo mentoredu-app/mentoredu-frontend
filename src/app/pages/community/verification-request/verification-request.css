@@ -254,6 +254,51 @@
   color: var(--color-text-muted);
 }
 
+/* File input */
+.file-input-hidden { display: none; }
+
+.file-input-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 160ms var(--ease-out), color 160ms var(--ease-out),
+    background 160ms var(--ease-out);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.file-input-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--color-bg));
+}
+.file-input-btn--selected {
+  border-style: solid;
+  border-color: #16a34a;
+  color: #15803d;
+  background: #f0fdf4;
+}
+.file-input-btn--missing {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
 .select,
 .input {
   padding: 9px 12px;

@@ -2,10 +2,11 @@ import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError, switchMap, throwError } from 'rxjs';
 import { AuthStateService } from '../../../core/services/auth-state.service';
 import { CatalogService } from '../../../services/catalog.service';
 import { ProfileService } from '../../../services/profile.service';
+import { FileUploadService, resolveFileUrl } from '../../../services/file-upload.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { Area, Career, University } from '../../../models/catalog.model';
@@ -17,27 +18,30 @@ import { Area, Career, University } from '../../../models/catalog.model';
   styleUrl: './profile-edit.css',
 })
 export class ProfileEdit implements OnInit {
-  private fb = inject(FormBuilder);
-  private profileService = inject(ProfileService);
-  private catalogService = inject(CatalogService);
-  private toast = inject(ToastService);
-  readonly authState = inject(AuthStateService);
+  private fb                = inject(FormBuilder);
+  private profileService    = inject(ProfileService);
+  private catalogService    = inject(CatalogService);
+  private fileUploadService = inject(FileUploadService);
+  private toast             = inject(ToastService);
+  readonly authState        = inject(AuthStateService);
+  private destroyRef        = inject(DestroyRef);
 
-  readonly isLoading = signal(true);
-  readonly isSaving = signal(false);
-  readonly loadError = signal('');
+  readonly isLoading   = signal(true);
+  readonly isSaving    = signal(false);
+  readonly loadError   = signal('');
 
   readonly universities = signal<University[]>([]);
-  readonly areas = signal<Area[]>([]);
-  readonly careers = signal<Career[]>([]);
+  readonly areas        = signal<Area[]>([]);
+  readonly careers      = signal<Career[]>([]);
 
   private hasStudentProfile = false;
   private hasTeacherProfile = false;
   private hasAcademyProfile = false;
 
-  // profileType viene del backend — no depende de authState.role() que puede ser null tras token refresh
-  readonly profileType = signal<string | null>(null);
-  private destroyRef = inject(DestroyRef);
+  readonly profileType   = signal<string | null>(null);
+  readonly avatarUrl     = signal<string | null>(null);
+  readonly avatarPreview = signal<string | null>(null);
+  private pendingAvatarFile: File | null = null;
 
   private currentUserId = '';
 
@@ -76,13 +80,12 @@ export class ProfileEdit implements OnInit {
       next: profile => {
         this.currentUserId = profile.userId;
         this.profileType.set(profile.profileType);
+        this.avatarUrl.set(profile.avatarUrl ?? null);
         this.baseForm.patchValue({
           displayName: profile.displayName,
           city:        profile.city ?? '',
-          bio:         profile.bio ?? '',
+          bio:         profile.bio  ?? '',
         });
-        // Usar profileType del backend: fiable incluso tras page-refresh o token-refresh
-        // donde authState.role() puede ser null (setAccessToken no repopula _user).
         if (profile.profileType === 'STUDENT') {
           this.loadUniversities();
           this.watchUniversityChange();
@@ -104,12 +107,12 @@ export class ProfileEdit implements OnInit {
         next: sp => {
           this.hasStudentProfile = true;
           this.studentForm.patchValue({
-            gradeLevel:         sp.gradeLevel ?? '',
-            schoolName:         sp.schoolName ?? '',
-            studyShift:         sp.studyShift ?? '',
+            gradeLevel:         sp.gradeLevel         ?? '',
+            schoolName:         sp.schoolName         ?? '',
+            studyShift:         sp.studyShift         ?? '',
             targetUniversityId: sp.targetUniversityId ?? '',
-            targetAreaId:       sp.targetAreaId ?? '',
-            targetCareerId:     sp.targetCareerId ?? '',
+            targetAreaId:       sp.targetAreaId       ?? '',
+            targetCareerId:     sp.targetCareerId     ?? '',
           });
           if (sp.targetUniversityId) {
             this.loadAreasByUniversity(sp.targetUniversityId);
@@ -138,8 +141,8 @@ export class ProfileEdit implements OnInit {
           this.hasAcademyProfile = true;
           this.academyForm.patchValue({
             academyName:  ap.academyName,
-            ruc:          ap.ruc ?? '',
-            website:      ap.website ?? '',
+            ruc:          ap.ruc          ?? '',
+            website:      ap.website      ?? '',
             contactEmail: ap.contactEmail ?? '',
           });
         },
@@ -167,15 +170,25 @@ export class ProfileEdit implements OnInit {
   }
 
   private watchUniversityChange(): void {
-    this.studentForm.get('targetUniversityId')!.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(universityId => {
-      this.areas.set([]);
-      this.careers.set([]);
-      this.studentForm.patchValue({ targetAreaId: '', targetCareerId: '' });
-      if (universityId) {
-        this.loadAreasByUniversity(universityId);
-        this.loadCareersByUniversity(universityId);
-      }
-    });
+    this.studentForm.get('targetUniversityId')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(universityId => {
+        this.areas.set([]);
+        this.careers.set([]);
+        this.studentForm.patchValue({ targetAreaId: '', targetCareerId: '' });
+        if (universityId) {
+          this.loadAreasByUniversity(universityId);
+          this.loadCareersByUniversity(universityId);
+        }
+      });
+  }
+
+  onAvatarSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file  = input.files?.[0];
+    if (!file) return;
+    this.pendingAvatarFile = file;
+    this.avatarPreview.set(URL.createObjectURL(file));
   }
 
   saveBase(): void {
@@ -184,20 +197,48 @@ export class ProfileEdit implements OnInit {
 
     this.isSaving.set(true);
     const raw = this.baseForm.getRawValue();
-    this.profileService.updateMe({
+    const baseData = {
       displayName: raw.displayName,
       city:        raw.city || undefined,
-      bio:         raw.bio || undefined,
-    }).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        this.toast.success('Datos actualizados');
-      },
-      error: () => {
-        this.isSaving.set(false);
-        this.toast.error('Error al guardar. Intenta de nuevo.');
-      },
-    });
+      bio:         raw.bio  || undefined,
+    };
+
+    if (this.pendingAvatarFile) {
+      this.fileUploadService.uploadImage(this.pendingAvatarFile).pipe(
+        switchMap(result =>
+          this.profileService.updateMe({ ...baseData, avatarUrl: result.fileUrl })
+        )
+      ).subscribe({
+        next: updated => {
+          this.avatarUrl.set(updated.avatarUrl ?? null);
+          this.avatarPreview.set(null);
+          this.pendingAvatarFile = null;
+          this.isSaving.set(false);
+          this.toast.success('Datos actualizados');
+        },
+        error: (err: HttpErrorResponse) => {
+          this.isSaving.set(false);
+          if (err.status === 415) {
+            this.toast.error('Formato de imagen no válido. Usa PNG o JPEG.');
+          } else if (err.status === 413) {
+            this.toast.error('La imagen supera los 5 MB.');
+          } else {
+            this.toast.error('Error al guardar. Intenta de nuevo.');
+          }
+        },
+      });
+    } else {
+      this.profileService.updateMe(baseData).subscribe({
+        next: () => {
+          this.isSaving.set(false);
+          this.toast.success('Datos actualizados');
+        },
+        error: () => {
+          this.isSaving.set(false);
+          this.toast.error('Error al guardar. Intenta de nuevo.');
+        },
+      });
+    }
   }
 
   saveRoleProfile(): void {
@@ -211,20 +252,18 @@ export class ProfileEdit implements OnInit {
       if (this.studentForm.invalid) return;
       const raw = this.studentForm.getRawValue();
       const updateData = {
-        gradeLevel:         raw.gradeLevel || undefined,
-        schoolName:         raw.schoolName || undefined,
-        studyShift:         raw.studyShift || undefined,
+        gradeLevel:         raw.gradeLevel         || undefined,
+        schoolName:         raw.schoolName         || undefined,
+        studyShift:         raw.studyShift         || undefined,
         targetUniversityId: raw.targetUniversityId || undefined,
-        targetAreaId:       raw.targetAreaId || undefined,
-        targetCareerId:     raw.targetCareerId || undefined,
+        targetAreaId:       raw.targetAreaId       || undefined,
+        targetCareerId:     raw.targetCareerId     || undefined,
       };
       const createData = { ...updateData, gradeLevel: raw.gradeLevel };
 
       if (this.hasStudentProfile) {
         request$ = this.profileService.updateStudentProfile(updateData);
       } else {
-        // Si POST retorna 409 (perfil ya existe pero no fue detectado),
-        // hace fallback automático a PATCH sin mostrar error al usuario
         request$ = this.profileService.createStudentProfile(createData).pipe(
           catchError(err => {
             if (err.status === 409) {
@@ -257,15 +296,20 @@ export class ProfileEdit implements OnInit {
       if (this.academyForm.invalid) return;
       const raw = this.academyForm.getRawValue();
       const updateData = {
-        academyName:  raw.academyName || undefined,
-        website:      raw.website || undefined,
+        academyName:  raw.academyName  || undefined,
+        website:      raw.website      || undefined,
         contactEmail: raw.contactEmail || undefined,
       };
 
       if (this.hasAcademyProfile) {
         request$ = this.profileService.updateAcademyProfile(updateData);
       } else {
-        const createData = { academyName: raw.academyName, ruc: raw.ruc || undefined, website: raw.website || undefined, contactEmail: raw.contactEmail || undefined };
+        const createData = {
+          academyName:  raw.academyName,
+          ruc:          raw.ruc          || undefined,
+          website:      raw.website      || undefined,
+          contactEmail: raw.contactEmail || undefined,
+        };
         request$ = this.profileService.createAcademyProfile(createData).pipe(
           catchError(err => {
             if (err.status === 409) {
@@ -316,6 +360,8 @@ export class ProfileEdit implements OnInit {
     if (ctrl.hasError('email'))     return 'Ingresa un email válido';
     return '';
   }
+
+  resolveUrl = resolveFileUrl;
 
   get bioLength(): number {
     return this.teacherForm.get('bioProfessional')!.value.length;
