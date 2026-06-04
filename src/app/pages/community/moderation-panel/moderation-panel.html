@@ -37,10 +37,10 @@
 
             <div class="request-card__header" (click)="toggleExpand(req)">
               <div class="request-card__identity">
-                <div class="request-avatar">{{ (req.userName ?? 'U').charAt(0).toUpperCase() }}</div>
+                <div class="request-avatar">{{ entityLabel(req.entityType).charAt(0) }}</div>
                 <div class="request-card__info">
-                  <span class="request-name">{{ req.userName ?? 'Usuario' }}</span>
-                  <span class="request-meta">{{ entityLabel(req.entityType) }} · {{ formatDate(req.createdAt) }}</span>
+                  <span class="request-name">{{ entityLabel(req.entityType) }}</span>
+                  <span class="request-meta">{{ entityLabel(req.entityType) }} · {{ formatDate(req.submittedAt) }}</span>
                 </div>
               </div>
               <div class="request-card__right">
@@ -173,13 +173,15 @@
                     {{ report.reason | slice:0:60 }}{{ report.reason.length > 60 ? '...' : '' }}
                   </span>
                   <span class="request-meta">
-                    {{ report.reporterName ?? 'Usuario' }} · {{ formatDate(report.createdAt) }}
+                    {{ formatDate(report.createdAt) }}
                   </span>
                 </div>
               </div>
               <div class="request-card__right">
-                <span class="status-badge" [class]="'status-badge--' + report.status.toLowerCase()">
-                  {{ report.status === 'PENDING' ? 'Pendiente' : 'Resuelto' }}
+                <span class="status-badge"
+                  [class.status-badge--pending]="report.status === 'OPEN'"
+                  [class.status-badge--resolved]="report.status === 'RESOLVED'">
+                  {{ report.status === 'OPEN' ? 'Pendiente' : 'Resuelto' }}
                 </span>
                 <svg class="expand-icon" [class.expand-icon--open]="isReportExpanded(report.id)"
                   width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -203,7 +205,7 @@
                   </div>
                 }
 
-                @if (report.status === 'PENDING') {
+                @if (report.status === 'OPEN') {
                   <div class="review-form-section" (click)="$event.stopPropagation()">
                     <p class="detail-label">Resolver reporte</p>
                     <div class="notes-field">

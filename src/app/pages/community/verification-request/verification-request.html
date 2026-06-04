@@ -48,7 +48,7 @@
           </div>
           <div>
             <p class="status-card__label">{{ statusLabels[req.status] }}</p>
-            <p class="status-card__date">Enviada el {{ formatDate(req.createdAt) }}</p>
+            <p class="status-card__date">Enviada el {{ formatDate(req.submittedAt) }}</p>
             @if (req.notes) {
               <p class="status-card__notes">{{ req.notes }}</p>
             }

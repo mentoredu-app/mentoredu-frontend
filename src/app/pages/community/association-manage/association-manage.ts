@@ -20,15 +20,13 @@ export class AssociationManage implements OnInit {
   private toast            = inject(ToastService);
   readonly authState       = inject(AuthStateService);
 
-  readonly isLoading     = signal(true);
-  readonly isLoadingMore = signal(false);
-  readonly loadError     = signal('');
-  readonly items         = signal<AssociationResponse[]>([]);
-  readonly hasMore       = signal(false);
-  private currentPage    = 0;
+  readonly isLoading    = signal(true);
+  readonly loadError    = signal('');
+  readonly items        = signal<AssociationResponse[]>([]);
+  private allItems: AssociationResponse[] = [];
 
-  readonly actioningId   = signal<string | null>(null);
-  readonly statusFilter  = signal<AssociationStatus | 'ALL'>('ALL');
+  readonly actioningId  = signal<string | null>(null);
+  readonly statusFilter = signal<AssociationStatus | 'ALL'>('ALL');
 
   readonly statusLabels = ASSOCIATION_STATUS_LABELS;
 
@@ -43,29 +41,22 @@ export class AssociationManage implements OnInit {
 
   ngOnInit(): void {
     this.isAcademy.set(this.authState.role() === 'ACADEMY');
-    this.load(0);
+    this.load();
   }
 
-  private load(page: number): void {
-    if (page === 0) {
-      this.isLoading.set(true);
-      this.loadError.set('');
-    } else {
-      this.isLoadingMore.set(true);
-    }
+  private load(): void {
+    this.isLoading.set(true);
+    this.loadError.set('');
 
-    this.communityService.getMyAssociations(page, 15).subscribe({
-      next: paged => {
-        const filtered = this.applyFilter(paged.content);
-        if (page === 0) {
-          this.items.set(filtered);
-        } else {
-          this.items.update(prev => [...prev, ...filtered]);
-        }
-        this.currentPage = paged.page;
-        this.hasMore.set(!paged.last);
+    const req$ = this.isAcademy()
+      ? this.communityService.getAcademyRequests()
+      : this.communityService.getMyAssociations();
+
+    req$.subscribe({
+      next: list => {
+        this.allItems = list;
+        this.items.set(this.applyFilter(list));
         this.isLoading.set(false);
-        this.isLoadingMore.set(false);
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 403) {
@@ -74,7 +65,6 @@ export class AssociationManage implements OnInit {
           this.loadError.set('No se pudo cargar las asociaciones. Intenta de nuevo.');
         }
         this.isLoading.set(false);
-        this.isLoadingMore.set(false);
       },
     });
   }
@@ -86,12 +76,7 @@ export class AssociationManage implements OnInit {
 
   setFilter(value: AssociationStatus | 'ALL'): void {
     this.statusFilter.set(value);
-    this.load(0);
-  }
-
-  loadMore(): void {
-    if (this.isLoadingMore() || !this.hasMore()) return;
-    this.load(this.currentPage + 1);
+    this.items.set(this.applyFilter(this.allItems));
   }
 
   accept(item: AssociationResponse): void {
@@ -101,7 +86,7 @@ export class AssociationManage implements OnInit {
       next: updated => {
         this.items.update(list => list.map(r => r.id === updated.id ? updated : r));
         this.actioningId.set(null);
-        this.toast.success(`Asociación con ${item.teacherName ?? 'el docente'} aceptada`);
+        this.toast.success('Asociación aceptada');
       },
       error: (err: HttpErrorResponse) => {
         this.actioningId.set(null);
@@ -123,7 +108,7 @@ export class AssociationManage implements OnInit {
       next: updated => {
         this.items.update(list => list.map(r => r.id === updated.id ? updated : r));
         this.actioningId.set(null);
-        this.toast.success(`Solicitud de ${item.teacherName ?? 'el docente'} rechazada`);
+        this.toast.success('Solicitud rechazada');
       },
       error: (err: HttpErrorResponse) => {
         this.actioningId.set(null);
@@ -140,6 +125,11 @@ export class AssociationManage implements OnInit {
 
   isActioning(id: string): boolean {
     return this.actioningId() === id;
+  }
+
+  // Muestra los últimos 8 chars del UUID como identificador corto
+  shortId(uuid: string): string {
+    return uuid ? uuid.slice(-8).toUpperCase() : '—';
   }
 
   formatDate(iso: string): string {

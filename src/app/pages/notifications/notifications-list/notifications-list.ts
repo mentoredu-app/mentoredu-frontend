@@ -112,6 +112,23 @@ export class NotificationsList implements OnInit {
     return this.typeLabels[type] ?? type;
   }
 
+  // El texto de la notificación viene en payload (Map<String,Object>).
+  // Intenta extraer texto de claves comunes que el backend puede incluir.
+  getPayloadText(notif: NotificationResponse): string {
+    const p = notif.payload;
+    if (!p) return '';
+    for (const key of ['message', 'text', 'description', 'content', 'body']) {
+      const val = p[key];
+      if (typeof val === 'string' && val.trim()) return val;
+    }
+    // Fallback: componer texto a partir de campos de nombre si existen
+    const name =
+      p['senderName'] ?? p['followerName'] ?? p['authorName'] ??
+      p['teacherName'] ?? p['studentName'];
+    if (typeof name === 'string') return name;
+    return '';
+  }
+
   formatDate(iso: string): string {
     const d = new Date(iso);
     const now = new Date();

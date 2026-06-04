@@ -50,23 +50,22 @@
         <li class="assoc-card" [style.--index]="i">
 
           <div class="assoc-card__left">
-            <div class="assoc-avatar">
-              {{ ((isAcademy() ? item.teacherName : item.academyName) ?? 'U').charAt(0).toUpperCase() }}
-            </div>
+            <div class="assoc-avatar">{{ isAcademy() ? 'D' : 'A' }}</div>
             <div class="assoc-card__info">
               <span class="assoc-name">
-                {{ isAcademy() ? (item.teacherName ?? 'Docente') : (item.academyName ?? 'Academia') }}
+                @if (isAcademy()) {
+                  Docente <span class="assoc-id">#{{ shortId(item.teacherProfileId) }}</span>
+                } @else {
+                  Academia <span class="assoc-id">#{{ shortId(item.academyProfileId) }}</span>
+                }
               </span>
-              <span class="assoc-meta">Enviada el {{ formatDate(item.createdAt) }}</span>
+              <span class="assoc-meta">Enviada el {{ formatDate(item.requestedAt) }}</span>
             </div>
           </div>
 
           <div class="assoc-card__right">
             @if (item.status === 'PENDING' && isAcademy()) {
-              <!-- ACADEMY actions -->
-              <button class="btn-accept"
-                [disabled]="isActioning(item.id)"
-                (click)="accept(item)">
+              <button class="btn-accept" [disabled]="isActioning(item.id)" (click)="accept(item)">
                 @if (isActioning(item.id)) {
                   <svg class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -80,9 +79,7 @@
                 }
                 Aceptar
               </button>
-              <button class="btn-reject"
-                [disabled]="isActioning(item.id)"
-                (click)="reject(item)">
+              <button class="btn-reject" [disabled]="isActioning(item.id)" (click)="reject(item)">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -99,14 +96,6 @@
         </li>
       }
     </ul>
-
-    @if (hasMore()) {
-      <div class="load-more">
-        <button class="btn-load-more" (click)="loadMore()" [disabled]="isLoadingMore()">
-          {{ isLoadingMore() ? 'Cargando...' : 'Cargar más' }}
-        </button>
-      </div>
-    }
 
   }
 

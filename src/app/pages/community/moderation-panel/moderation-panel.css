@@ -233,6 +233,7 @@
 .status-badge--pending  { color: #b45309; background: #fef3c7; }
 .status-badge--approved { color: #15803d; background: #dcfce7; }
 .status-badge--rejected { color: #dc2626; background: #fee2e2; }
+.status-badge--resolved { color: #15803d; background: #dcfce7; }
 
 /* Expand icon */
 .expand-icon {

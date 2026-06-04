@@ -6,13 +6,12 @@ export const ASSOCIATION_STATUS_LABELS: Record<AssociationStatus, string> = {
   REJECTED: 'Rechazada',
 };
 
+// Campos exactos del backend AssociationResponse
 export interface AssociationResponse {
   id: string;
-  teacherId?: string;
-  teacherName?: string;
-  academyProfileId?: string;
-  academyName?: string;
+  teacherProfileId: string;  // profileId del docente (no userId)
+  academyProfileId: string;  // profileId de la academia
   status: AssociationStatus;
-  createdAt: string;
-  updatedAt?: string;
+  requestedAt: string;       // backend usa requestedAt, NO createdAt
+  resolvedAt: string | null;
 }

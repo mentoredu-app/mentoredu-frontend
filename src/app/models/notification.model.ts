@@ -19,11 +19,11 @@ export const NOTIFICATION_LABELS: Record<NotificationType, string> = {
   association_resolved:     'Solicitud de asociación resuelta',
 };
 
+// Campos exactos del backend — el texto va en payload (Map<String,Object>), NO en message
 export interface NotificationResponse {
   id: string;
   type: NotificationType;
-  message: string;
+  payload: Record<string, unknown>;
   readAt: string | null;
   createdAt: string;
-  referenceId?: string;
 }

@@ -20,8 +20,10 @@ export const DOCUMENT_TYPE_LABELS: Record<string, string> = {
 export const DOCUMENT_TYPES = Object.keys(DOCUMENT_TYPE_LABELS);
 
 export interface VerificationDocument {
+  id?: string;
   documentType: string;
   fileUrl: string;
+  uploadedAt?: string;
 }
 
 export interface CreateVerificationRequest {
@@ -36,12 +38,11 @@ export interface ReviewVerificationRequest {
 
 export interface VerificationResponse {
   id: string;
-  userId?: string;
-  userName?: string;
+  userId: string;          // UUID del solicitante (sin nombre)
   entityType: VerificationEntityType;
   documents: VerificationDocument[];
   status: VerificationStatus;
   notes: string | null;
-  createdAt: string;
-  reviewedAt?: string | null;
+  submittedAt: string;     // backend usa submittedAt, NO createdAt
+  reviewedAt: string | null;
 }

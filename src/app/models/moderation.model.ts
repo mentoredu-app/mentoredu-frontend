@@ -1,5 +1,6 @@
 export type ReportTargetType = 'THREAD' | 'ANSWER' | 'COMMENT' | 'RESOURCE';
-export type ReportStatus = 'PENDING' | 'RESOLVED';
+// Backend usa 'OPEN' y 'RESOLVED' (NO 'PENDING')
+export type ReportStatus = 'OPEN' | 'RESOLVED';
 
 export const REPORT_TARGET_LABELS: Record<ReportTargetType, string> = {
   THREAD:   'Hilo',
@@ -18,14 +19,16 @@ export interface ResolveReportRequest {
   resolutionNote: string;
 }
 
+// Campos exactos del backend ReportResponse
 export interface ReportResponse {
   id: string;
+  reporterId: string;        // UUID del reportante (sin nombre)
   targetType: ReportTargetType;
   targetId: string;
   reason: string;
-  status: ReportStatus;
-  resolutionNote: string | null;
-  reporterName?: string;
+  status: ReportStatus;      // 'OPEN' | 'RESOLVED'
   createdAt: string;
-  resolvedAt?: string | null;
+  resolvedById: string | null;
+  resolutionNote: string | null;
+  resolvedAt: string | null;
 }

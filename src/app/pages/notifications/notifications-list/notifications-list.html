@@ -79,7 +79,9 @@
 
           <div class="notif-body">
             <p class="notif-type">{{ typeLabel(notif.type) }}</p>
-            <p class="notif-message">{{ notif.message }}</p>
+            @if (getPayloadText(notif)) {
+              <p class="notif-message">{{ getPayloadText(notif) }}</p>
+            }
             <p class="notif-date">{{ formatDate(notif.createdAt) }}</p>
           </div>
 

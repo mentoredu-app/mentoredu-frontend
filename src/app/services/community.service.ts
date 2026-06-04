@@ -55,10 +55,12 @@ export class CommunityService {
     return this.http.post<AssociationResponse>(this.associationsBase, { academyProfileId });
   }
 
-  getMyAssociations(page = 0, size = 20): Observable<PagedResponse<AssociationResponse>> {
-    return this.http.get<PagedResponse<AssociationResponse>>(this.associationsBase, {
-      params: { page, size }
-    });
+  getMyAssociations(): Observable<AssociationResponse[]> {
+    return this.http.get<AssociationResponse[]>(`${this.associationsBase}/me`);
+  }
+
+  getAcademyRequests(): Observable<AssociationResponse[]> {
+    return this.http.get<AssociationResponse[]>(`${this.associationsBase}/academy`);
   }
 
   acceptAssociation(id: string): Observable<AssociationResponse> {

@@ -42,6 +42,11 @@ export class ReportButton {
     this.reason = '';
   }
 
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.isOpen()) this.close();
+  }
+
   submit(event: Event): void {
     event.stopPropagation();
     const trimmed = this.reason.trim();

@@ -69,9 +69,10 @@ export class ModerationPanel implements OnInit {
 
   readonly reportTargetLabels = REPORT_TARGET_LABELS;
   readonly reportStatusFilter = signal<ReportStatus | 'ALL'>('ALL');
+  // Backend usa 'OPEN' (no 'PENDING') para reportes sin resolver
   readonly reportStatuses: Array<{ value: ReportStatus | 'ALL'; label: string }> = [
     { value: 'ALL',      label: 'Todos' },
-    { value: 'PENDING',  label: 'Pendientes' },
+    { value: 'OPEN',     label: 'Pendientes' },
     { value: 'RESOLVED', label: 'Resueltos' },
   ];
 
