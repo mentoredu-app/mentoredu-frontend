@@ -9,12 +9,11 @@ export const VERIFICATION_STATUS_LABELS: Record<VerificationStatus, string> = {
 };
 
 export const DOCUMENT_TYPE_LABELS: Record<string, string> = {
-  DNI:                  'DNI',
-  PASAPORTE:            'Pasaporte',
-  TITULO_PROFESIONAL:   'Título profesional',
-  CONSTANCIA_TRABAJO:   'Constancia de trabajo',
-  CARNET_UNIVERSITARIO: 'Carnet universitario',
-  RUC:                  'RUC',
+  DNI:                'DNI',
+  PASAPORTE:          'Pasaporte',
+  TITULO_PROFESIONAL: 'Título profesional',
+  CONSTANCIA_TRABAJO: 'Constancia de trabajo',
+  RUC:                'RUC',
 };
 
 export const DOCUMENT_TYPES = Object.keys(DOCUMENT_TYPE_LABELS);

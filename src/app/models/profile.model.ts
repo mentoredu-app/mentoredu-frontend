@@ -26,6 +26,7 @@ export interface ProfileResponse {
   followingCount: number;
   isFollowing: boolean;
   hasStudentProfile: boolean;
+  isVerified: boolean;
   createdAt: string;
   updatedAt: string;
 }

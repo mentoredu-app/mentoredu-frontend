@@ -8,7 +8,7 @@ import {
   ReviewVerificationRequest,
   VerificationResponse,
 } from '../models/community.model';
-import { AssociationResponse } from '../models/association.model';
+import { AssociatedMemberResponse, AssociationResponse } from '../models/association.model';
 
 @Injectable({ providedIn: 'root' })
 export class CommunityService {
@@ -69,5 +69,17 @@ export class CommunityService {
 
   rejectAssociation(id: string): Observable<AssociationResponse> {
     return this.http.patch<AssociationResponse>(`${this.associationsBase}/${id}/reject`, {});
+  }
+
+  getTeachersOfAcademy(userId: string): Observable<AssociatedMemberResponse[]> {
+    return this.http.get<AssociatedMemberResponse[]>(
+      `${this.associationsBase}/academy/${userId}/teachers`
+    );
+  }
+
+  getAcademiesOfTeacher(userId: string): Observable<AssociatedMemberResponse[]> {
+    return this.http.get<AssociatedMemberResponse[]>(
+      `${this.associationsBase}/teacher/${userId}/academies`
+    );
   }
 }

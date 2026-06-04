@@ -3,7 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { Area, Career, Course, University } from '../models/catalog.model';
+import {
+  Area, Career, Course, University,
+  CreateUniversityRequest, CreateAreaRequest, CreateCourseRequest, CreateCareerRequest,
+} from '../models/catalog.model';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
@@ -53,5 +56,43 @@ export class CatalogService {
 
   getAllCourses(): Observable<Course[]> {
     return this.allCourses$;
+  }
+
+  // ── Fresh reads (sin caché) — para el panel de administración ──────────────
+  getUniversitiesFresh(): Observable<University[]> {
+    return this.http.get<University[]>(`${this.base}/universities`);
+  }
+
+  getAreasByUniversityFresh(universityId: string): Observable<Area[]> {
+    return this.http.get<Area[]>(`${this.base}/universities/${universityId}/areas`);
+  }
+
+  getCareersByUniversityFresh(universityId: string): Observable<Career[]> {
+    return this.http.get<Career[]>(`${this.base}/universities/${universityId}/careers`);
+  }
+
+  getCoursesFresh(): Observable<Course[]> {
+    return this.http.get<Course[]>(`${this.base}/courses`);
+  }
+
+  // ── Mutations (solo ADMIN) ─────────────────────────────────────────────────
+  createUniversity(req: CreateUniversityRequest): Observable<University> {
+    return this.http.post<University>(`${this.base}/universities`, req);
+  }
+
+  createArea(universityId: string, req: CreateAreaRequest): Observable<Area> {
+    return this.http.post<Area>(`${this.base}/universities/${universityId}/areas`, req);
+  }
+
+  createCourse(req: CreateCourseRequest): Observable<Course> {
+    return this.http.post<Course>(`${this.base}/courses`, req);
+  }
+
+  linkCourseToArea(areaId: string, courseId: string): Observable<void> {
+    return this.http.put<void>(`${this.base}/areas/${areaId}/courses/${courseId}`, null);
+  }
+
+  createCareer(universityId: string, req: CreateCareerRequest): Observable<Career> {
+    return this.http.post<Career>(`${this.base}/universities/${universityId}/careers`, req);
   }
 }

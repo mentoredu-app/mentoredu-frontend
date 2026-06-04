@@ -26,6 +26,7 @@ export const routes: Routes = [
       { path: 'pedagogy', loadChildren: () => import('./pages/pedagogy/pedagogy.routes').then(m => m.PEDAGOGY_ROUTES) },
       { path: 'notifications', loadChildren: () => import('./pages/notifications/notifications.routes').then(m => m.NOTIFICATIONS_ROUTES) },
       { path: 'community', loadChildren: () => import('./pages/community/community.routes').then(m => m.COMMUNITY_ROUTES) },
+      { path: 'admin', loadChildren: () => import('./pages/admin/admin.routes').then(m => m.ADMIN_ROUTES) },
     ],
   },
   { path: '**', redirectTo: 'login' },

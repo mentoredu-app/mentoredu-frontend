@@ -6,6 +6,7 @@ import { forkJoin, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { LibraryService } from '../../../services/library.service';
 import { CatalogService } from '../../../services/catalog.service';
+import { CommunityService } from '../../../services/community.service';
 import { AuthStateService } from '../../../core/services/auth-state.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { ResourceResponse, ResourceType, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
@@ -18,16 +19,18 @@ import { Area, Career, Course, University } from '../../../models/catalog.model'
   styleUrl: './resource-detail.css',
 })
 export class ResourceDetail implements OnInit, OnDestroy {
-  private route          = inject(ActivatedRoute);
-  private http           = inject(HttpClient);
-  private libraryService = inject(LibraryService);
-  private catalogService = inject(CatalogService);
-  private sanitizer      = inject(DomSanitizer);
-  readonly authState     = inject(AuthStateService);
+  private route             = inject(ActivatedRoute);
+  private http              = inject(HttpClient);
+  private libraryService    = inject(LibraryService);
+  private catalogService    = inject(CatalogService);
+  private communityService  = inject(CommunityService);
+  private sanitizer         = inject(DomSanitizer);
+  readonly authState        = inject(AuthStateService);
 
-  readonly isLoading     = signal(true);
-  readonly loadError     = signal('');
-  readonly resource      = signal<ResourceResponse | null>(null);
+  readonly isLoading            = signal(true);
+  readonly loadError            = signal('');
+  readonly resource             = signal<ResourceResponse | null>(null);
+  readonly isAssociatedReviewer = signal(false);
   readonly isDownloading = signal(false);
 
   // PDF preview — se carga vía HttpClient para incluir el token JWT
@@ -52,6 +55,16 @@ export class ResourceDetail implements OnInit, OnDestroy {
         this.isLoading.set(false);
         this.loadCatalogNames(r);
         this.loadPdfPreview(r.fileUrl);
+
+        // Docente asociado: verificar si tiene acceso de revisor a este recurso
+        if (this.authState.role() === 'TEACHER' && r.authorId !== this.authState.user()?.id && r.aceptaResoluciones) {
+          this.communityService.getAcademiesOfTeacher(this.authState.user()!.id).subscribe({
+            next: academies => {
+              this.isAssociatedReviewer.set(academies.some(a => a.userId === r.authorId));
+            },
+            error: () => {},
+          });
+        }
       },
       error: () => {
         this.loadError.set('No se encontró el recurso o no tienes acceso.');
