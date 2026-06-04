@@ -1,0 +1,424 @@
+<div class="catalog-page">
+
+  <header class="page-header">
+    <h1 class="page-title">Catálogo del sistema</h1>
+    <p class="page-subtitle">Administración de universidades, áreas, cursos y carreras.</p>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'universities'"
+      (click)="switchTab('universities')">Universidades</button>
+    <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'areas'"
+      (click)="switchTab('areas')">Áreas</button>
+    <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'courses'"
+      (click)="switchTab('courses')">Cursos</button>
+    <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'careers'"
+      (click)="switchTab('careers')">Carreras</button>
+  </div>
+
+  <!-- ══ TAB: UNIVERSIDADES ══════════════════════════════════════════════════ -->
+  @if (activeTab() === 'universities') {
+    <div class="tab-actions">
+      <button class="btn-add" (click)="uShowForm.set(!uShowForm())">
+        @if (uShowForm()) {
+          Cancelar
+        } @else {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nueva universidad
+        }
+      </button>
+    </div>
+
+    @if (uShowForm()) {
+      <div class="inline-form">
+        <h3 class="form-title">Nueva universidad</h3>
+        <form [formGroup]="univForm" (ngSubmit)="submitUniversity()" class="form-grid">
+          <div class="form-field">
+            <label class="field-label">Nombre <span class="required">*</span></label>
+            <input formControlName="name" class="field-input" placeholder="Ej. Universidad Nacional Mayor de San Marcos"
+              [class.field-input--error]="hasFieldError(univForm.get('name'), 'required')" />
+            @if (hasFieldError(univForm.get('name'), 'required')) {
+              <span class="field-error">El nombre es obligatorio</span>
+            }
+          </div>
+          <div class="form-field">
+            <label class="field-label">Ciudad</label>
+            <input formControlName="city" class="field-input" placeholder="Ej. Lima" />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="uIsSaving()">
+              @if (uIsSaving()) {
+                <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Guardando...
+              } @else {
+                Crear universidad
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (uIsLoading()) {
+      <div class="loading-center"><app-loading-spinner /></div>
+    } @else if (uLoadError()) {
+      <div class="error-banner">{{ uLoadError() }}</div>
+    } @else if (universities().length === 0) {
+      <app-empty-state message="No hay universidades registradas" />
+    } @else {
+      <p class="items-count">{{ universities().length }} universidad{{ universities().length === 1 ? '' : 'es' }}</p>
+      <ul class="entity-list">
+        @for (u of universities(); track u.id; let i = $index) {
+          <li class="entity-item" [style.--index]="i">
+            <div class="entity-icon entity-icon--blue">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="entity-info">
+              <span class="entity-name">{{ u.name }}</span>
+              @if (u.city) { <span class="entity-meta">{{ u.city }}</span> }
+            </div>
+            <span class="entity-id">{{ u.id | slice:0:8 }}…</span>
+          </li>
+        }
+      </ul>
+    }
+  }
+
+  <!-- ══ TAB: ÁREAS ══════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'areas') {
+    <div class="selector-row">
+      <label class="field-label">Universidad</label>
+      <select class="field-select" (change)="onUnivAreaChange($any($event.target).value)">
+        <option value="">-- Seleccionar universidad --</option>
+        @for (u of universities(); track u.id) {
+          <option [value]="u.id">{{ u.name }}</option>
+        }
+      </select>
+    </div>
+
+    @if (selectedUnivForArea()) {
+      <div class="tab-actions">
+        <button class="btn-add" (click)="aShowForm.set(!aShowForm())">
+          @if (aShowForm()) {
+            Cancelar
+          } @else {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nueva área
+          }
+        </button>
+      </div>
+
+      @if (aShowForm()) {
+        <div class="inline-form">
+          <h3 class="form-title">Nueva área</h3>
+          <form [formGroup]="areaForm" (ngSubmit)="submitArea()" class="form-grid">
+            <div class="form-field">
+              <label class="field-label">Nombre <span class="required">*</span></label>
+              <input formControlName="name" class="field-input" placeholder="Ej. Área A — Ciencias de la Salud"
+                [class.field-input--error]="hasFieldError(areaForm.get('name'), 'required')" />
+              @if (hasFieldError(areaForm.get('name'), 'required')) {
+                <span class="field-error">El nombre es obligatorio</span>
+              }
+            </div>
+            <div class="form-field">
+              <label class="field-label">Descripción</label>
+              <input formControlName="description" class="field-input" placeholder="Descripción opcional" />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" [disabled]="aIsSaving()">
+                @if (aIsSaving()) {
+                  <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Guardando...
+                } @else {
+                  Crear área
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+
+      @if (aIsLoading()) {
+        <div class="loading-center"><app-loading-spinner /></div>
+      } @else if (aLoadError()) {
+        <div class="error-banner">{{ aLoadError() }}</div>
+      } @else if (areas().length === 0) {
+        <app-empty-state message="No hay áreas para esta universidad" />
+      } @else {
+        <p class="items-count">{{ areas().length }} área{{ areas().length === 1 ? '' : 's' }}</p>
+        <ul class="entity-list">
+          @for (a of areas(); track a.id; let i = $index) {
+            <li class="entity-item" [style.--index]="i">
+              <div class="entity-icon entity-icon--green">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+              </div>
+              <div class="entity-info">
+                <span class="entity-name">{{ a.name }}</span>
+                @if (a.description) { <span class="entity-meta">{{ a.description }}</span> }
+              </div>
+              <span class="entity-id">{{ a.id | slice:0:8 }}…</span>
+            </li>
+          }
+        </ul>
+      }
+    }
+  }
+
+  <!-- ══ TAB: CURSOS ══════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'courses') {
+    <div class="courses-layout">
+
+      <!-- Columna izquierda: lista + formulario -->
+      <div class="courses-main">
+        <div class="tab-actions">
+          <button class="btn-add" (click)="cShowForm.set(!cShowForm())">
+            @if (cShowForm()) {
+              Cancelar
+            } @else {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Nuevo curso
+            }
+          </button>
+        </div>
+
+        @if (cShowForm()) {
+          <div class="inline-form">
+            <h3 class="form-title">Nuevo curso</h3>
+            <form [formGroup]="courseForm" (ngSubmit)="submitCourse()" class="form-grid">
+              <div class="form-field">
+                <label class="field-label">Nombre <span class="required">*</span></label>
+                <input formControlName="name" class="field-input" placeholder="Ej. Matemática"
+                  [class.field-input--error]="hasFieldError(courseForm.get('name'), 'required')" />
+                @if (hasFieldError(courseForm.get('name'), 'required')) {
+                  <span class="field-error">El nombre es obligatorio</span>
+                }
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-primary" [disabled]="cIsSaving()">
+                  @if (cIsSaving()) {
+                    <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                    </svg>
+                    Guardando...
+                  } @else {
+                    Crear curso
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        }
+
+        @if (cIsLoading()) {
+          <div class="loading-center"><app-loading-spinner /></div>
+        } @else if (cLoadError()) {
+          <div class="error-banner">{{ cLoadError() }}</div>
+        } @else if (courses().length === 0) {
+          <app-empty-state message="No hay cursos registrados" />
+        } @else {
+          <p class="items-count">{{ courses().length }} curso{{ courses().length === 1 ? '' : 's' }}</p>
+          <ul class="entity-list">
+            @for (c of courses(); track c.id; let i = $index) {
+              <li class="entity-item" [style.--index]="i">
+                <div class="entity-icon entity-icon--purple">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                  </svg>
+                </div>
+                <div class="entity-info">
+                  <span class="entity-name">{{ c.name }}</span>
+                </div>
+                <span class="entity-id">{{ c.id | slice:0:8 }}…</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- Columna derecha: asociar curso a área -->
+      <div class="link-panel">
+        <h3 class="link-panel__title">Asociar curso a área</h3>
+        <p class="link-panel__desc">Vincula un curso existente a un área de admisión.</p>
+
+        <div class="link-form">
+          <div class="form-field">
+            <label class="field-label">Universidad</label>
+            <select class="field-select" (change)="onLinkUnivChange($any($event.target).value)">
+              <option value="">-- Seleccionar --</option>
+              @for (u of universities(); track u.id) {
+                <option [value]="u.id">{{ u.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Área</label>
+            <select class="field-select" [disabled]="!linkUnivId() || linkAreasLoading()"
+              (change)="linkAreaId.set($any($event.target).value)">
+              <option value="">-- Seleccionar --</option>
+              @for (a of linkAreas(); track a.id) {
+                <option [value]="a.id">{{ a.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Curso</label>
+            <select class="field-select" [disabled]="!linkAreaId()"
+              (change)="linkCourseId.set($any($event.target).value)">
+              <option value="">-- Seleccionar --</option>
+              @for (c of courses(); track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          </div>
+
+          <button class="btn-primary btn-primary--full" [disabled]="linkIsSaving() || !linkAreaId() || !linkCourseId()"
+            (click)="submitLink()">
+            @if (linkIsSaving()) {
+              <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+              </svg>
+              Asociando...
+            } @else {
+              Asociar
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ══ TAB: CARRERAS ════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'careers') {
+    <div class="selector-row">
+      <label class="field-label">Universidad</label>
+      <select class="field-select" (change)="onUnivCareerChange($any($event.target).value)">
+        <option value="">-- Seleccionar universidad --</option>
+        @for (u of universities(); track u.id) {
+          <option [value]="u.id">{{ u.name }}</option>
+        }
+      </select>
+    </div>
+
+    @if (selectedUnivForCareer()) {
+      <div class="tab-actions">
+        <button class="btn-add" [disabled]="careerAreasLoading()"
+          (click)="carShowForm.set(!carShowForm())">
+          @if (carShowForm()) {
+            Cancelar
+          } @else {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nueva carrera
+          }
+        </button>
+      </div>
+
+      @if (carShowForm()) {
+        <div class="inline-form">
+          <h3 class="form-title">Nueva carrera</h3>
+          <form [formGroup]="careerForm" (ngSubmit)="submitCareer()" class="form-grid">
+            <div class="form-field">
+              <label class="field-label">Nombre <span class="required">*</span></label>
+              <input formControlName="name" class="field-input" placeholder="Ej. Medicina Humana"
+                [class.field-input--error]="hasFieldError(careerForm.get('name'), 'required')" />
+              @if (hasFieldError(careerForm.get('name'), 'required')) {
+                <span class="field-error">El nombre es obligatorio</span>
+              }
+            </div>
+            <div class="form-field">
+              <label class="field-label">Área <span class="required">*</span></label>
+              <select formControlName="areaId" class="field-select"
+                [class.field-input--error]="hasFieldError(careerForm.get('areaId'), 'required')">
+                <option value="">-- Seleccionar área --</option>
+                @for (a of careerAreas(); track a.id) {
+                  <option [value]="a.id">{{ a.name }}</option>
+                }
+              </select>
+              @if (hasFieldError(careerForm.get('areaId'), 'required')) {
+                <span class="field-error">El área es obligatoria</span>
+              }
+            </div>
+            <div class="form-field">
+              <label class="field-label">Descripción</label>
+              <input formControlName="description" class="field-input" placeholder="Descripción opcional" />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" [disabled]="carIsSaving()">
+                @if (carIsSaving()) {
+                  <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Guardando...
+                } @else {
+                  Crear carrera
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+
+      @if (carIsLoading()) {
+        <div class="loading-center"><app-loading-spinner /></div>
+      } @else if (carLoadError()) {
+        <div class="error-banner">{{ carLoadError() }}</div>
+      } @else if (careers().length === 0) {
+        <app-empty-state message="No hay carreras para esta universidad" />
+      } @else {
+        <p class="items-count">{{ careers().length }} carrera{{ careers().length === 1 ? '' : 's' }}</p>
+        <ul class="entity-list">
+          @for (c of careers(); track c.id; let i = $index) {
+            <li class="entity-item" [style.--index]="i">
+              <div class="entity-icon entity-icon--orange">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+              </div>
+              <div class="entity-info">
+                <span class="entity-name">{{ c.name }}</span>
+                @if (c.description) { <span class="entity-meta">{{ c.description }}</span> }
+              </div>
+              <span class="entity-id">{{ c.id | slice:0:8 }}…</span>
+            </li>
+          }
+        </ul>
+      }
+    }
+  }
+
+</div>
