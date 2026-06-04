@@ -8,12 +8,14 @@ import {
   ReviewVerificationRequest,
   VerificationResponse,
 } from '../models/community.model';
+import { AssociationResponse } from '../models/association.model';
 
 @Injectable({ providedIn: 'root' })
 export class CommunityService {
   private http = inject(HttpClient);
-  private readonly usersBase        = `${environment.apiUrl}/users`;
-  private readonly verificationBase = `${environment.apiUrl}/verification`;
+  private readonly usersBase         = `${environment.apiUrl}/users`;
+  private readonly verificationBase  = `${environment.apiUrl}/verification`;
+  private readonly associationsBase  = `${environment.apiUrl}/associations/teacher-academy`;
 
   toggleFollow(userId: string) {
     return this.http.post<void>(
@@ -46,5 +48,24 @@ export class CommunityService {
       `${this.verificationBase}/requests/${id}/review`,
       request
     );
+  }
+
+  // ── Associations teacher-academy ─────────────────────────────────────────
+  requestAssociation(academyProfileId: string): Observable<AssociationResponse> {
+    return this.http.post<AssociationResponse>(this.associationsBase, { academyProfileId });
+  }
+
+  getMyAssociations(page = 0, size = 20): Observable<PagedResponse<AssociationResponse>> {
+    return this.http.get<PagedResponse<AssociationResponse>>(this.associationsBase, {
+      params: { page, size }
+    });
+  }
+
+  acceptAssociation(id: string): Observable<AssociationResponse> {
+    return this.http.patch<AssociationResponse>(`${this.associationsBase}/${id}/accept`, {});
+  }
+
+  rejectAssociation(id: string): Observable<AssociationResponse> {
+    return this.http.patch<AssociationResponse>(`${this.associationsBase}/${id}/reject`, {});
   }
 }
