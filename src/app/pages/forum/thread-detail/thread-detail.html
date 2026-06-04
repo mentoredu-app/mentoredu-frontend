@@ -65,6 +65,8 @@
           No me gusta
           @if (thread()!.dislikeCount > 0) { <span class="reaction-count">{{ thread()!.dislikeCount }}</span> }
         </button>
+        <span class="reactions-spacer"></span>
+        <app-report-button targetType="THREAD" [targetId]="thread()!.id" />
       </div>
     </article>
 
@@ -114,6 +116,8 @@
                 No me gusta
                 @if (answer.dislikeCount > 0) { <span class="reaction-count">{{ answer.dislikeCount }}</span> }
               </button>
+              <span class="reactions-spacer"></span>
+              <app-report-button targetType="ANSWER" [targetId]="answer.id" />
             </div>
 
             <!-- Sección de comentarios -->

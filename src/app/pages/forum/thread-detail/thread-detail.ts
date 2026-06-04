@@ -6,11 +6,12 @@ import { AuthStateService } from '../../../core/services/auth-state.service';
 import { ForumService } from '../../../services/forum.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
+import { ReportButton } from '../../../shared/components/report-button/report-button';
 import { AnswerResponse, CommentResponse, ReactionType, ThreadResponse } from '../../../models/forum.model';
 
 @Component({
   selector: 'app-thread-detail',
-  imports: [RouterLink, ReactiveFormsModule, LoadingSpinner],
+  imports: [RouterLink, ReactiveFormsModule, LoadingSpinner, ReportButton],
   templateUrl: './thread-detail.html',
   styleUrl: './thread-detail.css',
 })

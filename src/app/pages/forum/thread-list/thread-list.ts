@@ -6,6 +6,7 @@ import { CatalogService } from '../../../services/catalog.service';
 import { ForumService } from '../../../services/forum.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
+import { ReportButton } from '../../../shared/components/report-button/report-button';
 import { ThreadResponse, ThreadStatus } from '../../../models/forum.model';
 import { University, Course } from '../../../models/catalog.model';
 
@@ -17,7 +18,7 @@ interface ThreadFilters {
 
 @Component({
   selector: 'app-thread-list',
-  imports: [RouterLink, FormsModule, LoadingSpinner, EmptyState],
+  imports: [RouterLink, FormsModule, LoadingSpinner, EmptyState, ReportButton],
   templateUrl: './thread-list.html',
   styleUrl: './thread-list.css',
 })

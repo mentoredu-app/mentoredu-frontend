@@ -141,6 +141,7 @@
                 {{ resource.authorName }}
               </a>
               <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
+              <app-report-button targetType="RESOURCE" [targetId]="resource.id" />
             </div>
 
           </article>
