@@ -3,6 +3,8 @@ import { SlicePipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommunityService } from '../../../services/community.service';
+import { resolveFileUrl } from '../../../services/file-upload.service';
+import { DocImagePreview } from '../../../shared/components/doc-image-preview/doc-image-preview';
 import { ModerationService } from '../../../services/moderation.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
@@ -19,7 +21,7 @@ type PanelTab = 'verifications' | 'reports';
 
 @Component({
   selector: 'app-moderation-panel',
-  imports: [ReactiveFormsModule, FormsModule, SlicePipe, LoadingSpinner, EmptyState],
+  imports: [ReactiveFormsModule, FormsModule, SlicePipe, LoadingSpinner, EmptyState, DocImagePreview],
   templateUrl: './moderation-panel.html',
   styleUrl: './moderation-panel.css',
 })
@@ -248,6 +250,8 @@ export class ModerationPanel implements OnInit {
   }
 
   // ── Helpers ──────────────────────────────────────────
+  readonly resolveUrl = resolveFileUrl;
+
   docTypeLabel(type: string): string  { return this.documentTypeLabels[type] ?? type; }
   entityLabel(type: string): string   { return type === 'ACADEMY' ? 'Academia' : 'Docente'; }
   targetLabel(type: string): string   { return this.reportTargetLabels[type as keyof typeof this.reportTargetLabels] ?? type; }

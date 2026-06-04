@@ -45,7 +45,9 @@ export interface FeedbackResponse {
   id: string;
   solutionId: string;
   authorId: string;
+  authorUserId: string;
   authorName: string;
+  authorRole: string;
   body: string;
   score?: number;
   createdAt: string;

@@ -13,12 +13,22 @@
       <div class="profile-hero__left">
         @if (profile()!.avatarUrl) {
           <img class="profile-hero__avatar profile-hero__avatar--img"
-            [src]="profile()!.avatarUrl" [alt]="profile()!.displayName" />
+            [src]="resolveUrl(profile()!.avatarUrl)" [alt]="profile()!.displayName" />
         } @else {
           <div class="profile-hero__avatar">{{ profile()!.displayName.charAt(0) }}</div>
         }
         <div class="profile-hero__meta">
-          <h1 class="profile-hero__name">{{ profile()!.displayName }}</h1>
+          <div class="profile-hero__name-row">
+            <h1 class="profile-hero__name">{{ profile()!.displayName }}</h1>
+            @if (profile()!.isVerified) {
+              <span class="verified-badge" title="Identidad verificada">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                  stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </span>
+            }
+          </div>
           <span class="profile-hero__role">{{ roleLabels[profile()!.profileType] }}</span>
           @if (profile()!.city) {
             <span class="profile-hero__detail">📍 {{ profile()!.city }}</span>
@@ -27,68 +37,96 @@
         </div>
       </div>
 
-      <div class="profile-hero__actions">
-        @if (isOwnProfile()) {
-          <a class="btn-edit" routerLink="/profiles/edit">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Editar perfil
-          </a>
-        } @else {
-          <div class="hero-actions-group">
-            <button class="follow-btn"
-              [class.follow-btn--following]="isFollowing()"
-              [disabled]="isFollowLoading()"
-              (click)="toggleFollow()">
-              @if (isFollowLoading()) {
-                <span class="follow-btn__spinner"></span>
-              } @else if (isFollowing()) {
-                <span class="follow-btn__label">Siguiendo</span>
-                <span class="follow-btn__label--hover">Dejar de seguir</span>
-              } @else {
-                Seguir
-              }
-            </button>
+      <!-- Acciones: ocultas para usuarios del sistema -->
+      @if (!isSystemProfile()) {
+        <div class="profile-hero__actions">
+          @if (isOwnProfile()) {
+            <a class="btn-edit" routerLink="/profiles/edit">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar perfil
+            </a>
+          } @else {
+            <div class="hero-actions-group">
+              <button class="follow-btn"
+                [class.follow-btn--following]="isFollowing()"
+                [disabled]="isFollowLoading()"
+                (click)="toggleFollow()">
+                @if (isFollowLoading()) {
+                  <span class="follow-btn__spinner"></span>
+                } @else if (isFollowing()) {
+                  <span class="follow-btn__label">Siguiendo</span>
+                  <span class="follow-btn__label--hover">Dejar de seguir</span>
+                } @else {
+                  Seguir
+                }
+              </button>
 
-            @if (canRequestAssociation()) {
-              @if (associationStatus() === 'PENDING') {
-                <span class="assoc-badge">Solicitud enviada</span>
-              } @else {
-                <button class="btn-assoc" [disabled]="isAssocLoading()" (click)="requestAssociation()">
-                  @if (isAssocLoading()) {
-                    <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                    </svg>
-                  } @else {
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                      <circle cx="9" cy="7" r="4"/>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
+              @if (canRequestAssociation()) {
+                @switch (associationStatus()) {
+                  @case ('ACCEPTED') {
+                    <span class="assoc-badge assoc-badge--accepted">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Asociado
+                    </span>
                   }
-                  Asociarse
-                </button>
+                  @case ('PENDING') {
+                    <span class="assoc-badge assoc-badge--pending">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                      Solicitud enviada
+                    </span>
+                  }
+                  @case ('REJECTED') {
+                    <span class="assoc-badge assoc-badge--rejected">
+                      Solicitud rechazada
+                    </span>
+                  }
+                  @default {
+                    <button class="btn-assoc" [disabled]="isAssocLoading()" (click)="requestAssociation()">
+                      @if (isAssocLoading()) {
+                        <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                        </svg>
+                      } @else {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                      }
+                      Asociarse
+                    </button>
+                  }
+                }
               }
-            }
-          </div>
-        }
-      </div>
+            </div>
+          }
+        </div>
+      }
     </div>
 
-    <!-- ── Stats ─────────────────────────────────── -->
-    <div class="profile-stats">
-      <div class="profile-stats__item">
-        <span class="profile-stats__value">{{ profile()!.followerCount }}</span>
-        <span class="profile-stats__label">Seguidores</span>
+    <!-- ── Stats — oculto para usuarios del sistema ── -->
+    @if (!isSystemProfile()) {
+      <div class="profile-stats">
+        <div class="profile-stats__item">
+          <span class="profile-stats__value">{{ profile()!.followerCount }}</span>
+          <span class="profile-stats__label">Seguidores</span>
+        </div>
+        <div class="profile-stats__sep"></div>
+        <div class="profile-stats__item">
+          <span class="profile-stats__value">{{ profile()!.followingCount }}</span>
+          <span class="profile-stats__label">Siguiendo</span>
+        </div>
       </div>
-      <div class="profile-stats__sep"></div>
-      <div class="profile-stats__item">
-        <span class="profile-stats__value">{{ profile()!.followingCount }}</span>
-        <span class="profile-stats__label">Siguiendo</span>
-      </div>
-    </div>
+    }
 
     <!-- ── Bio ───────────────────────────────────── -->
     @if (profile()!.bio) {
@@ -123,6 +161,70 @@
         </div>
       </div>
     }
+
+    <!-- ── Equipo docente (academia) / Academia asociada (docente) ── -->
+    @if (profile()!.profileType === 'ACADEMY' || profile()!.profileType === 'TEACHER') {
+      @if (teamIsLoading()) {
+        <div class="team-section team-section--loading">
+          <div class="section-label">
+            {{ profile()!.profileType === 'ACADEMY' ? 'Equipo docente' : 'Academia asociada' }}
+          </div>
+          <div class="team-loading-row">
+            @for (_ of [1,2,3]; track $index) {
+              <div class="team-skeleton"></div>
+            }
+          </div>
+        </div>
+      } @else if (teamMembers().length > 0) {
+        <div class="team-section">
+          <div class="section-label">
+            {{ profile()!.profileType === 'ACADEMY' ? 'Equipo docente' : 'Academia asociada' }}
+          </div>
+          <div class="team-grid">
+            @for (member of teamMembers(); track member.userId) {
+              <a class="team-card" [routerLink]="['/profiles', member.userId]">
+                <div class="team-card__avatar">
+                  @if (member.avatarUrl) {
+                    <img [src]="resolveUrl(member.avatarUrl)" [alt]="member.displayName" class="team-card__avatar-img" />
+                  } @else {
+                    {{ member.displayName.charAt(0) }}
+                  }
+                </div>
+                <div class="team-card__info">
+                  <span class="team-card__name">
+                    {{ member.displayName }}
+                    @if (member.isVerified) {
+                      <span class="team-verified-dot" title="Identidad verificada">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                          stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </span>
+                    }
+                  </span>
+                  <span class="team-card__role">
+                    {{ member.profileType === 'TEACHER' ? 'Docente' : 'Academia' }}
+                  </span>
+                </div>
+              </a>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ── Tabs y actividad — ocultos para usuarios del sistema ── -->
+    @if (isSystemProfile()) {
+      <div class="system-user-notice">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Este usuario es parte del equipo de administración de la plataforma.
+      </div>
+    }
+
+    @if (!isSystemProfile()) {
 
     <!-- ── Tabs ───────────────────────────────────── -->
     <div class="profile-tabs">
@@ -250,6 +352,8 @@
         </div>
       }
     </div>
+
+    } <!-- end @if (!isSystemProfile()) -->
 
   }
 </div>

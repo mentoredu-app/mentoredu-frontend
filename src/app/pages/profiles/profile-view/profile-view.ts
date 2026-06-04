@@ -1,6 +1,8 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProfileService } from '../../../services/profile.service';
+import { resolveFileUrl } from '../../../services/file-upload.service';
 import { LibraryService } from '../../../services/library.service';
 import { ForumService } from '../../../services/forum.service';
 import { PedagogyService } from '../../../services/pedagogy.service';
@@ -11,7 +13,7 @@ import { ProfileResponse, StudentProfileResponse } from '../../../models/profile
 import { ResourceResponse, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
 import { ThreadResponse } from '../../../models/forum.model';
 import { MySolutionSummaryResponse, ReceivedSolutionResponse } from '../../../models/pedagogy.model';
-import { AssociationStatus } from '../../../models/association.model';
+import { AssociatedMemberResponse, AssociationStatus } from '../../../models/association.model';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 
@@ -25,6 +27,7 @@ type ProfileTab = 'resources' | 'threads' | 'solutions' | 'received';
 })
 export class ProfileView implements OnInit {
   private route            = inject(ActivatedRoute);
+  private destroyRef       = inject(DestroyRef);
   private profileService   = inject(ProfileService);
   private libraryService   = inject(LibraryService);
   private forumService     = inject(ForumService);
@@ -81,6 +84,15 @@ export class ProfileView implements OnInit {
     return user && p ? user.id === p.userId : false;
   });
 
+  readonly isSystemProfile = computed(() => {
+    const t = this.profile()?.profileType;
+    return t === 'ADMIN' || t === 'MODERATOR';
+  });
+
+  // ── Equipo docente / academias asociadas ─────────────────────────────────
+  readonly teamMembers      = signal<AssociatedMemberResponse[]>([]);
+  readonly teamIsLoading    = signal(false);
+
   readonly typeLabels = RESOURCE_TYPE_LABELS;
 
   readonly roleLabels: Record<string, string> = {
@@ -99,9 +111,34 @@ export class ProfileView implements OnInit {
 
   // ── Lifecycle ────────────────────────────────────
   ngOnInit(): void {
-    const userId   = this.route.snapshot.paramMap.get('id') ?? '';
-    const tabParam = this.route.snapshot.queryParamMap.get('tab') as ProfileTab | null;
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const userId   = params.get('id') ?? '';
+        const tabParam = this.route.snapshot.queryParamMap.get('tab') as ProfileTab | null;
+        this.resetState();
+        this.loadProfile(userId, tabParam);
+      });
+  }
 
+  private resetState(): void {
+    this.isLoading.set(true);
+    this.profile.set(null);
+    this.studentExtra.set(null);
+    this.notFound.set(false);
+    this.isFollowing.set(false);
+    this.associationStatus.set('NONE');
+    this.teamMembers.set([]);
+    this.teamIsLoading.set(false);
+    this.tabResources.set([]);
+    this.tabThreads.set([]);
+    this.tabSolutions.set([]);
+    this.tabReceived.set([]);
+    this.hasMore.set(false);
+    this.pages = { resources: 0, threads: 0, solutions: 0, received: 0 };
+  }
+
+  private loadProfile(userId: string, tabParam: ProfileTab | null): void {
     this.profileService.getById(userId).subscribe({
       next: p => {
         this.profile.set(p);
@@ -112,6 +149,31 @@ export class ProfileView implements OnInit {
           this.profileService.getStudentProfile(p.userId).subscribe({
             next: s => this.studentExtra.set(s),
             error: () => {},
+          });
+        }
+
+        if (p.profileType === 'ACADEMY') {
+          this.teamIsLoading.set(true);
+          this.communityService.getTeachersOfAcademy(p.userId).subscribe({
+            next: members => { this.teamMembers.set(members); this.teamIsLoading.set(false); },
+            error: () => this.teamIsLoading.set(false),
+          });
+
+          // Si el visitante es TEACHER, verificar si ya existe una asociación con esta academia
+          if (this.authState.role() === 'TEACHER' && !this.isOwnProfile()) {
+            this.communityService.getMyAssociations().subscribe({
+              next: associations => {
+                const existing = associations.find(a => a.academyProfileId === p.id);
+                if (existing) this.associationStatus.set(existing.status);
+              },
+              error: () => {},
+            });
+          }
+        } else if (p.profileType === 'TEACHER') {
+          this.teamIsLoading.set(true);
+          this.communityService.getAcademiesOfTeacher(p.userId).subscribe({
+            next: members => { this.teamMembers.set(members); this.teamIsLoading.set(false); },
+            error: () => this.teamIsLoading.set(false),
           });
         }
 
@@ -249,6 +311,8 @@ export class ProfileView implements OnInit {
   }
 
   // ── Helpers ───────────────────────────────────────
+  readonly resolveUrl = resolveFileUrl;
+
   formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('es-PE', { year: 'numeric', month: 'long' });
   }

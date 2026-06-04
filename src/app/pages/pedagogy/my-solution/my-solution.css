@@ -211,8 +211,16 @@
   color: var(--color-text-subtle);
 }
 
-.feedback-meta__author { font-weight: 500; color: var(--color-text-muted); }
+.feedback-meta__label { color: var(--color-text-subtle); }
+.feedback-meta__author {
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.feedback-meta__author:hover { text-decoration: underline; }
+.feedback-meta__role { color: var(--color-text-muted); }
 .feedback-meta__dot { color: var(--color-border); }
+.feedback-meta svg { color: var(--color-text-subtle); flex-shrink: 0; }
 
 /* Pending feedback */
 .pending-feedback-card {

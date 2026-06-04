@@ -88,7 +88,7 @@
       <!-- Feedback recibido -->
       @if (result.feedback; as fb) {
         <div class="feedback-card">
-          <h2 class="card-label">Feedback del docente</h2>
+          <h2 class="card-label">Feedback recibido</h2>
 
           @if (fb.score !== null && fb.score !== undefined) {
             <div class="score-display">
@@ -100,7 +100,18 @@
           <p class="feedback-body">{{ fb.body }}</p>
 
           <div class="feedback-meta">
-            <span class="feedback-meta__author">{{ fb.authorName }}</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span class="feedback-meta__label">Corregido por</span>
+            <a class="feedback-meta__author" [routerLink]="['/profiles', fb.authorUserId]">
+              {{ fb.authorName }}
+            </a>
+            <span class="feedback-meta__role">
+              {{ fb.authorRole === 'TEACHER' ? '· Docente' : fb.authorRole === 'ACADEMY' ? '· Academia' : '' }}
+            </span>
             <span class="feedback-meta__dot">·</span>
             <span class="feedback-meta__date">{{ formatDate(fb.createdAt) }}</span>
           </div>

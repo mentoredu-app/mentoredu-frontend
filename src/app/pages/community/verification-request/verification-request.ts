@@ -8,6 +8,7 @@ import { CommunityService } from '../../../services/community.service';
 import { FileUploadService } from '../../../services/file-upload.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
+import { DocImagePreview } from '../../../shared/components/doc-image-preview/doc-image-preview';
 import {
   VerificationResponse, VerificationEntityType,
   VERIFICATION_STATUS_LABELS, DOCUMENT_TYPE_LABELS, DOCUMENT_TYPES,
@@ -15,7 +16,7 @@ import {
 
 @Component({
   selector: 'app-verification-request',
-  imports: [ReactiveFormsModule, RouterLink, LoadingSpinner],
+  imports: [ReactiveFormsModule, RouterLink, LoadingSpinner, DocImagePreview],
   templateUrl: './verification-request.html',
   styleUrl: './verification-request.css',
 })

@@ -1,5 +1,14 @@
 export type AssociationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
 
+export interface AssociatedMemberResponse {
+  profileId: string;
+  userId:    string;
+  displayName: string;
+  avatarUrl?: string;
+  profileType: string;
+  isVerified: boolean;
+}
+
 export const ASSOCIATION_STATUS_LABELS: Record<AssociationStatus, string> = {
   PENDING:  'Pendiente',
   ACCEPTED: 'Aceptada',
