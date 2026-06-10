@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://<render-url>/api/v1',
-  baseUrl: 'https://<render-url>',
+  apiUrl: 'https://mentoredu-api.onrender.com/api/v1',
+  baseUrl: 'https://mentoredu-api.onrender.com',
 };
