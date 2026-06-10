@@ -1,0 +1,1 @@
+var e={EXAMEN_COMPLETO:"Examen completo",EXAMEN_SECCION:"Examen por secci\xF3n",GUIA:"Gu\xEDa",APUNTES:"Apuntes",PRACTICA:"Pr\xE1ctica",OTRO:"Otro"},r=["EXAMEN_SECCION","PRACTICA","OTRO"];export{e as a,r as b};
