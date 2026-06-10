@@ -1,0 +1,46 @@
+<div class="report-wrap">
+
+  @if (alreadySent()) {
+    <span class="reported-label">Reportado</span>
+  } @else {
+    <button class="report-trigger"
+      (click)="toggle($event)"
+      [title]="'Reportar ' + targetLabel"
+      [attr.aria-expanded]="isOpen()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+        <line x1="4" y1="22" x2="4" y2="15"/>
+      </svg>
+      Reportar
+    </button>
+  }
+
+  @if (isOpen()) {
+    <div class="report-popover" (click)="$event.stopPropagation()">
+      <p class="report-popover__title">Reportar {{ targetLabel }}</p>
+      <textarea
+        class="report-textarea"
+        [(ngModel)]="reason"
+        placeholder="Describe brevemente el problema..."
+        rows="3"
+        maxlength="500">
+      </textarea>
+      <div class="report-popover__actions">
+        <button class="btn-cancel" (click)="close($event)">Cancelar</button>
+        <button class="btn-submit"
+          (click)="submit($event)"
+          [disabled]="!reason.trim() || isSubmitting()">
+          @if (isSubmitting()) {
+            <svg class="spin" width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+          }
+          Enviar reporte
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

@@ -1,0 +1,103 @@
+<div class="my-resources-page">
+
+  <div class="page-header">
+    <div class="page-header__text">
+      <h1 class="page-title">Mis recursos</h1>
+      <p class="page-subtitle">
+        @if (totalLabel()) {
+          {{ totalLabel() }} {{ resources().length === 1 ? 'recurso publicado' : 'recursos publicados' }}
+        } @else {
+          Recursos que has publicado en la plataforma
+        }
+      </p>
+    </div>
+    <a routerLink="/library/upload" class="btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Publicar recurso
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  } @else if (loadError()) {
+    <div class="error-banner" role="alert">{{ loadError() }}</div>
+  } @else if (resources().length === 0) {
+    <app-empty-state message="Aún no has publicado ningún recurso">
+      <a routerLink="/library/upload" class="btn-primary btn-primary--sm">Publicar mi primer recurso</a>
+    </app-empty-state>
+  } @else {
+    <div class="resource-grid">
+      @for (resource of resources(); track resource.id; let i = $index) {
+        <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
+
+          <div class="resource-card__top">
+            <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
+              {{ typeLabel(resource.resourceType) }}
+            </span>
+            <div class="resource-card__meta">
+              @if (resource.resourceType === 'PRACTICA') {
+                <button
+                  type="button"
+                  class="btn-resolutions"
+                  [class.btn-resolutions--active]="resource.aceptaResoluciones"
+                  [disabled]="isUpdating(resource.id)"
+                  (click)="toggleSettings(resource, $event)"
+                  [title]="resource.aceptaResoluciones ? 'Desactivar resoluciones' : 'Activar resoluciones'"
+                >
+                  @if (isUpdating(resource.id)) {
+                    <app-loading-spinner size="sm" />
+                  } @else if (resource.aceptaResoluciones) {
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Resoluciones
+                  } @else {
+                    + Resoluciones
+                  }
+                </button>
+              } @else if (resource.aceptaResoluciones) {
+                <span class="resoluciones-badge">Resoluciones</span>
+              }
+              <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
+            </div>
+          </div>
+
+          <h2 class="resource-card__title">{{ resource.title }}</h2>
+
+          @if (resource.description) {
+            <p class="resource-card__desc">{{ resource.description }}</p>
+          }
+
+          <div class="resource-card__footer">
+            <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
+            <div class="resource-card__actions">
+              @if (resource.aceptaResoluciones) {
+                <a class="resource-card__solutions-link"
+                   [routerLink]="['/library', resource.id, 'solutions']"
+                   (click)="$event.stopPropagation()">
+                  Resoluciones
+                </a>
+              }
+              <a class="resource-card__view-link"
+                 [routerLink]="['/library', resource.id]"
+                 (click)="$event.stopPropagation()">
+                Ver detalle
+              </a>
+            </div>
+          </div>
+
+        </article>
+      }
+    </div>
+
+    @if (hasMore()) {
+      <div class="load-more">
+        <button class="btn-load-more" (click)="loadMore()" [disabled]="isLoadingMore()">
+          @if (isLoadingMore()) { <app-loading-spinner size="sm" /> }
+          Cargar más
+        </button>
+      </div>
+    }
+  }
+
+</div>

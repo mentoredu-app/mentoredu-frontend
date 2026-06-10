@@ -1,0 +1,274 @@
+.detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  margin-bottom: 24px;
+  transition: color 160ms var(--ease-out);
+}
+.back-link:hover { color: var(--color-text); }
+
+.loading-center {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+.error-banner {
+  padding: 14px 18px;
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-error) 20%, transparent);
+  border-radius: var(--radius-md);
+}
+
+/* Layout dos columnas */
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Panel PDF: sticky mientras se hace scroll en el sidebar */
+.preview-panel {
+  position: sticky;
+  top: 80px;
+}
+
+.pdf-loading,
+.pdf-unavailable {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: calc(100vh - 140px);
+  min-height: 520px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: #f7f7f5;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.pdf-frame {
+  width: 100%;
+  height: calc(100vh - 140px);
+  min-height: 520px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: #f7f7f5;
+  display: block;
+}
+
+/* Sidebar */
+.meta-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: sidebar-in 280ms var(--ease-out) both;
+}
+
+@keyframes sidebar-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.type-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #1F6C9F;
+  background: #E1F3FE;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  align-self: flex-start;
+}
+
+.resource-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.015em;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.resource-desc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+/* Metadatos */
+.meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.meta-row dt {
+  font-size: 0.8125rem;
+  color: var(--color-text-subtle);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.meta-row dd {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+  text-align: right;
+  margin: 0;
+  word-break: break-word;
+}
+
+.accepts-tag {
+  color: #346538 !important;
+  font-weight: 600 !important;
+}
+
+/* Acciones */
+.action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+.btn-download:hover:not(:disabled) { background: var(--color-primary-hover); }
+.btn-download:active:not(:disabled) { transform: scale(0.97); }
+.btn-download:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+.btn-open:hover:not(:disabled) { border-color: var(--color-text-subtle); color: var(--color-text); }
+.btn-open:active:not(:disabled) { transform: scale(0.97); }
+.btn-open:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.owner-note {
+  font-size: 0.8125rem;
+  color: var(--color-text-subtle);
+  text-align: center;
+  margin: 0;
+}
+
+.btn-submit-solution {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+
+.btn-submit-solution:hover { background: var(--color-primary-hover); }
+.btn-submit-solution:active { transform: scale(0.97); }
+
+.btn-solutions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+
+.btn-solutions:hover {
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.btn-solutions:active { transform: scale(0.97); }
+
+/* Responsive */
+@media (max-width: 860px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+  }
+  .preview-panel {
+    position: static;
+    order: 1;
+  }
+  .meta-sidebar {
+    order: 0;
+  }
+  .pdf-frame {
+    height: 65vh;
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-page { padding: 20px 16px 48px; }
+  .pdf-frame { height: 55vh; }
+}

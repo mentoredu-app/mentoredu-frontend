@@ -1,0 +1,165 @@
+<div class="detail-page">
+
+  <a routerLink="/library" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Volver a la biblioteca
+  </a>
+
+  @if (isLoading()) {
+    <div class="loading-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  } @else if (loadError()) {
+    <div class="error-banner" role="alert">{{ loadError() }}</div>
+  } @else if (resource(); as r) {
+    <div class="detail-layout">
+
+      <!-- Panel de previsualización PDF -->
+      <div class="preview-panel">
+        @if (isPdfLoading()) {
+          <div class="pdf-loading">
+            <app-loading-spinner size="lg" />
+            <span>Cargando vista previa…</span>
+          </div>
+        } @else if (pdfBlobUrl()) {
+          <iframe
+            class="pdf-frame"
+            [src]="pdfBlobUrl()"
+            [title]="'Vista previa — ' + r.title">
+          </iframe>
+        } @else {
+          <div class="pdf-unavailable">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-text-subtle)">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <p>No se pudo cargar la vista previa</p>
+          </div>
+        }
+      </div>
+
+      <!-- Sidebar de metadatos -->
+      <aside class="meta-sidebar">
+
+        <span class="type-badge">{{ typeLabel(r.resourceType) }}</span>
+        <h1 class="resource-title">{{ r.title }}</h1>
+
+        @if (r.description) {
+          <p class="resource-desc">{{ r.description }}</p>
+        }
+
+        <div class="divider"></div>
+
+        <dl class="meta-list">
+          <div class="meta-row">
+            <dt>Autor</dt>
+            <dd>{{ r.authorName }}</dd>
+          </div>
+          <div class="meta-row">
+            <dt>Publicado</dt>
+            <dd>{{ formatDate(r.createdAt) }}</dd>
+          </div>
+          @if (universityName()) {
+            <div class="meta-row">
+              <dt>Universidad</dt>
+              <dd>{{ universityName() }}</dd>
+            </div>
+          }
+          @if (areaName()) {
+            <div class="meta-row">
+              <dt>Área</dt>
+              <dd>{{ areaName() }}</dd>
+            </div>
+          }
+          @if (careerName()) {
+            <div class="meta-row">
+              <dt>Carrera</dt>
+              <dd>{{ careerName() }}</dd>
+            </div>
+          }
+          @if (courseName()) {
+            <div class="meta-row">
+              <dt>Curso</dt>
+              <dd>{{ courseName() }}</dd>
+            </div>
+          }
+          <div class="meta-row">
+            <dt>Tamaño</dt>
+            <dd>{{ formatSize(r.sizeBytes) }}</dd>
+          </div>
+          @if (r.aceptaResoluciones) {
+            <div class="meta-row">
+              <dt>Resoluciones</dt>
+              <dd class="accepts-tag">Acepta resoluciones</dd>
+            </div>
+          }
+        </dl>
+
+        <div class="divider"></div>
+
+        <div class="action-group">
+          <button class="btn-download" (click)="download()" [disabled]="isDownloading()">
+            @if (isDownloading()) {
+              <app-loading-spinner size="sm" />
+              Descargando…
+            } @else {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Descargar PDF
+            }
+          </button>
+          <button class="btn-open" (click)="openInNewTab()" [disabled]="!pdfBlobUrl()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <polyline points="15 3 21 3 21 9"/>
+              <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            Abrir en nueva pestaña
+          </button>
+        </div>
+
+        @if (r.aceptaResoluciones && authState.role() === 'STUDENT') {
+          <div class="divider"></div>
+          @if (r.mySubmission) {
+            <a [routerLink]="['/pedagogy', r.id, 'my-solution']" class="btn-submit-solution">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              Ver mi resolución
+            </a>
+          } @else {
+            <a [routerLink]="['/pedagogy', r.id, 'submit']" class="btn-submit-solution">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+              Enviar mi resolución
+            </a>
+          }
+        }
+
+        @if (r.authorId === authState.user()?.id) {
+          <p class="owner-note">Publicado por ti</p>
+        }
+
+        @if (r.aceptaResoluciones && (r.authorId === authState.user()?.id || isAssociatedReviewer())) {
+          <a [routerLink]="['/library', r.id, 'solutions']" class="btn-solutions">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            Ver resoluciones de estudiantes
+          </a>
+        }
+
+      </aside>
+    </div>
+  }
+
+</div>

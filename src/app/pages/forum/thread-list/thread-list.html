@@ -1,1 +1,124 @@
-<p>thread-list works!</p>
+<div class="forum-page">
+
+  <!-- Encabezado -->
+  <div class="page-header">
+    <div class="page-header__text">
+      <h1 class="page-title">Foro</h1>
+      <p class="page-subtitle">Preguntas y respuestas de la comunidad</p>
+    </div>
+    <a routerLink="/forum/create" class="btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nuevo hilo
+    </a>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-bar">
+    <div class="filter-selects">
+
+      <select class="filter-select"
+        [(ngModel)]="filters.universityId"
+        (ngModelChange)="applyFilter()">
+        <option value="">Universidad</option>
+        @for (uni of universities(); track uni.id) {
+          <option [value]="uni.id">{{ uni.name }}</option>
+        }
+      </select>
+
+      <select class="filter-select"
+        [(ngModel)]="filters.courseId"
+        (ngModelChange)="applyFilter()">
+        <option value="">Curso</option>
+        @for (course of courses(); track course.id) {
+          <option [value]="course.id">{{ course.name }}</option>
+        }
+      </select>
+
+      <select class="filter-select"
+        [(ngModel)]="filters.status"
+        (ngModelChange)="applyFilter()">
+        <option value="">Estado</option>
+        <option value="OPEN">Abiertos</option>
+        <option value="CLOSED">Cerrados</option>
+      </select>
+
+      @if (hasActiveFilters) {
+        <button class="btn-clear-filters" (click)="clearFilters()">Limpiar filtros</button>
+      }
+
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  @if (isLoading()) {
+    <div class="loading-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  } @else if (loadError()) {
+    <div class="error-banner" role="alert">{{ loadError() }}</div>
+  } @else if (threads().length === 0) {
+    <app-empty-state
+      [message]="hasActiveFilters ? 'No hay hilos que coincidan con los filtros' : 'Sé el primero en publicar una pregunta'"
+    />
+  } @else {
+    <div class="thread-list">
+      @for (thread of threads(); track thread.id; let i = $index) {
+        <article class="thread-card" [style.--index]="i % 15" [routerLink]="['/forum', thread.id]">
+
+          <div class="thread-card__main">
+            <div class="thread-card__meta">
+              <span class="thread-status-badge" [class.thread-status-badge--closed]="thread.status === 'CLOSED'">
+                {{ thread.status === 'OPEN' ? 'Abierto' : 'Cerrado' }}
+              </span>
+              @if (myThreadBadge(thread) === 'mine') {
+                <span class="mine-badge">Mío</span>
+              }
+              @if (myThreadBadge(thread) === 'mine-anon') {
+                <span class="mine-badge mine-badge--anon">Mío (Anónimo)</span>
+              }
+              @if (contextLabel(thread)) {
+                <span class="thread-context-tag">{{ contextLabel(thread) }}</span>
+              }
+            </div>
+
+            <h2 class="thread-card__title">{{ thread.title }}</h2>
+            <p class="thread-card__body">{{ excerpt(thread.body) }}</p>
+
+            <div class="thread-card__footer">
+              @if (thread.authorId) {
+                <a class="thread-card__author thread-card__author--link"
+                  [routerLink]="['/profiles', thread.authorId]"
+                  (click)="$event.stopPropagation()">
+                  {{ thread.authorDisplay }}
+                </a>
+              } @else {
+                <span class="thread-card__author">{{ thread.authorDisplay }}</span>
+              }
+              <span class="thread-card__date">{{ formatDate(thread.createdAt) }}</span>
+              <app-report-button targetType="THREAD" [targetId]="thread.id" />
+            </div>
+          </div>
+
+          <div class="thread-card__side">
+            <div class="answer-count">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+          </div>
+
+        </article>
+      }
+    </div>
+
+    @if (hasMore()) {
+      <div class="load-more">
+        <button class="btn-load-more" (click)="loadMore()" [disabled]="isLoadingMore()">
+          @if (isLoadingMore()) { <app-loading-spinner size="sm" /> }
+          Cargar más
+        </button>
+      </div>
+    }
+  }
+
+</div>

@@ -1,1 +1,232 @@
-<p>resource-upload works!</p>
+<div class="upload-page">
+
+  <!-- Encabezado -->
+  <div class="page-header">
+    <a routerLink="/library" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Biblioteca
+    </a>
+    <h1 class="page-title">Publicar recurso</h1>
+    <p class="page-subtitle">Sube un archivo PDF y completa los metadatos para que sea visible en la biblioteca.</p>
+  </div>
+
+  <!-- Alerta rol no permitido -->
+  @if (!isAllowedRole()) {
+    <div class="role-alert" role="alert">
+      Solo los docentes y academias pueden publicar recursos.
+    </div>
+  } @else {
+
+    <!-- Indicador de pasos -->
+    <div class="steps-indicator" aria-label="Pasos del formulario">
+      <div class="step-item" [class.step-item--active]="step() === 1" [class.step-item--done]="step() === 2">
+        <span class="step-number">
+          @if (step() === 2) {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          } @else { 1 }
+        </span>
+        <span class="step-label">Subir PDF</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" [class.step-item--active]="step() === 2">
+        <span class="step-number">2</span>
+        <span class="step-label">Metadatos</span>
+      </div>
+    </div>
+
+    <!-- PASO 1: Subida de archivo -->
+    @if (step() === 1) {
+      <section class="upload-section">
+        <div class="section-header">
+          <h2 class="section-title">Selecciona el archivo PDF</h2>
+          <p class="section-hint">Formatos aceptados: PDF. Tamaño máximo: 20 MB.</p>
+        </div>
+
+        @if (isUploading()) {
+          <div class="upload-loading">
+            <app-loading-spinner size="lg" />
+            <p class="upload-loading__text">Subiendo <strong>{{ selectedFileName() }}</strong>…</p>
+          </div>
+        } @else {
+          <label
+            class="dropzone"
+            [class.dropzone--dragging]="isDragging()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave()"
+            (drop)="onDrop($event)"
+            tabindex="0"
+            role="button"
+            aria-label="Área de carga de archivos PDF"
+          >
+            <input
+              type="file"
+              accept=".pdf,application/pdf"
+              class="dropzone__input"
+              (change)="onFileSelected($event)"
+            />
+            <div class="dropzone__icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <polyline points="9 15 12 12 15 15"/>
+              </svg>
+            </div>
+            <p class="dropzone__title">Arrastra tu PDF aquí o haz clic para seleccionar</p>
+            <p class="dropzone__hint">PDF · máx. 20 MB</p>
+          </label>
+        }
+
+        @if (uploadError()) {
+          <p class="upload-error" role="alert">{{ uploadError() }}</p>
+        }
+      </section>
+    }
+
+    <!-- PASO 2: Metadatos -->
+    @if (step() === 2) {
+      <section class="upload-section">
+        <div class="section-header">
+          <h2 class="section-title">Información del recurso</h2>
+        </div>
+
+        <!-- Archivo adjunto -->
+        <div class="file-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span class="file-badge__name">{{ uploadedFile()?.fileName }}</span>
+          <span class="file-badge__size">{{ formatSize(uploadedFile()?.sizeBytes ?? 0) }}</span>
+          <button type="button" class="file-badge__change" (click)="goBackToStep1()">Cambiar</button>
+        </div>
+
+        <form class="meta-form" [formGroup]="metaForm" (ngSubmit)="publish()" novalidate>
+
+          <!-- Título -->
+          <div class="form-field">
+            <label class="form-label" for="title">Título <span class="required">*</span></label>
+            <input id="title" class="form-input"
+              [class.form-input--error]="fieldError('title')"
+              type="text" formControlName="title"
+              placeholder="Ej: Examen de Admisión UNMSM 2024 – Área A" />
+            @if (fieldError('title')) {
+              <span class="form-error">{{ fieldError('title') }}</span>
+            }
+          </div>
+
+          <!-- Tipo de recurso -->
+          <div class="form-field">
+            <label class="form-label" for="resourceType">Tipo de recurso <span class="required">*</span></label>
+            <select id="resourceType" class="form-input form-select"
+              [class.form-input--error]="fieldError('resourceType')"
+              formControlName="resourceType">
+              <option value="">Selecciona un tipo</option>
+              @for (rt of resourceTypes; track rt) {
+                <option [value]="rt">{{ typeLabels[rt] }}</option>
+              }
+            </select>
+            @if (fieldError('resourceType')) {
+              <span class="form-error">{{ fieldError('resourceType') }}</span>
+            }
+          </div>
+
+          <!-- Universidad -->
+          <div class="form-field">
+            <label class="form-label" for="universityId">Universidad <span class="required">*</span></label>
+            <select id="universityId" class="form-input form-select"
+              [class.form-input--error]="fieldError('universityId')"
+              formControlName="universityId">
+              <option value="">Selecciona una universidad</option>
+              @for (uni of universities(); track uni.id) {
+                <option [value]="uni.id">{{ uni.name }}</option>
+              }
+            </select>
+            @if (fieldError('universityId')) {
+              <span class="form-error">{{ fieldError('universityId') }}</span>
+            }
+          </div>
+
+          <!-- Área -->
+          <div class="form-field">
+            <label class="form-label" for="areaId">Área <span class="required">*</span></label>
+            <select id="areaId" class="form-input form-select"
+              [class.form-input--error]="fieldError('areaId')"
+              formControlName="areaId"
+              [attr.disabled]="areas().length === 0 ? true : null">
+              <option value="">{{ areas().length === 0 ? 'Selecciona primero una universidad' : 'Selecciona un área' }}</option>
+              @for (area of areas(); track area.id) {
+                <option [value]="area.id">{{ area.name }}</option>
+              }
+            </select>
+            @if (fieldError('areaId')) {
+              <span class="form-error">{{ fieldError('areaId') }}</span>
+            }
+          </div>
+
+          <!-- Carrera (opcional) -->
+          <div class="form-field">
+            <label class="form-label" for="careerId">Carrera <span class="form-label--optional">(opcional)</span></label>
+            <select id="careerId" class="form-input form-select" formControlName="careerId"
+              [attr.disabled]="careers().length === 0 ? true : null">
+              <option value="">{{ careers().length === 0 ? 'Selecciona primero una universidad' : 'Sin carrera específica' }}</option>
+              @for (career of careers(); track career.id) {
+                <option [value]="career.id">{{ career.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Curso (obligatorio para algunos tipos) -->
+          <div class="form-field">
+            <label class="form-label" for="courseId">
+              Curso
+              @if (requiresCourse()) { <span class="required">*</span> }
+              @else { <span class="form-label--optional">(opcional)</span> }
+            </label>
+            <select id="courseId" class="form-input form-select"
+              [class.form-input--error]="requiresCourse() && metaForm.get('courseId')!.touched && !metaForm.get('courseId')!.value"
+              formControlName="courseId"
+              [attr.disabled]="courses().length === 0 ? true : null">
+              <option value="">{{ courses().length === 0 ? 'Selecciona primero un área' : 'Selecciona un curso' }}</option>
+              @for (course of courses(); track course.id) {
+                <option [value]="course.id">{{ course.name }}</option>
+              }
+            </select>
+            @if (requiresCourse() && metaForm.get('courseId')!.touched && !metaForm.get('courseId')!.value) {
+              <span class="form-error">El tipo seleccionado requiere un curso</span>
+            }
+            @if (requiresCourse()) {
+              <span class="form-hint">El tipo seleccionado requiere un curso.</span>
+            }
+          </div>
+
+          <!-- Acepta resoluciones (solo para PRACTICA) -->
+          @if (isPractica()) {
+            <div class="toggle-field">
+              <div class="toggle-field__text">
+                <span class="toggle-field__label">Acepta resoluciones de estudiantes</span>
+                <span class="toggle-field__hint">Los estudiantes podrán subir su solución a este ejercicio para que la evalúes</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" class="toggle-switch__input" formControlName="aceptaResoluciones" />
+                <span class="toggle-switch__track"></span>
+              </label>
+            </div>
+          }
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="goBackToStep1()">
+              Atrás
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="isPublishing()">
+              @if (isPublishing()) { <app-loading-spinner size="sm" /> }
+              Publicar recurso
+            </button>
+          </div>
+
+        </form>
+      </section>
+    }
+
+  }
+</div>

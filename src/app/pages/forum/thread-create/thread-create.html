@@ -1,0 +1,149 @@
+<div class="create-page">
+
+  <div class="create-header">
+    <a routerLink="/forum" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver al foro
+    </a>
+    <h1 class="page-title">Crear hilo</h1>
+    <p class="page-subtitle">Publica tu pregunta y la comunidad te ayudará</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="create-form" novalidate>
+
+    <!-- Título -->
+    <div class="form-group">
+      <label class="form-label" for="title">Título <span class="required">*</span></label>
+      <input
+        id="title"
+        type="text"
+        class="form-input"
+        [class.form-input--error]="fieldError('title')"
+        formControlName="title"
+        placeholder="¿Cuál es tu pregunta?"
+        autocomplete="off"
+      />
+      @if (fieldError('title')) {
+        <span class="field-error">{{ fieldError('title') }}</span>
+      }
+    </div>
+
+    <!-- Cuerpo -->
+    <div class="form-group">
+      <label class="form-label" for="body">
+        Descripción <span class="required">*</span>
+        <span class="char-count">{{ bodyLength() }}/5000</span>
+      </label>
+      <textarea
+        id="body"
+        class="form-textarea"
+        [class.form-textarea--error]="fieldError('body')"
+        formControlName="body"
+        placeholder="Describe tu duda con el mayor detalle posible..."
+        rows="7"
+      ></textarea>
+      @if (fieldError('body')) {
+        <span class="field-error">{{ fieldError('body') }}</span>
+      }
+    </div>
+
+    <!-- Contexto del hilo -->
+    <div class="form-group">
+      <label class="form-label">Categoría <span class="required">*</span></label>
+      <p class="form-hint">El hilo debe pertenecer a al menos una categoría.</p>
+
+      <!-- Selector de modo -->
+      <div class="mode-tabs" role="tablist">
+        <button type="button" class="mode-tab" [class.mode-tab--active]="contextMode() === 'course'"
+          (click)="setMode('course')" role="tab">
+          Por curso
+        </button>
+        <button type="button" class="mode-tab" [class.mode-tab--active]="contextMode() === 'university'"
+          (click)="setMode('university')" role="tab">
+          Por universidad / área
+        </button>
+        <button type="button" class="mode-tab" [class.mode-tab--active]="contextMode() === 'career'"
+          (click)="setMode('career')" role="tab">
+          Por carrera
+        </button>
+      </div>
+
+      <!-- Modo: Curso -->
+      @if (contextMode() === 'course') {
+        <div class="context-fields">
+          <select class="form-select" formControlName="courseId">
+            <option value="">Selecciona un curso</option>
+            @for (course of courses(); track course.id) {
+              <option [value]="course.id">{{ course.name }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <!-- Modo: Universidad / Área -->
+      @if (contextMode() === 'university') {
+        <div class="context-fields">
+          <select class="form-select" formControlName="universityId">
+            <option value="">Selecciona una universidad</option>
+            @for (uni of universities(); track uni.id) {
+              <option [value]="uni.id">{{ uni.name }}</option>
+            }
+          </select>
+
+          <select class="form-select" formControlName="areaId"
+            [disabled]="areas().length === 0">
+            <option value="">Área (opcional)</option>
+            @for (area of areas(); track area.id) {
+              <option [value]="area.id">{{ area.name }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <!-- Modo: Carrera -->
+      @if (contextMode() === 'career') {
+        <div class="context-fields">
+          <select class="form-select" formControlName="universityId">
+            <option value="">Selecciona una universidad</option>
+            @for (uni of universities(); track uni.id) {
+              <option [value]="uni.id">{{ uni.name }}</option>
+            }
+          </select>
+
+          <select class="form-select" formControlName="careerId"
+            [disabled]="careers().length === 0">
+            <option value="">Selecciona una carrera</option>
+            @for (career of careers(); track career.id) {
+              <option [value]="career.id">{{ career.name }}</option>
+            }
+          </select>
+        </div>
+      }
+    </div>
+
+    <!-- Publicación anónima -->
+    <div class="form-group form-group--row">
+      <label class="toggle-label">
+        <input type="checkbox" class="toggle-checkbox" formControlName="isAnonymous" />
+        <span class="toggle-track">
+          <span class="toggle-thumb"></span>
+        </span>
+        <span class="toggle-text">Publicar de forma anónima</span>
+      </label>
+      <p class="form-hint toggle-hint">Tu identidad no será visible, pero queda registrada internamente.</p>
+    </div>
+
+    <!-- Acciones -->
+    <div class="form-actions">
+      <a routerLink="/forum" class="btn-secondary">Cancelar</a>
+      <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          <app-loading-spinner size="sm" />
+        }
+        Publicar hilo
+      </button>
+    </div>
+
+  </form>
+
+</div>

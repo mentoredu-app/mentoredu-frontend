@@ -1,1 +1,242 @@
-<p>thread-detail works!</p>
+<div class="detail-page">
+
+  @if (isLoading()) {
+    <div class="loading-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  } @else if (loadError()) {
+    <div class="error-banner" role="alert">{{ loadError() }}</div>
+  } @else if (thread()) {
+
+    <!-- Encabezado -->
+    <div class="detail-header">
+      <a routerLink="/forum" class="back-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Volver al foro
+      </a>
+
+      <div class="header-actions">
+        <span class="status-badge" [class.status-badge--closed]="isClosed()">
+          {{ isClosed() ? 'Cerrado' : 'Abierto' }}
+        </span>
+        @if (canClose()) {
+          <button class="btn-close-thread" (click)="closeThread()" [disabled]="isClosing()">
+            @if (isClosing()) { <app-loading-spinner size="sm" /> }
+            Cerrar hilo
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Hilo principal -->
+    <article class="thread-post">
+      <h1 class="thread-title">{{ thread()!.title }}</h1>
+
+      <div class="post-meta">
+        @if (thread()!.authorId) {
+          <a class="post-author post-author--link" [routerLink]="['/profiles', thread()!.authorId]">
+            {{ thread()!.authorDisplay }}
+          </a>
+        } @else {
+          <span class="post-author">{{ thread()!.authorDisplay }}</span>
+        }
+        <span class="post-date">{{ formatDate(thread()!.createdAt) }}</span>
+      </div>
+
+      <div class="post-body">{{ thread()!.body }}</div>
+
+      <!-- Reacciones al hilo -->
+      <div class="reactions">
+        <button class="reaction-btn"
+          [class.reaction-btn--active]="getReaction('thread_' + thread()!.id) === 'LIKE'"
+          [disabled]="isReacting('thread_' + thread()!.id)"
+          (click)="reactThread('LIKE')"
+          title="Me gusta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          Me gusta
+          @if (thread()!.likeCount > 0) { <span class="reaction-count">{{ thread()!.likeCount }}</span> }
+        </button>
+        <button class="reaction-btn reaction-btn--dislike"
+          [class.reaction-btn--active]="getReaction('thread_' + thread()!.id) === 'DISLIKE'"
+          [disabled]="isReacting('thread_' + thread()!.id)"
+          (click)="reactThread('DISLIKE')"
+          title="No me gusta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+          No me gusta
+          @if (thread()!.dislikeCount > 0) { <span class="reaction-count">{{ thread()!.dislikeCount }}</span> }
+        </button>
+        <span class="reactions-spacer"></span>
+        <app-report-button targetType="THREAD" [targetId]="thread()!.id" />
+      </div>
+    </article>
+
+    <!-- Separador de respuestas -->
+    <div class="answers-header">
+      <h2 class="answers-title">
+        {{ answers().length }} {{ answers().length === 1 ? 'respuesta' : 'respuestas' }}
+      </h2>
+    </div>
+
+    <!-- Lista de respuestas -->
+    @if (isLoadingAnswers() && answers().length === 0) {
+      <div class="loading-center">
+        <app-loading-spinner size="md" />
+      </div>
+    } @else {
+      <div class="answers-list">
+        @for (answer of answers(); track answer.id; let i = $index) {
+          <article class="answer-card" [style.--index]="i % 30" [class.answer-card--accepted]="answer.accepted">
+
+            @if (answer.accepted) {
+              <div class="accepted-mark">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Respuesta aceptada
+              </div>
+            }
+
+            <p class="answer-body">{{ answer.body }}</p>
+
+            <!-- Reacciones a la respuesta -->
+            <div class="reactions">
+              <button class="reaction-btn"
+                [class.reaction-btn--active]="getReaction('answer_' + answer.id) === 'LIKE'"
+                [disabled]="isReacting('answer_' + answer.id)"
+                (click)="reactAnswer(answer.id, 'LIKE')"
+                title="Me gusta">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                Me gusta
+                @if (answer.likeCount > 0) { <span class="reaction-count">{{ answer.likeCount }}</span> }
+              </button>
+              <button class="reaction-btn reaction-btn--dislike"
+                [class.reaction-btn--active]="getReaction('answer_' + answer.id) === 'DISLIKE'"
+                [disabled]="isReacting('answer_' + answer.id)"
+                (click)="reactAnswer(answer.id, 'DISLIKE')"
+                title="No me gusta">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                No me gusta
+                @if (answer.dislikeCount > 0) { <span class="reaction-count">{{ answer.dislikeCount }}</span> }
+              </button>
+              <span class="reactions-spacer"></span>
+              <app-report-button targetType="ANSWER" [targetId]="answer.id" />
+            </div>
+
+            <!-- Sección de comentarios -->
+            <div class="comments-section">
+              <button class="btn-toggle-comments" (click)="toggleComments(answer.id)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                @if (commentsFor(answer.id).length > 0) {
+                  {{ isCommentsOpen(answer.id) ? 'Ocultar' : 'Ver' }} {{ commentsFor(answer.id).length }} {{ commentsFor(answer.id).length === 1 ? 'comentario' : 'comentarios' }}
+                } @else {
+                  {{ isCommentsOpen(answer.id) ? 'Ocultar comentarios' : 'Comentar' }}
+                }
+              </button>
+
+              @if (isCommentsOpen(answer.id)) {
+                <div class="comments-body">
+
+                  @if (isLoadingComments(answer.id)) {
+                    <div class="comments-loading">
+                      <app-loading-spinner size="sm" />
+                    </div>
+                  } @else {
+                    @for (comment of commentsFor(answer.id); track comment.id) {
+                      <div class="comment-item">
+                        <div class="comment-header">
+                          <a class="comment-author comment-author--link"
+                            [routerLink]="['/profiles', comment.authorId]">
+                            {{ comment.authorDisplay }}
+                          </a>
+                          <span class="comment-date">{{ formatDateShort(comment.createdAt) }}</span>
+                        </div>
+                        <p class="comment-body">{{ comment.body }}</p>
+                      </div>
+                    }
+                  }
+
+                  @if (!isClosed()) {
+                    <div class="comment-form">
+                      <textarea
+                        class="comment-textarea"
+                        [value]="getCommentText(answer.id)"
+                        (input)="setCommentText(answer.id, $any($event.target).value)"
+                        placeholder="Escribe un comentario..."
+                        rows="2"
+                      ></textarea>
+                      <div class="comment-form-actions">
+                        <button
+                          class="btn-comment-submit"
+                          [disabled]="!getCommentText(answer.id).trim() || isSubmittingComment(answer.id)"
+                          (click)="submitComment(answer.id)">
+                          @if (isSubmittingComment(answer.id)) { <app-loading-spinner size="sm" /> }
+                          Publicar
+                        </button>
+                      </div>
+                    </div>
+                  }
+
+                </div>
+              }
+            </div>
+
+            <div class="answer-footer">
+              <a class="answer-author answer-author--link"
+                [routerLink]="['/profiles', answer.authorId]">
+                {{ answer.authorDisplay }}
+              </a>
+              <span class="answer-date">{{ formatDateShort(answer.createdAt) }}</span>
+            </div>
+
+          </article>
+        }
+      </div>
+
+      @if (hasMoreAnswers()) {
+        <div class="load-more">
+          <button class="btn-load-more" (click)="loadMoreAnswers()" [disabled]="isLoadingAnswers()">
+            @if (isLoadingAnswers()) { <app-loading-spinner size="sm" /> }
+            Cargar más respuestas
+          </button>
+        </div>
+      }
+    }
+
+    <!-- Formulario de respuesta -->
+    @if (!isClosed()) {
+      <section class="reply-section">
+        <h3 class="reply-title">Tu respuesta</h3>
+        <form [formGroup]="answerForm" (ngSubmit)="submitAnswer()" novalidate>
+          <div class="reply-field">
+            <textarea
+              class="reply-textarea"
+              [class.reply-textarea--error]="answerForm.get('body')!.invalid && answerForm.get('body')!.touched"
+              formControlName="body"
+              placeholder="Escribe tu respuesta..."
+              rows="5"
+            ></textarea>
+            <div class="reply-field-footer">
+              @if (answerForm.get('body')!.invalid && answerForm.get('body')!.touched) {
+                <span class="field-error">La respuesta no puede estar vacía</span>
+              } @else {
+                <span></span>
+              }
+              <span class="char-count">{{ bodyLength() }}/5000</span>
+            </div>
+          </div>
+          <div class="reply-actions">
+            <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
+              @if (isSubmitting()) { <app-loading-spinner size="sm" /> }
+              Publicar respuesta
+            </button>
+          </div>
+        </form>
+      </section>
+    } @else {
+      <div class="closed-notice">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        Este hilo está cerrado y no acepta nuevas respuestas.
+      </div>
+    }
+
+  }
+
+</div>

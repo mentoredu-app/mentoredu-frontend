@@ -1,1 +1,71 @@
-<p>login works!</p>
+<div class="login-page">
+  <div class="login-card">
+
+    <div class="login-card__header">
+      <h1 class="login-card__title">Bienvenido</h1>
+      <p class="login-card__subtitle">Inicia sesión para continuar en MentorEdu</p>
+    </div>
+
+    <form class="login-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+      <div class="form-field">
+        <label class="form-label" for="email">Correo electrónico</label>
+        <input
+          id="email"
+          class="form-input"
+          [class.form-input--error]="fieldError('email')"
+          type="email"
+          formControlName="email"
+          placeholder="juan@ejemplo.com"
+          autocomplete="email"
+        />
+        @if (fieldError('email')) {
+          <span class="form-error">{{ fieldError('email') }}</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="form-label-row">
+          <label class="form-label" for="password">Contraseña</label>
+          <a routerLink="/forgot-password" class="form-forgot">¿Olvidaste tu contraseña?</a>
+        </div>
+        <input
+          id="password"
+          class="form-input"
+          [class.form-input--error]="fieldError('password')"
+          type="password"
+          formControlName="password"
+          placeholder="Tu contraseña"
+          autocomplete="current-password"
+        />
+        @if (fieldError('password')) {
+          <span class="form-error">{{ fieldError('password') }}</span>
+        }
+      </div>
+
+      @if (serverError()) {
+        <div class="form-server-error" role="alert">{{ serverError() }}</div>
+      }
+
+      <button
+        type="submit"
+        class="btn-primary"
+        [disabled]="isLoading()"
+      >
+        @if (isLoading()) {
+          <app-loading-spinner size="sm" />
+          <span>Iniciando sesión...</span>
+        } @else {
+          <span>Iniciar sesión</span>
+        }
+      </button>
+
+    </form>
+
+    <p class="login-card__footer">
+      ¿No tienes cuenta?
+      <a routerLink="/register" class="login-card__link">Regístrate</a>
+    </p>
+
+  </div>
+</div>

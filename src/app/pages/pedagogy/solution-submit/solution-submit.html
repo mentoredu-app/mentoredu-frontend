@@ -1,1 +1,211 @@
-<p>solution-submit works!</p>
+<div class="submit-page">
+
+  <!-- Back link -->
+  @if (resource()) {
+    <a [routerLink]="['/library', resource()!.id]" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+      </svg>
+      Volver al ejercicio
+    </a>
+  }
+
+  <!-- Loading -->
+  @if (pageState() === 'loading') {
+    <div class="loading-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  }
+
+  <!-- Error de carga -->
+  @else if (pageState() === 'load-error') {
+    <div class="error-banner" role="alert">{{ loadError() }}</div>
+  }
+
+  <!-- No permitido (no STUDENT o sin aceptaResoluciones) -->
+  @else if (pageState() === 'not-allowed') {
+    <div class="not-allowed-card">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-text-subtle)">
+        <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+      </svg>
+      <p class="not-allowed-title">Acceso no permitido</p>
+      <p class="not-allowed-hint">Solo los estudiantes pueden enviar resoluciones a ejercicios que aceptan resoluciones.</p>
+      <a routerLink="/library" class="btn-back-lib">Ir a la biblioteca</a>
+    </div>
+  }
+
+  <!-- Ya enviada -->
+  @else if (pageState() === 'already-submitted') {
+    <div class="page-header">
+      <h1 class="page-title">Mi resolución</h1>
+      @if (resource()) {
+        <p class="page-subtitle">{{ resource()!.title }}</p>
+      }
+    </div>
+
+    <div class="already-card">
+      <div class="already-card__icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="already-card__body">
+        <p class="already-card__title">Resolución enviada</p>
+        @if (existing()?.solution; as sol) {
+          <p class="already-card__date">Enviada el {{ formatDate(sol.submittedAt) }}</p>
+          <span class="status-badge status-badge--{{ sol.status.toLowerCase() }}">
+            {{ sol.status === 'REVIEWED' ? 'Revisada por el docente' : 'Pendiente de revisión' }}
+          </span>
+          @if (sol.content) {
+            <div class="already-content">
+              <p class="already-content__label">Tu respuesta</p>
+              <p class="already-content__text">{{ sol.content }}</p>
+            </div>
+          }
+          @if (sol.fileUrl) {
+            <p class="already-content__label" style="margin-top:12px">Enviaste un archivo PDF</p>
+          }
+        }
+        @if (existing()?.feedback; as fb) {
+          <div class="feedback-preview">
+            <p class="feedback-preview__label">Feedback recibido</p>
+            <p class="feedback-preview__comment">{{ fb.body }}</p>
+            @if (fb.score !== null && fb.score !== undefined) {
+              <p class="feedback-preview__score">Nota: <strong>{{ fb.score }} / 10</strong></p>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Formulario de envío -->
+  @else if (pageState() === 'form') {
+    <div class="page-header">
+      <h1 class="page-title">Enviar resolución</h1>
+      @if (resource()) {
+        <p class="page-subtitle">{{ resource()!.title }}</p>
+      }
+    </div>
+
+    <div class="form-card">
+
+      <!-- Tabs -->
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" class="tab" [class.tab--active]="activeTab() === 'pdf'"
+          (click)="setTab('pdf')" [attr.aria-selected]="activeTab() === 'pdf'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          Subir PDF
+        </button>
+        <button type="button" role="tab" class="tab" [class.tab--active]="activeTab() === 'text'"
+          (click)="setTab('text')" [attr.aria-selected]="activeTab() === 'text'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Escribir respuesta
+        </button>
+      </div>
+
+      <!-- Tab: PDF -->
+      @if (activeTab() === 'pdf') {
+        <div class="tab-panel">
+          @if (uploadedFile()) {
+            <div class="uploaded-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span class="uploaded-badge__name">{{ selectedPdfName() }}</span>
+              <span class="uploaded-badge__size">{{ formatSize(uploadedFile()!.sizeBytes) }}</span>
+              <button type="button" class="uploaded-badge__change" (click)="clearPdf()">Cambiar</button>
+            </div>
+          } @else if (isUploading()) {
+            <div class="upload-loading">
+              <app-loading-spinner size="lg" />
+              <p>Subiendo <strong>{{ selectedPdfName() }}</strong>…</p>
+            </div>
+          } @else {
+            <label class="dropzone" [class.dropzone--dragging]="isDragging()"
+              (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)"
+              tabindex="0" role="button" aria-label="Área de carga de tu resolución en PDF">
+              <input type="file" accept=".pdf,application/pdf" class="dropzone__input" (change)="onFileSelected($event)" />
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="dropzone__icon">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <polyline points="9 15 12 12 15 15"/>
+              </svg>
+              <p class="dropzone__title">Arrastra tu PDF aquí o haz clic para seleccionar</p>
+              <p class="dropzone__hint">PDF · máx. 20 MB</p>
+            </label>
+          }
+          @if (uploadError()) {
+            <p class="field-error" role="alert">{{ uploadError() }}</p>
+          }
+        </div>
+      }
+
+      <!-- Tab: Texto -->
+      @if (activeTab() === 'text') {
+        <div class="tab-panel" [formGroup]="textForm">
+          <div class="form-field">
+            <label class="form-label" for="content">Tu resolución <span class="required">*</span></label>
+            <textarea id="content" class="form-textarea"
+              [class.form-textarea--error]="fieldError('content')"
+              formControlName="content"
+              rows="10"
+              placeholder="Escribe aquí tu resolución paso a paso…"></textarea>
+            @if (fieldError('content')) {
+              <span class="field-error">{{ fieldError('content') }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Error de envío -->
+      @if (submitError()) {
+        <div class="submit-error" role="alert">{{ submitError() }}</div>
+      }
+
+      <!-- Botón enviar -->
+      <div class="form-footer">
+        <button type="button" class="btn-submit" [disabled]="isSubmitting()" (click)="submit()">
+          @if (isSubmitting()) {
+            <app-loading-spinner size="sm" />
+            Enviando…
+          } @else {
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            Enviar resolución
+          }
+        </button>
+      </div>
+
+    </div>
+  }
+
+  <!-- Éxito -->
+  @else if (pageState() === 'success') {
+    <div class="page-header">
+      <h1 class="page-title">Resolución enviada</h1>
+    </div>
+    <div class="success-card">
+      <div class="success-card__icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <p class="success-card__title">¡Resolución enviada con éxito!</p>
+      <p class="success-card__hint">El docente recibirá una notificación y podrá revisarla pronto.</p>
+      @if (resource()) {
+        <a [routerLink]="['/library', resource()!.id]" class="btn-back">Volver al ejercicio</a>
+      }
+    </div>
+  }
+
+</div>

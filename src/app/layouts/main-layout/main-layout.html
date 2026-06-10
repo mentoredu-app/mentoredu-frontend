@@ -1,1 +1,152 @@
-<p>main-layout works!</p>
+<div class="main-layout">
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a routerLink="/library" class="topbar__brand">MentorEdu</a>
+
+      <nav class="topbar__nav" aria-label="Navegación principal">
+        <a routerLink="/library" routerLinkActive="topbar__link--active"
+          [routerLinkActiveOptions]="{exact:true}" class="topbar__link">Biblioteca</a>
+        <a routerLink="/forum"   routerLinkActive="topbar__link--active" class="topbar__link">Foro</a>
+        <a routerLink="/notifications" routerLinkActive="topbar__link--active" class="topbar__link topbar__link--bell">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          Notificaciones
+        </a>
+      </nav>
+
+      <!-- User menu -->
+      <div class="user-menu" [class.user-menu--open]="menuOpen()">
+
+        <button class="user-menu__trigger" (click)="toggleMenu()" aria-label="Menú de usuario">
+          <span class="user-menu__avatar">
+            {{ authState.user()?.firstName?.charAt(0) }}{{ authState.user()?.lastName?.charAt(0) }}
+          </span>
+          <span class="user-menu__name">
+            {{ authState.user()?.firstName }} {{ authState.user()?.lastName }}
+          </span>
+          <svg class="user-menu__chevron" width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+
+        @if (menuOpen()) {
+          <!-- Backdrop -->
+          <div class="user-menu__backdrop" (click)="closeMenu()"></div>
+
+          <div class="user-menu__dropdown">
+            <!-- Cabecera del menú -->
+            <div class="user-menu__header">
+              <span class="user-menu__fullname">
+                {{ authState.user()?.firstName }} {{ authState.user()?.lastName }}
+              </span>
+              <span class="user-menu__role">{{ authState.role() }}</span>
+            </div>
+
+            <div class="user-menu__divider"></div>
+
+            <!-- Perfil — solo para roles con perfil en BD -->
+            @if (authState.user()?.id && authState.role() !== 'ADMIN' && authState.role() !== 'MODERATOR') {
+              <a class="user-menu__item"
+                [routerLink]="['/profiles', authState.user()!.id]"
+                (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Mi perfil
+              </a>
+              <a class="user-menu__item" routerLink="/profiles/edit" (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Editar perfil
+              </a>
+            }
+
+            <div class="user-menu__divider"></div>
+
+            <!-- Rol: STUDENT -->
+            @if (authState.role() === 'STUDENT' && authState.user()?.id) {
+              <a class="user-menu__item"
+                [routerLink]="['/profiles', authState.user()!.id]"
+                [queryParams]="{ tab: 'solutions' }"
+                (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Mis resoluciones
+              </a>
+            }
+
+            <!-- Rol: TEACHER / ACADEMY -->
+            @if ((authState.role() === 'TEACHER' || authState.role() === 'ACADEMY') && authState.user()?.id) {
+              <a class="user-menu__item" routerLink="/library/my-resources" (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                Mis recursos
+              </a>
+              <a class="user-menu__item"
+                [routerLink]="['/profiles', authState.user()!.id]"
+                [queryParams]="{ tab: 'received' }"
+                (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                Resoluciones recibidas
+              </a>
+              <a class="user-menu__item" routerLink="/community/verification" (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Verificación de identidad
+              </a>
+            }
+
+            <!-- Rol: TEACHER (solicitudes de asociación) -->
+            @if (authState.role() === 'TEACHER') {
+              <a class="user-menu__item" routerLink="/community/association" (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Mis asociaciones
+              </a>
+            }
+
+            <!-- Rol: ACADEMY (gestionar solicitudes recibidas) -->
+            @if (authState.role() === 'ACADEMY') {
+              <a class="user-menu__item" routerLink="/community/association" (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Solicitudes de docentes
+              </a>
+            }
+
+            <!-- Rol: MODERATOR / ADMIN -->
+            @if (authState.role() === 'MODERATOR' || authState.role() === 'ADMIN') {
+              <a class="user-menu__item" routerLink="/community/moderation" (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Moderación
+              </a>
+            }
+
+            <!-- Rol: ADMIN -->
+            @if (authState.role() === 'ADMIN') {
+              <a class="user-menu__item" routerLink="/library/my-resources" (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Mis recursos
+              </a>
+              <a class="user-menu__item" routerLink="/admin/catalog" (click)="closeMenu()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Catálogo
+              </a>
+            }
+
+            <div class="user-menu__divider"></div>
+
+            <button class="user-menu__item user-menu__item--danger" (click)="logout()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Cerrar sesión
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+  </header>
+
+  <main class="main-layout__content">
+    <router-outlet />
+  </main>
+
+</div>
