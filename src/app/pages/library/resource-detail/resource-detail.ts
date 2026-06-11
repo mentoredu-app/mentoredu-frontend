@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpBackend, HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { forkJoin, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -20,7 +20,7 @@ import { Area, Career, Course, University } from '../../../models/catalog.model'
 })
 export class ResourceDetail implements OnInit, OnDestroy {
   private route             = inject(ActivatedRoute);
-  private http              = inject(HttpClient);
+  private http              = new HttpClient(inject(HttpBackend));
   private libraryService    = inject(LibraryService);
   private catalogService    = inject(CatalogService);
   private communityService  = inject(CommunityService);
