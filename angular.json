@@ -28,6 +28,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/mentoredu-frontend/",
               "budgets": [
                 {
                   "type": "initial",
