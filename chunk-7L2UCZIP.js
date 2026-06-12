@@ -1,0 +1,1 @@
+import{f as o,j as r}from"./chunk-7BXRIFDK.js";import{R as t}from"./chunk-RSRGUALB.js";var p=a=>{let n=t(r),c=t(o),e=a.data.roles??[];return e.length===0||e.includes(n.role())?!0:c.createUrlTree(["/"])};export{p as a};
