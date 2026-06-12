@@ -37,6 +37,7 @@ export class AuthStateService {
 
   setUser(user: UserInfo): void {
     this._user.set(user);
+    localStorage.setItem('user', JSON.stringify(user));
   }
 
   getRefreshToken(): string | null {

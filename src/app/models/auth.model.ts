@@ -6,6 +6,7 @@ export interface UserInfo {
   firstName: string;
   lastName: string;
   role: Role;
+  avatarUrl?: string;
 }
 
 export interface RegisterRequest {

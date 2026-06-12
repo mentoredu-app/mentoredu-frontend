@@ -3,7 +3,7 @@
   <header class="topbar">
     <div class="topbar__inner">
       <a routerLink="/library" class="topbar__brand">
-        <img src="/logo.svg" class="topbar__logo-mark" alt="" aria-hidden="true" width="20" height="20">
+        <img src="logo.svg" class="topbar__logo-mark" alt="" aria-hidden="true" width="20" height="20">
         MentorEdu
       </a>
 
@@ -26,7 +26,11 @@
 
         <button class="user-menu__trigger" (click)="toggleMenu()" aria-label="Menú de usuario">
           <span class="user-menu__avatar">
-            {{ authState.user()?.firstName?.charAt(0) }}{{ authState.user()?.lastName?.charAt(0) }}
+            @if (resolveUrl(authState.user()?.avatarUrl); as avatarSrc) {
+              <img [src]="avatarSrc" alt="" class="user-menu__avatar-img">
+            } @else {
+              {{ authState.user()?.firstName?.charAt(0) }}{{ authState.user()?.lastName?.charAt(0) }}
+            }
           </span>
           <span class="user-menu__name">
             {{ authState.user()?.firstName }} {{ authState.user()?.lastName }}
