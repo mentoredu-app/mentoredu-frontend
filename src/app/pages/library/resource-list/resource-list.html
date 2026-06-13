@@ -108,7 +108,12 @@
         @for (resource of displayedResources(); track resource.id; let i = $index) {
           <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
 
-            <div class="resource-card__top">
+            <div class="resource-card__icon" aria-hidden="true">
+              <img src="/pdf-file-type-svgrepo-com.svg" alt="" />
+            </div>
+
+            <div class="resource-card__body">
+              <div class="resource-card__top">
               <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
                 {{ typeLabel(resource.resourceType) }}
               </span>
@@ -126,13 +131,9 @@
                 }
                 <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
               </div>
-            </div>
+              </div>
 
             <h2 class="resource-card__title">{{ resource.title }}</h2>
-
-            @if (resource.description) {
-              <p class="resource-card__desc">{{ resource.description }}</p>
-            }
 
             <div class="resource-card__footer">
               <a class="resource-card__author resource-card__author--link"
@@ -142,6 +143,7 @@
               </a>
               <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
               <app-report-button targetType="RESOURCE" [targetId]="resource.id" />
+            </div>
             </div>
 
           </article>
