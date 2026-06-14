@@ -100,6 +100,14 @@
   justify-content: center;
   text-transform: uppercase;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.user-menu__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .user-menu__name {

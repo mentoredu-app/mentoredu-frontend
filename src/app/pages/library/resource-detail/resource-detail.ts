@@ -45,8 +45,6 @@ export class ResourceDetail implements OnInit, OnDestroy {
 
   readonly typeLabels = RESOURCE_TYPE_LABELS;
 
-  private readonly serverUrl = environment.apiUrl.replace('/api/v1', '');
-
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.libraryService.getById(id).subscribe({
@@ -54,7 +52,7 @@ export class ResourceDetail implements OnInit, OnDestroy {
         this.resource.set(r);
         this.isLoading.set(false);
         this.loadCatalogNames(r);
-        this.loadPdfPreview(r.fileUrl);
+        this.loadPdfPreview(r.id);
 
         // Docente asociado: verificar si tiene acceso de revisor a este recurso
         if (this.authState.role() === 'TEACHER' && r.authorId !== this.authState.user()?.id && r.aceptaResoluciones) {
@@ -77,23 +75,14 @@ export class ResourceDetail implements OnInit, OnDestroy {
     if (this.blobUrlRef) URL.revokeObjectURL(this.blobUrlRef);
   }
 
-  // Resuelve rutas relativas (uploads/...) a URL absolutas del backend
-  private resolveUrl(url: string): string {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    const path = url.startsWith('/') ? url : `/${url}`;
-    return `${this.serverUrl}${path}`;
+  // Obtiene el contenido del archivo a través del backend (que proxea desde Cloudinary con credenciales)
+  private fetchBlob(resourceId: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/resources/${resourceId}/content`, { responseType: 'blob' });
   }
 
-  // Descarga el PDF como blob a través del HttpClient (lleva el JWT automáticamente)
-  // y devuelve un observable. Reutilizado por preview y por la descarga.
-  private fetchBlob(fileUrl: string): Observable<Blob> {
-    return this.http.get(this.resolveUrl(fileUrl), { responseType: 'blob' });
-  }
-
-  private loadPdfPreview(fileUrl: string): void {
+  private loadPdfPreview(resourceId: string): void {
     this.isPdfLoading.set(true);
-    this.fetchBlob(fileUrl).subscribe({
+    this.fetchBlob(resourceId).subscribe({
       next: (blob) => {
         if (this.blobUrlRef) URL.revokeObjectURL(this.blobUrlRef);
         this.blobUrlRef = URL.createObjectURL(blob);
@@ -135,11 +124,11 @@ export class ResourceDetail implements OnInit, OnDestroy {
     if (!r || this.isDownloading()) return;
     this.isDownloading.set(true);
 
-    // 1. Registrar la descarga en el backend (log) y obtener fileUrl
+    // 1. Registrar la descarga en el backend (log) y obtener fileName
     this.libraryService.download(r.id).subscribe({
       next: (dl) => {
-        // 2. Descargar el archivo como blob a través del HttpClient (con token JWT)
-        this.fetchBlob(dl.fileUrl).subscribe({
+        // 2. Obtener el contenido binario a través del proxy del backend
+        this.fetchBlob(r.id).subscribe({
           next: (blob) => {
             const url = URL.createObjectURL(blob);
             const a   = document.createElement('a');

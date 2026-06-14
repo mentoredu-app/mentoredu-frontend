@@ -215,6 +215,8 @@ export class ProfileEdit implements OnInit {
           this.pendingAvatarFile = null;
           this.isSaving.set(false);
           this.toast.success('Datos actualizados');
+          const current = this.authState.user();
+          if (current) this.authState.setUser({ ...current, avatarUrl: updated.avatarUrl });
         },
         error: (err: HttpErrorResponse) => {
           this.isSaving.set(false);

@@ -15,9 +15,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      const isApiRequest = req.url.startsWith(environment.apiUrl) || req.url.startsWith(environment.baseUrl);
       const isAuthEndpoint = SKIP_REFRESH.some(e => req.url.includes(e));
 
-      if (error.status === 401 && !isAuthEndpoint) {
+      if (error.status === 401 && isApiRequest && !isAuthEndpoint) {
         const refreshToken = authState.getRefreshToken();
         if (refreshToken) {
           // HttpClient via HttpBackend evita el interceptor y previene dependencia circular
