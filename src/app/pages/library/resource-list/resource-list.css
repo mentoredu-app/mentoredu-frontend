@@ -141,7 +141,7 @@
   transition: border-color 160ms var(--ease-out), color 160ms var(--ease-out),
               background 160ms var(--ease-out), transform 160ms var(--ease-out);
 }
-.filter-toggle:hover:not(.filter-toggle--active) {
+.filter-toggle:hover:not(.filter-toggle--active):not(.filter-toggle--resolutions) {
   border-color: var(--color-text-muted);
   color: var(--color-text);
 }
@@ -159,12 +159,9 @@
 }
 
 .filter-toggle--resolutions.filter-toggle--active {
+  color: #7c3aed;
   background: #f5f3ff;
 }
-.filter-toggle--active:hover {
-  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-}
-
 .btn-clear-filters {
   padding: 8px 14px;
   font-size: 0.8125rem;
