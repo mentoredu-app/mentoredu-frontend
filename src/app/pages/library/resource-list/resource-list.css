@@ -319,6 +319,8 @@
 
 .resource-card__author {
   grid-column: 1;
+  width: fit-content;
+  max-width: 100%;
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--color-text-muted);
