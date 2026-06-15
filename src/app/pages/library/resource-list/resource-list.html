@@ -37,8 +37,8 @@
 
     <div class="filter-selects">
       <select class="filter-select"
-        [(ngModel)]="filters.universityId"
-        (ngModelChange)="onUniversityChange()">
+              [(ngModel)]="filters.universityId"
+              (ngModelChange)="onUniversityChange()">
         <option value="">Universidad</option>
         @for (uni of universities(); track uni.id) {
           <option [value]="uni.id">{{ uni.name }}</option>
@@ -46,9 +46,9 @@
       </select>
 
       <select class="filter-select"
-        [(ngModel)]="filters.areaId"
-        (ngModelChange)="triggerSearch()"
-        [disabled]="areas().length === 0">
+              [(ngModel)]="filters.areaId"
+              (ngModelChange)="triggerSearch()"
+              [disabled]="areas().length === 0">
         <option value="">Área</option>
         @for (area of areas(); track area.id) {
           <option [value]="area.id">{{ area.name }}</option>
@@ -56,8 +56,8 @@
       </select>
 
       <select class="filter-select"
-        [(ngModel)]="filters.type"
-        (ngModelChange)="triggerSearch()">
+              [(ngModel)]="filters.type"
+              (ngModelChange)="triggerSearch()">
         <option value="">Tipo</option>
         @for (rt of resourceTypes; track rt) {
           <option [value]="rt">{{ typeLabels[rt] }}</option>
@@ -120,33 +120,33 @@
               <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
                 {{ typeLabel(resource.resourceType) }}
               </span>
-              <div class="resource-card__badges">
-                @if (resource.mySubmission) {
-                  <span class="resolved-badge">
+                <div class="resource-card__badges">
+                  @if (resource.mySubmission) {
+                    <span class="resolved-badge">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
-                    {{ resource.mySubmission.status === 'REVIEWED' ? 'Revisada' : 'Resuelta' }}
+                      {{ resource.mySubmission.status === 'REVIEWED' ? 'Revisada' : 'Resuelta' }}
                   </span>
-                }
-                @if (resource.authorId === authState.user()?.id) {
-                  <span class="mine-badge">Mío</span>
-                }
-                <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
-              </div>
+                  }
+                  @if (resource.authorId === authState.user()?.id) {
+                    <span class="mine-badge">Mío</span>
+                  }
+                  <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
+                </div>
               </div>
 
-            <h2 class="resource-card__title">{{ resource.title }}</h2>
+              <h2 class="resource-card__title">{{ resource.title }}</h2>
 
-            <div class="resource-card__footer">
-              <a class="resource-card__author resource-card__author--link"
-                [routerLink]="['/profiles', resource.authorId]"
-                (click)="$event.stopPropagation()">
-                {{ resource.authorName }}
-              </a>
-              <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
-              <app-report-button targetType="RESOURCE" [targetId]="resource.id" />
-            </div>
+              <div class="resource-card__footer">
+                <a class="resource-card__author resource-card__author--link"
+                   [routerLink]="['/profiles', resource.authorId]"
+                   (click)="$event.stopPropagation()">
+                  {{ resource.authorName }}
+                </a>
+                <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
+                <app-report-button targetType="RESOURCE" [targetId]="resource.id" />
+              </div>
             </div>
 
           </article>
