@@ -17,6 +17,7 @@ export class MainLayout implements OnInit {
   private profileService = inject(ProfileService);
 
   readonly menuOpen = signal(false);
+  readonly sidebarOpen = signal(false);
   readonly resolveUrl = resolveFileUrl;
 
   ngOnInit(): void {
@@ -35,8 +36,15 @@ export class MainLayout implements OnInit {
 
   closeMenu(): void { this.menuOpen.set(false); }
 
+  toggleSidebar(): void { this.sidebarOpen.update(v => !v); }
+
+  closeSidebar(): void { this.sidebarOpen.set(false); }
+
   @HostListener('document:keydown.escape')
-  onEscape(): void { this.menuOpen.set(false); }
+  onEscape(): void {
+    this.menuOpen.set(false);
+    this.sidebarOpen.set(false);
+  }
 
   logout(): void {
     this.closeMenu();
