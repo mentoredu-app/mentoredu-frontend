@@ -57,6 +57,7 @@ export class ResourceList implements OnInit {
   readonly isStudent = computed(() => this.authState.role() === 'STUDENT');
 
   readonly showMySubmissions = signal(false);
+  readonly filtersOpen = signal(false);
 
   readonly displayedResources = computed(() => {
     const all = this.resources();
@@ -66,7 +67,17 @@ export class ResourceList implements OnInit {
 
   // Getter en lugar de computed para evitar problemas de reactividad zoneless con no-signals
   get hasActiveFilters(): boolean {
-    return !!(this.filters.q || this.filters.universityId || this.filters.areaId || this.filters.type);
+    return !!(this.filters.q || this.filters.universityId || this.filters.areaId || this.filters.type || this.showMySubmissions());
+  }
+
+  activeFilterCount(): number {
+    let count = 0;
+    if (this.filters.q.trim()) count += 1;
+    if (this.filters.universityId) count += 1;
+    if (this.filters.areaId) count += 1;
+    if (this.filters.type) count += 1;
+    if (this.showMySubmissions()) count += 1;
+    return count;
   }
 
   // Pipeline único para TODOS los cambios de filtros — sin distinctUntilChanged
@@ -104,8 +115,13 @@ export class ResourceList implements OnInit {
 
   clearFilters(): void {
     this.filters = { q: '', universityId: '', areaId: '', type: '' };
+    this.showMySubmissions.set(false);
     this.areas.set([]);
     this.searchTrigger.next();
+  }
+
+  toggleFilters(): void {
+    this.filtersOpen.update(open => !open);
   }
 
   loadMore(): void {
