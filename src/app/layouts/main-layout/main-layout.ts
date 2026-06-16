@@ -4,6 +4,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { resolveFileUrl } from '../../services/file-upload.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -15,9 +16,11 @@ export class MainLayout implements OnInit {
   readonly authState     = inject(AuthStateService);
   private authService    = inject(AuthService);
   private profileService = inject(ProfileService);
+  private notificationService = inject(NotificationService);
 
   readonly menuOpen = signal(false);
   readonly sidebarOpen = signal(false);
+  readonly unreadNotifications = signal(0);
   readonly resolveUrl = resolveFileUrl;
 
   ngOnInit(): void {
@@ -28,6 +31,10 @@ export class MainLayout implements OnInit {
           this.authState.setUser({ ...user, avatarUrl: profile.avatarUrl });
         },
         error: () => {},
+      });
+      this.notificationService.getPending(0, 1).subscribe({
+        next: page => this.unreadNotifications.set(page.totalElements),
+        error: () => this.unreadNotifications.set(0),
       });
     }
   }

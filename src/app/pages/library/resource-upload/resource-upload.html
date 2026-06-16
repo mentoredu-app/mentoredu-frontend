@@ -131,6 +131,25 @@
             }
           </div>
 
+          <!-- Ano del recurso -->
+          <div class="form-field">
+            <label class="form-label" for="resourceYear">
+              Año
+              @if (requiresYear()) { <span class="required">*</span> }
+              @else { <span class="form-label--optional">(opcional)</span> }
+            </label>
+            <input id="resourceYear" class="form-input"
+              [class.form-input--error]="fieldError('resourceYear')"
+              type="number" min="1900" max="2100" formControlName="resourceYear"
+              placeholder="Ej: 2026" />
+            @if (fieldError('resourceYear')) {
+              <span class="form-error">{{ fieldError('resourceYear') }}</span>
+            }
+            @if (!requiresYear()) {
+              <span class="form-hint">Si no se conoce, dejalo vacio y se mostrara como desconocido.</span>
+            }
+          </div>
+
           <!-- Universidad -->
           <div class="form-field">
             <label class="form-label" for="universityId">Universidad <span class="required">*</span></label>

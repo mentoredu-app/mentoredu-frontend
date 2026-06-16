@@ -61,6 +61,10 @@
             <dt>Publicado</dt>
             <dd>{{ formatDate(r.createdAt) }}</dd>
           </div>
+          <div class="meta-row">
+            <dt>Año</dt>
+            <dd>{{ r.resourceYear ?? 'Desconocido' }}</dd>
+          </div>
           @if (universityName()) {
             <div class="meta-row">
               <dt>Universidad</dt>

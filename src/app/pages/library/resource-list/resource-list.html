@@ -42,6 +42,27 @@
       }
     </div>
 
+    <label class="toolbar-select">
+      <span>Ordenar</span>
+      <select [ngModel]="sortMode()" (ngModelChange)="setSortMode($event)">
+        <option value="recent">Mas recientes</option>
+        <option value="oldest">Mas antiguos</option>
+        <option value="title">Titulo</option>
+        <option value="size">Tamano</option>
+        <option value="year">Ano</option>
+      </select>
+    </label>
+
+    <label class="toolbar-select">
+      <span>Agrupar</span>
+      <select [ngModel]="groupMode()" (ngModelChange)="setGroupMode($event)">
+        <option value="none">Sin agrupar</option>
+        <option value="type">Tipo</option>
+        <option value="year">Ano</option>
+        <option value="university">Universidad</option>
+      </select>
+    </label>
+
     <button class="btn-filter-toggle" type="button" (click)="toggleFilters()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -75,57 +96,71 @@
                 : 'Aun no hay recursos publicados'"
           />
         } @else {
-          <div class="resource-grid">
-            @for (resource of displayedResources(); track resource.id; let i = $index) {
-              <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
-
-                <div class="resource-card__icon" aria-hidden="true">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <rect x="7" y="13" width="10" height="6" rx="1"></rect>
-                    <text x="12" y="17" font-size="5" text-anchor="middle" fill="currentColor"
-                      font-family="Arial, Helvetica, sans-serif">PDF</text>
-                  </svg>
+          <div class="resource-groups">
+            @for (group of groupedResources(); track group.key) {
+              @if (groupMode() !== 'none') {
+                <div class="resource-group-header">
+                  <h2>{{ group.label }}</h2>
+                  <span>{{ group.count }}</span>
                 </div>
+              }
 
-                <div class="resource-card__body">
-                  <div class="resource-card__top">
-                    <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
-                      {{ typeLabel(resource.resourceType) }}
-                    </span>
-                    <div class="resource-card__badges">
-                      @if (resource.mySubmission) {
-                        <span class="resolved-badge">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                          {{ resource.mySubmission.status === 'REVIEWED' ? 'Revisada' : 'Resuelta' }}
-                        </span>
-                      }
-                      @if (resource.authorId === authState.user()?.id) {
-                        <span class="mine-badge">Mio</span>
-                      }
-                      <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
+              <div class="resource-grid">
+                @for (resource of group.resources; track resource.id; let i = $index) {
+                  <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
+
+                    <div class="resource-card__icon" aria-hidden="true">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <rect x="7" y="13" width="10" height="6" rx="1"></rect>
+                        <text x="12" y="17" font-size="5" text-anchor="middle" fill="currentColor"
+                          font-family="Arial, Helvetica, sans-serif">PDF</text>
+                      </svg>
                     </div>
-                  </div>
 
-                  <h2 class="resource-card__title">{{ resource.title }}</h2>
+                    <div class="resource-card__body">
+                      <div class="resource-card__top">
+                        <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
+                          {{ typeLabel(resource.resourceType) }}
+                        </span>
+                        <div class="resource-card__badges">
+                          @if (resource.resourceYear) {
+                            <span class="year-badge">{{ resource.resourceYear }}</span>
+                          }
+                          @if (resource.mySubmission) {
+                            <span class="resolved-badge">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                              </svg>
+                              {{ resource.mySubmission.status === 'REVIEWED' ? 'Revisada' : 'Resuelta' }}
+                            </span>
+                          }
+                          @if (resource.authorId === authState.user()?.id) {
+                            <span class="mine-badge">Mio</span>
+                          }
+                          <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
+                        </div>
+                      </div>
 
-                  <div class="resource-card__footer">
-                    <a class="resource-card__author resource-card__author--link"
-                       [routerLink]="['/profiles', resource.authorId]"
-                       (click)="$event.stopPropagation()">
-                      {{ resource.authorName }}
-                    </a>
-                    <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
-                    <app-report-button targetType="RESOURCE" [targetId]="resource.id" />
-                  </div>
-                </div>
+                      <h2 class="resource-card__title">{{ resource.title }}</h2>
 
-              </article>
+                      <div class="resource-card__footer">
+                        <a class="resource-card__author resource-card__author--link"
+                           [routerLink]="['/profiles', resource.authorId]"
+                           (click)="$event.stopPropagation()">
+                          {{ resource.authorName }}
+                        </a>
+                        <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
+                        <app-report-button targetType="RESOURCE" [targetId]="resource.id" />
+                      </div>
+                    </div>
+
+                  </article>
+                }
+              </div>
             }
           </div>
         }
@@ -193,6 +228,19 @@
               <option [value]="area.id">{{ area.name }}</option>
             }
           </select>
+        </label>
+
+        <label class="filter-field">
+          <span>Año</span>
+          <input
+            class="filter-select"
+            type="number"
+            min="1900"
+            max="2100"
+            placeholder="Todos"
+            [(ngModel)]="filters.resourceYear"
+            (ngModelChange)="triggerSearch()"
+          />
         </label>
       </div>
 
