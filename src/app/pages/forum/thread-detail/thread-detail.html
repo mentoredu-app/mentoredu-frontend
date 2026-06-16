@@ -34,11 +34,23 @@
 
       <div class="post-meta">
         @if (thread()!.authorId) {
-          <a class="post-author post-author--link" [routerLink]="['/profiles', thread()!.authorId]">
-            {{ thread()!.authorDisplay }}
+          <a class="post-identity post-identity--link" [routerLink]="['/profiles', thread()!.authorId]">
+            <span class="author-avatar author-avatar--post" aria-hidden="true">
+              @if (authorAvatarUrl(thread()!); as avatarUrl) {
+                <img [src]="avatarUrl" [alt]="thread()!.authorDisplay" />
+              } @else {
+                <span>{{ authorInitials(thread()!.authorDisplay) }}</span>
+              }
+            </span>
+            <span class="post-author">{{ thread()!.authorDisplay }}</span>
           </a>
         } @else {
-          <span class="post-author">{{ thread()!.authorDisplay }}</span>
+          <span class="post-identity">
+            <span class="author-avatar author-avatar--post author-avatar--anonymous" aria-hidden="true">
+              <span>{{ authorInitials(thread()!.authorDisplay) }}</span>
+            </span>
+            <span class="post-author">{{ thread()!.authorDisplay }}</span>
+          </span>
         }
         <span class="post-date">{{ formatDate(thread()!.createdAt) }}</span>
       </div>
@@ -142,9 +154,16 @@
                     @for (comment of commentsFor(answer.id); track comment.id) {
                       <div class="comment-item">
                         <div class="comment-header">
-                          <a class="comment-author comment-author--link"
+                          <a class="comment-identity comment-identity--link"
                             [routerLink]="['/profiles', comment.authorId]">
-                            {{ comment.authorDisplay }}
+                            <span class="author-avatar author-avatar--comment" aria-hidden="true">
+                              @if (authorAvatarUrl(comment); as avatarUrl) {
+                                <img [src]="avatarUrl" [alt]="comment.authorDisplay" />
+                              } @else {
+                                <span>{{ authorInitials(comment.authorDisplay) }}</span>
+                              }
+                            </span>
+                            <span class="comment-author">{{ comment.authorDisplay }}</span>
                           </a>
                           <span class="comment-date">{{ formatDateShort(comment.createdAt) }}</span>
                         </div>
@@ -179,9 +198,16 @@
             </div>
 
             <div class="answer-footer">
-              <a class="answer-author answer-author--link"
+              <a class="answer-identity answer-identity--link"
                 [routerLink]="['/profiles', answer.authorId]">
-                {{ answer.authorDisplay }}
+                <span class="author-avatar author-avatar--answer" aria-hidden="true">
+                  @if (authorAvatarUrl(answer); as avatarUrl) {
+                    <img [src]="avatarUrl" [alt]="answer.authorDisplay" />
+                  } @else {
+                    <span>{{ authorInitials(answer.authorDisplay) }}</span>
+                  }
+                </span>
+                <span class="answer-author">{{ answer.authorDisplay }}</span>
               </a>
               <span class="answer-date">{{ formatDateShort(answer.createdAt) }}</span>
             </div>

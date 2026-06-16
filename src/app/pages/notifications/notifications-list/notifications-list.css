@@ -121,6 +121,20 @@
   transform: translateX(6px);
 }
 
+.notif-card--clickable {
+  cursor: pointer;
+}
+
+.notif-card--clickable:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
+}
+
+.notif-card--clickable:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+  outline-offset: 2px;
+}
+
 /* Icon */
 .notif-icon {
   flex-shrink: 0;
@@ -177,10 +191,12 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
+  gap: 6px;
   padding-top: 2px;
 }
 
-.btn-mark-read {
+.btn-mark-read,
+.btn-open-target {
   width: 30px;
   height: 30px;
   display: flex;
@@ -201,6 +217,16 @@
 }
 .btn-mark-read:active:not(:disabled) { transform: scale(0.94); }
 .btn-mark-read:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-open-target {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+}
+.btn-open-target:hover {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+.btn-open-target:active { transform: scale(0.94); }
 
 .read-dot {
   display: block;

@@ -43,7 +43,13 @@
         <li class="notif-card"
           [class.notif-card--unread]="!isRead(notif)"
           [class.notif-card--fading]="isMarking(notif.id)"
-          [style.--index]="i">
+          [class.notif-card--clickable]="notificationRoute(notif)"
+          [style.--index]="i"
+          [attr.tabindex]="notificationRoute(notif) ? 0 : null"
+          [attr.role]="notificationRoute(notif) ? 'button' : null"
+          (click)="openNotification(notif)"
+          (keydown.enter)="openNotification(notif)"
+          (keydown.space)="openNotification(notif); $event.preventDefault()">
 
           <div class="notif-icon" [class]="'notif-icon--' + notif.type.replace('_', '-')">
             @switch (notif.type) {
@@ -89,7 +95,7 @@
             @if (!isRead(notif)) {
               <button class="btn-mark-read"
                 [disabled]="isMarking(notif.id)"
-                (click)="markRead(notif)"
+                (click)="markRead(notif); $event.stopPropagation()"
                 title="Marcar como leída">
                 @if (isMarking(notif.id)) {
                   <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -105,6 +111,16 @@
               </button>
             } @else {
               <span class="read-dot" title="Leída"></span>
+            }
+            @if (notificationRoute(notif)) {
+              <button class="btn-open-target"
+                (click)="openNotification(notif); $event.stopPropagation()"
+                title="Abrir origen">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
             }
           </div>
 

@@ -10,6 +10,7 @@ export interface ThreadResponse {
   anonymous: boolean;
   authorId: string | null;   // null when anonymous
   authorDisplay: string;
+  authorAvatarUrl?: string | null;
   universityId?: string;
   areaId?: string;
   careerId?: string;
@@ -50,6 +51,7 @@ export interface AnswerResponse {
   accepted: boolean;
   authorId: string;
   authorDisplay: string;
+  authorAvatarUrl?: string | null;
   likeCount: number;
   dislikeCount: number;
   myReaction: ReactionType | null;
@@ -68,6 +70,7 @@ export interface CommentResponse {
   body: string;
   authorId: string;
   authorDisplay: string;
+  authorAvatarUrl?: string | null;
   createdAt: string;
   updatedAt?: string;
 }

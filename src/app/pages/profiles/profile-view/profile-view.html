@@ -135,6 +135,56 @@
       </div>
     }
 
+    @if (profile()!.profileType === 'TEACHER' && hasTeacherDetails()) {
+      <div class="profile-section teacher-profile-section">
+        <p class="profile-section__label">Perfil docente</p>
+        <div class="teacher-info-grid">
+          @if (teacherDetails()!.universities) {
+            <div class="teacher-info-block teacher-info-block--full">
+              <span class="teacher-info-block__label">Universidades vinculadas</span>
+              <div class="teacher-chip-list">
+                @for (university of splitTeacherList(teacherDetails()!.universities); track university) {
+                  <span class="teacher-chip">{{ university }}</span>
+                }
+              </div>
+            </div>
+          }
+
+          @if (teacherDetails()!.specialty) {
+            <div class="teacher-info-block">
+              <span class="teacher-info-block__label">Especialidad</span>
+              <p class="teacher-info-block__value">{{ teacherDetails()!.specialty }}</p>
+            </div>
+          }
+
+          @if (teacherDetails()!.experience) {
+            <div class="teacher-info-block">
+              <span class="teacher-info-block__label">Experiencia</span>
+              <p class="teacher-info-block__value">{{ teacherDetails()!.experience }}</p>
+            </div>
+          }
+
+          @if (teacherDetails()!.courses) {
+            <div class="teacher-info-block teacher-info-block--full">
+              <span class="teacher-info-block__label">Cursos</span>
+              <div class="teacher-chip-list">
+                @for (course of splitTeacherList(teacherDetails()!.courses); track course) {
+                  <span class="teacher-chip teacher-chip--course">{{ course }}</span>
+                }
+              </div>
+            </div>
+          }
+
+          @if (teacherDetails()!.summary) {
+            <div class="teacher-info-block teacher-info-block--full">
+              <span class="teacher-info-block__label">Resumen profesional</span>
+              <p class="teacher-info-block__value teacher-info-block__value--long">{{ teacherDetails()!.summary }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
     <!-- ── Info académica (STUDENT) ──────────────── -->
     @if (profile()!.profileType === 'STUDENT' && studentExtra()) {
       <div class="profile-section">

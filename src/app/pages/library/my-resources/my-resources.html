@@ -23,81 +23,192 @@
     </div>
   } @else if (loadError()) {
     <div class="error-banner" role="alert">{{ loadError() }}</div>
-  } @else if (resources().length === 0) {
-    <app-empty-state message="Aún no has publicado ningún recurso">
-      <a routerLink="/library/upload" class="btn-primary btn-primary--sm">Publicar mi primer recurso</a>
-    </app-empty-state>
   } @else {
-    <div class="resource-grid">
-      @for (resource of resources(); track resource.id; let i = $index) {
-        <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
+    <div class="resources-workspace">
+      <main class="resources-main">
+        <section class="resource-toolbar" aria-label="Herramientas de recursos">
+          <div class="resource-search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input
+              type="search"
+              placeholder="Buscar por titulo, descripcion o archivo"
+              [value]="query()"
+              (input)="setQuery($any($event.target).value)"
+            />
+          </div>
 
-          <div class="resource-card__top">
-            <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
-              {{ typeLabel(resource.resourceType) }}
-            </span>
-            <div class="resource-card__meta">
-              @if (resource.resourceType === 'PRACTICA') {
-                <button
-                  type="button"
-                  class="btn-resolutions"
-                  [class.btn-resolutions--active]="resource.aceptaResoluciones"
-                  [disabled]="isUpdating(resource.id)"
-                  (click)="toggleSettings(resource, $event)"
-                  [title]="resource.aceptaResoluciones ? 'Desactivar resoluciones' : 'Activar resoluciones'"
-                >
-                  @if (isUpdating(resource.id)) {
-                    <app-loading-spinner size="sm" />
-                  } @else if (resource.aceptaResoluciones) {
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Resoluciones
-                  } @else {
-                    + Resoluciones
+          <label class="select-control">
+            <span>Ordenar</span>
+            <select [value]="sortMode()" (change)="setSortMode($any($event.target).value)">
+              <option value="recent">Mas recientes</option>
+              <option value="oldest">Mas antiguos</option>
+              <option value="title">Titulo A-Z</option>
+              <option value="size">Mas pesados</option>
+            </select>
+          </label>
+
+          <label class="select-control">
+            <span>Agrupar</span>
+            <select [value]="groupMode()" (change)="setGroupMode($any($event.target).value)">
+              <option value="none">Sin agrupar</option>
+              <option value="type">Tipo</option>
+              <option value="resolution">Resoluciones</option>
+              <option value="month">Mes</option>
+            </select>
+          </label>
+        </section>
+
+        @if (resources().length === 0) {
+          <app-empty-state message="Aun no has publicado ningun recurso">
+            <a routerLink="/library/upload" class="btn-primary btn-primary--sm">Publicar mi primer recurso</a>
+          </app-empty-state>
+        } @else if (filteredResources().length === 0) {
+          <div class="no-results">
+            <h2>No hay recursos con esos filtros</h2>
+            <p>Ajusta la busqueda o limpia los filtros para volver al listado completo.</p>
+            <button type="button" class="btn-secondary" (click)="clearFilters()">Limpiar filtros</button>
+          </div>
+        } @else {
+          <div class="grouped-resources">
+            @for (group of groupedResources(); track group.key) {
+              <section class="resource-group">
+                @if (groupMode() !== 'none') {
+                  <div class="resource-group__header">
+                    <h2>{{ group.label }}</h2>
+                    <span>{{ group.count }} {{ group.count === 1 ? 'recurso' : 'recursos' }}</span>
+                  </div>
+                }
+
+                <div class="resource-grid">
+                  @for (resource of group.resources; track resource.id; let i = $index) {
+                    <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
+
+                      <div class="resource-card__top">
+                        <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
+                          {{ typeLabel(resource.resourceType) }}
+                        </span>
+                        <div class="resource-card__meta">
+                          @if (resource.resourceType === 'PRACTICA') {
+                            <button
+                              type="button"
+                              class="btn-resolutions"
+                              [class.btn-resolutions--active]="resource.aceptaResoluciones"
+                              [disabled]="isUpdating(resource.id)"
+                              (click)="toggleSettings(resource, $event)"
+                              [title]="resource.aceptaResoluciones ? 'Desactivar resoluciones' : 'Activar resoluciones'"
+                            >
+                              @if (isUpdating(resource.id)) {
+                                <app-loading-spinner size="sm" />
+                              } @else if (resource.aceptaResoluciones) {
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                Resoluciones
+                              } @else {
+                                + Resoluciones
+                              }
+                            </button>
+                          } @else if (resource.aceptaResoluciones) {
+                            <span class="resoluciones-badge">Resoluciones</span>
+                          }
+                          <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
+                        </div>
+                      </div>
+
+                      <h2 class="resource-card__title">{{ resource.title }}</h2>
+
+                      @if (resource.description) {
+                        <p class="resource-card__desc">{{ resource.description }}</p>
+                      }
+
+                      <div class="resource-card__footer">
+                        <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
+                        <div class="resource-card__actions">
+                          @if (resource.aceptaResoluciones) {
+                            <a class="resource-card__solutions-link"
+                               [routerLink]="['/library', resource.id, 'solutions']"
+                               (click)="$event.stopPropagation()">
+                              Resoluciones
+                            </a>
+                          }
+                          <a class="resource-card__view-link"
+                             [routerLink]="['/library', resource.id]"
+                             (click)="$event.stopPropagation()">
+                            Ver detalle
+                          </a>
+                        </div>
+                      </div>
+
+                    </article>
                   }
-                </button>
-              } @else if (resource.aceptaResoluciones) {
-                <span class="resoluciones-badge">Resoluciones</span>
-              }
-              <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
-            </div>
+                </div>
+              </section>
+            }
           </div>
+        }
 
-          <h2 class="resource-card__title">{{ resource.title }}</h2>
+        @if (hasMore()) {
+          <div class="load-more">
+            <button class="btn-load-more" (click)="loadMore()" [disabled]="isLoadingMore()">
+              @if (isLoadingMore()) { <app-loading-spinner size="sm" /> }
+              Cargar mas
+            </button>
+          </div>
+        }
+      </main>
 
-          @if (resource.description) {
-            <p class="resource-card__desc">{{ resource.description }}</p>
+      <aside class="filter-panel" [class.filter-panel--collapsed]="!filtersOpen()" aria-label="Filtros de recursos">
+        <div class="filter-panel__header">
+          <button type="button" class="filter-panel__toggle" (click)="toggleFilters()" [attr.aria-expanded]="filtersOpen()">
+            <span>
+              Filtrar por
+              @if (activeFilterCount() > 0) {
+                <strong>{{ activeFilterCount() }}</strong>
+              }
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <h2>Filtrar por</h2>
+          @if (hasActiveFilters()) {
+            <button type="button" class="filter-panel__clear" (click)="clearFilters()">Limpiar</button>
           }
+        </div>
 
-          <div class="resource-card__footer">
-            <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
-            <div class="resource-card__actions">
-              @if (resource.aceptaResoluciones) {
-                <a class="resource-card__solutions-link"
-                   [routerLink]="['/library', resource.id, 'solutions']"
-                   (click)="$event.stopPropagation()">
-                  Resoluciones
-                </a>
-              }
-              <a class="resource-card__view-link"
-                 [routerLink]="['/library', resource.id]"
-                 (click)="$event.stopPropagation()">
-                Ver detalle
-              </a>
-            </div>
-          </div>
+        <div class="filter-panel__content">
+          <section class="filter-block">
+            <h3>Tipo</h3>
+            <label class="filter-option">
+              <input type="radio" name="resourceType" value="ALL" [checked]="selectedType() === 'ALL'" (change)="setType('ALL')" />
+              <span>Todos</span>
+            </label>
+            @for (type of resourceTypes; track type) {
+              <label class="filter-option">
+                <input type="radio" name="resourceType" [value]="type" [checked]="selectedType() === type" (change)="setType(type)" />
+                <span>{{ typeLabel(type) }}</span>
+              </label>
+            }
+          </section>
 
-        </article>
-      }
+          <section class="filter-block">
+            <h3>Resoluciones</h3>
+            <label class="filter-option">
+              <input type="radio" name="resolutionFilter" value="all" [checked]="resolutionFilter() === 'all'" (change)="setResolutionFilter('all')" />
+              <span>Cualquier estado</span>
+            </label>
+            <label class="filter-option">
+              <input type="radio" name="resolutionFilter" value="practice" [checked]="resolutionFilter() === 'practice'" (change)="setResolutionFilter('practice')" />
+              <span>Solo practicas</span>
+            </label>
+            <label class="filter-option">
+              <input type="radio" name="resolutionFilter" value="accepting" [checked]="resolutionFilter() === 'accepting'" (change)="setResolutionFilter('accepting')" />
+              <span>Aceptan resoluciones</span>
+            </label>
+            <label class="filter-option">
+              <input type="radio" name="resolutionFilter" value="not_accepting" [checked]="resolutionFilter() === 'not_accepting'" (change)="setResolutionFilter('not_accepting')" />
+              <span>No aceptan resoluciones</span>
+            </label>
+          </section>
+        </div>
+      </aside>
     </div>
-
-    @if (hasMore()) {
-      <div class="load-more">
-        <button class="btn-load-more" (click)="loadMore()" [disabled]="isLoadingMore()">
-          @if (isLoadingMore()) { <app-loading-spinner size="sm" /> }
-          Cargar más
-        </button>
-      </div>
-    }
   }
 
 </div>

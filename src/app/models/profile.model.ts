@@ -72,11 +72,21 @@ export interface StudentProfileResponse {
 // Teacher — POST /profiles/teacher | PATCH /profiles/teacher/me
 export interface TeacherProfileRequest {
   bioProfessional?: string; // max 2000
+  universities?: string;
+  specialty?: string;
+  courses?: string;
+  experience?: string;
+  summary?: string;
 }
 
 export interface TeacherProfileResponse {
   profileId: string;
   bioProfessional?: string;
+  universities?: string;
+  specialty?: string;
+  courses?: string;
+  experience?: string;
+  summary?: string;
 }
 
 // Academy — POST /profiles/academy
