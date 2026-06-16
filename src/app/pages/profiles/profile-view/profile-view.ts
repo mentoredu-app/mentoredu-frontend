@@ -16,6 +16,11 @@ import { MySolutionSummaryResponse, ReceivedSolutionResponse } from '../../../mo
 import { AssociatedMemberResponse, AssociationStatus } from '../../../models/association.model';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
+import {
+  TeacherProfileDetails,
+  hasTeacherProfileDetails,
+  toTeacherProfileDetails,
+} from '../teacher-profile-details';
 
 type ProfileTab = 'resources' | 'threads' | 'solutions' | 'received';
 
@@ -40,6 +45,7 @@ export class ProfileView implements OnInit {
   readonly isLoading    = signal(true);
   readonly profile      = signal<ProfileResponse | null>(null);
   readonly studentExtra = signal<StudentProfileResponse | null>(null);
+  readonly teacherDetails = signal<TeacherProfileDetails | null>(null);
   readonly notFound     = signal(false);
   readonly isFollowing        = signal(false);
   readonly isFollowLoading    = signal(false);
@@ -89,6 +95,10 @@ export class ProfileView implements OnInit {
     return t === 'ADMIN' || t === 'MODERATOR';
   });
 
+  readonly hasTeacherDetails = computed(() =>
+    hasTeacherProfileDetails(this.teacherDetails())
+  );
+
   // ── Equipo docente / academias asociadas ─────────────────────────────────
   readonly teamMembers      = signal<AssociatedMemberResponse[]>([]);
   readonly teamIsLoading    = signal(false);
@@ -125,6 +135,7 @@ export class ProfileView implements OnInit {
     this.isLoading.set(true);
     this.profile.set(null);
     this.studentExtra.set(null);
+    this.teacherDetails.set(null);
     this.notFound.set(false);
     this.isFollowing.set(false);
     this.associationStatus.set('NONE');
@@ -170,6 +181,13 @@ export class ProfileView implements OnInit {
             });
           }
         } else if (p.profileType === 'TEACHER') {
+          this.profileService.getTeacherProfile(p.userId).subscribe({
+            next: teacherProfile => {
+              this.teacherDetails.set(toTeacherProfileDetails(teacherProfile));
+            },
+            error: () => {},
+          });
+
           this.teamIsLoading.set(true);
           this.communityService.getAcademiesOfTeacher(p.userId).subscribe({
             next: members => { this.teamMembers.set(members); this.teamIsLoading.set(false); },
@@ -321,5 +339,11 @@ export class ProfileView implements OnInit {
   }
   formatSize(bytes: number): string {
     return bytes >= 1_048_576 ? `${(bytes / 1_048_576).toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
+  }
+  splitTeacherList(value?: string): string[] {
+    return (value ?? '')
+      .split(/[,;\n]/)
+      .map(item => item.trim())
+      .filter(Boolean);
   }
 }

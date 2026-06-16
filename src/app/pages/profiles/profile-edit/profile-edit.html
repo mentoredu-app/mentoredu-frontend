@@ -178,14 +178,61 @@
         </div>
         <form class="profile-form" [formGroup]="teacherForm" (ngSubmit)="saveRoleProfile()" novalidate>
           <div class="form-field">
-            <label class="form-label" for="bioProfessional">Biografía profesional</label>
-            <textarea id="bioProfessional" class="form-input form-textarea"
-              [class.form-input--error]="fieldError('teacher','bioProfessional')"
-              formControlName="bioProfessional"
-              placeholder="Describe tu experiencia, especialidades y logros académicos..."
-              rows="5"></textarea>
-            @if (fieldError('teacher','bioProfessional')) {
-              <span class="form-error">{{ fieldError('teacher','bioProfessional') }}</span>
+            <label class="form-label" for="teacherUniversities">Universidades vinculadas</label>
+            <textarea id="teacherUniversities" class="form-input form-textarea form-textarea--compact"
+              [class.form-input--error]="fieldError('teacher','universities')"
+              formControlName="universities"
+              placeholder="Ej: UPC, UNMSM, Universidad de Lima"
+              rows="2"></textarea>
+            <p class="form-hint">Puedes registrar más de una universidad separándolas por coma o por línea.</p>
+            @if (fieldError('teacher','universities')) {
+              <span class="form-error">{{ fieldError('teacher','universities') }}</span>
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label" for="teacherSpecialty">Especialidad</label>
+              <input id="teacherSpecialty" class="form-input"
+                [class.form-input--error]="fieldError('teacher','specialty')"
+                type="text" formControlName="specialty"
+                placeholder="Ej: Matemática preuniversitaria" />
+              @if (fieldError('teacher','specialty')) {
+                <span class="form-error">{{ fieldError('teacher','specialty') }}</span>
+              }
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="teacherExperience">Experiencia</label>
+              <input id="teacherExperience" class="form-input"
+                [class.form-input--error]="fieldError('teacher','experience')"
+                type="text" formControlName="experience"
+                placeholder="Ej: 8 años preparando postulantes" />
+              @if (fieldError('teacher','experience')) {
+                <span class="form-error">{{ fieldError('teacher','experience') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="teacherCourses">Cursos que enseña</label>
+            <input id="teacherCourses" class="form-input"
+              [class.form-input--error]="fieldError('teacher','courses')"
+              type="text" formControlName="courses"
+              placeholder="Ej: Álgebra, Física, Química" />
+            @if (fieldError('teacher','courses')) {
+              <span class="form-error">{{ fieldError('teacher','courses') }}</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="teacherSummary">Resumen profesional</label>
+            <textarea id="teacherSummary" class="form-input form-textarea"
+              [class.form-input--error]="fieldError('teacher','summary')"
+              formControlName="summary"
+              placeholder="Describe brevemente tu enfoque de enseñanza, logros o metodología."
+              rows="4"></textarea>
+            @if (fieldError('teacher','summary')) {
+              <span class="form-error">{{ fieldError('teacher','summary') }}</span>
             }
             <span class="char-count">{{ bioLength }} / 2000</span>
           </div>

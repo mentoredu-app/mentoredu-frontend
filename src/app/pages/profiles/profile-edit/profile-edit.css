@@ -215,6 +215,16 @@
   line-height: 1.5;
 }
 
+.form-textarea--compact {
+  min-height: 58px;
+}
+
+.form-hint {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--color-text-subtle);
+}
+
 .form-error {
   font-size: 0.8125rem;
   color: var(--color-error);
