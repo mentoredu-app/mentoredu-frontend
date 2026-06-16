@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { NotificationService } from '../../../services/notification.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
@@ -19,6 +20,7 @@ type TabValue = 'all' | 'pending';
 export class NotificationsList implements OnInit {
   private notifService = inject(NotificationService);
   private toast        = inject(ToastService);
+  private router       = inject(Router);
 
   readonly activeTab     = signal<TabValue>('pending');
   readonly isLoading     = signal(true);
@@ -79,6 +81,52 @@ export class NotificationsList implements OnInit {
   }
 
   markRead(notif: NotificationResponse): void {
+    this.markReadInternal(notif, true);
+  }
+
+  openNotification(notif: NotificationResponse): void {
+    const route = this.notificationRoute(notif);
+    if (!route) return;
+    this.markReadInternal(notif, false);
+    this.router.navigate(route);
+  }
+
+  notificationRoute(notif: NotificationResponse): string[] | null {
+    const p = notif.payload ?? {};
+    const value = (key: string): string | null => {
+      const raw = p[key];
+      return typeof raw === 'string' && raw.trim() ? raw : null;
+    };
+
+    switch (notif.type) {
+      case 'new_follower':
+        return value('followerId') ? ['/profiles', value('followerId')!] : null;
+      case 'answer_received':
+      case 'comment_received':
+        return value('threadId') ? ['/forum', value('threadId')!] : ['/forum'];
+      case 'reaction_received': {
+        const targetType = value('targetType');
+        const targetId = value('targetId');
+        if (targetType === 'THREAD' && targetId) return ['/forum', targetId];
+        if (targetType === 'RESOURCE' && targetId) return ['/library', targetId];
+        return ['/forum'];
+      }
+      case 'solution_submitted':
+        return value('resourceId') && value('solutionId')
+          ? ['/pedagogy', value('resourceId')!, 'review', value('solutionId')!]
+          : value('resourceId') ? ['/library', value('resourceId')!, 'solutions'] : ['/library/my-resources'];
+      case 'feedback_received':
+        return value('resourceId') ? ['/pedagogy', value('resourceId')!, 'my-solution'] : ['/library'];
+      case 'verification_processed':
+        return ['/community/verification'];
+      case 'association_resolved':
+        return ['/community/association'];
+      default:
+        return null;
+    }
+  }
+
+  private markReadInternal(notif: NotificationResponse, removeFromPending: boolean): void {
     if (this.isMarking(notif.id) || notif.readAt) return;
     this.markingIds.update(s => new Set([...s, notif.id]));
 
@@ -91,10 +139,12 @@ export class NotificationsList implements OnInit {
         this.markingIds.update(s => { const ns = new Set(s); ns.delete(notif.id); return ns; });
         if (this.activeTab() === 'pending') {
           this.unreadCount.update(c => Math.max(0, c - 1));
-          // Remove from pending list after a brief moment
-          setTimeout(() => {
-            this.items.update(list => list.filter(n => n.id !== notif.id));
-          }, 600);
+          if (removeFromPending) {
+            // Remove from pending list after a brief moment
+            setTimeout(() => {
+              this.items.update(list => list.filter(n => n.id !== notif.id));
+            }, 600);
+          }
         }
       },
       error: () => {
