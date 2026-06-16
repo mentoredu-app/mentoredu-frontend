@@ -40,6 +40,11 @@ export class MainLayout implements OnInit {
 
   closeSidebar(): void { this.sidebarOpen.set(false); }
 
+  canManageResources(): boolean {
+    const role = this.authState.role();
+    return role === 'TEACHER' || role === 'ACADEMY' || role === 'ADMIN';
+  }
+
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.menuOpen.set(false);
