@@ -17,6 +17,17 @@ interface SearchFilters {
   universityId: string;
   areaId: string;
   type: ResourceType | '';
+  resourceYear: string;
+}
+
+type ResourceSortMode = 'recent' | 'oldest' | 'title' | 'size' | 'year';
+type ResourceGroupMode = 'none' | 'type' | 'year' | 'university';
+
+interface ResourceGroup {
+  key: string;
+  label: string;
+  count: number;
+  resources: ResourceResponse[];
 }
 
 @Component({
@@ -44,7 +55,7 @@ export class ResourceList implements OnInit {
   readonly areas = signal<Area[]>([]);
 
   // Estado de filtros centralizado — única fuente de verdad
-  filters: SearchFilters = { q: '', universityId: '', areaId: '', type: '' };
+  filters: SearchFilters = { q: '', universityId: '', areaId: '', type: '', resourceYear: '' };
 
   readonly typeLabels = RESOURCE_TYPE_LABELS;
   readonly resourceTypes = Object.keys(RESOURCE_TYPE_LABELS) as ResourceType[];
@@ -58,16 +69,46 @@ export class ResourceList implements OnInit {
 
   readonly showMySubmissions = signal(false);
   readonly filtersOpen = signal(false);
+  readonly sortMode = signal<ResourceSortMode>('recent');
+  readonly groupMode = signal<ResourceGroupMode>('none');
 
   readonly displayedResources = computed(() => {
     const all = this.resources();
-    if (!this.showMySubmissions()) return all;
-    return all.filter(r => !!r.mySubmission);
+    const filtered = this.showMySubmissions() ? all.filter(r => !!r.mySubmission) : all;
+    return [...filtered].sort((a, b) => {
+      const mode = this.sortMode();
+      if (mode === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (mode === 'title') return a.title.localeCompare(b.title, 'es');
+      if (mode === 'size') return b.sizeBytes - a.sizeBytes;
+      if (mode === 'year') return (b.resourceYear ?? 0) - (a.resourceYear ?? 0);
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  });
+
+  readonly groupedResources = computed<ResourceGroup[]>(() => {
+    const list = this.displayedResources();
+    const mode = this.groupMode();
+    if (mode === 'none') {
+      return [{ key: 'all', label: 'Todos los recursos', count: list.length, resources: list }];
+    }
+
+    const groups = new Map<string, ResourceGroup>();
+    for (const resource of list) {
+      const { key, label } = this.groupKey(resource, mode);
+      const current = groups.get(key);
+      if (current) {
+        current.resources.push(resource);
+        current.count += 1;
+      } else {
+        groups.set(key, { key, label, count: 1, resources: [resource] });
+      }
+    }
+    return Array.from(groups.values());
   });
 
   // Getter en lugar de computed para evitar problemas de reactividad zoneless con no-signals
   get hasActiveFilters(): boolean {
-    return !!(this.filters.q || this.filters.universityId || this.filters.areaId || this.filters.type || this.showMySubmissions());
+    return !!(this.filters.q || this.filters.universityId || this.filters.areaId || this.filters.type || this.filters.resourceYear || this.showMySubmissions());
   }
 
   activeFilterCount(): number {
@@ -76,6 +117,7 @@ export class ResourceList implements OnInit {
     if (this.filters.universityId) count += 1;
     if (this.filters.areaId) count += 1;
     if (this.filters.type) count += 1;
+    if (this.filters.resourceYear) count += 1;
     if (this.showMySubmissions()) count += 1;
     return count;
   }
@@ -114,7 +156,7 @@ export class ResourceList implements OnInit {
   }
 
   clearFilters(): void {
-    this.filters = { q: '', universityId: '', areaId: '', type: '' };
+    this.filters = { q: '', universityId: '', areaId: '', type: '', resourceYear: '' };
     this.showMySubmissions.set(false);
     this.areas.set([]);
     this.searchTrigger.next();
@@ -122,6 +164,14 @@ export class ResourceList implements OnInit {
 
   toggleFilters(): void {
     this.filtersOpen.update(open => !open);
+  }
+
+  setSortMode(value: string): void {
+    this.sortMode.set(value as ResourceSortMode);
+  }
+
+  setGroupMode(value: string): void {
+    this.groupMode.set(value as ResourceGroupMode);
   }
 
   loadMore(): void {
@@ -150,6 +200,7 @@ export class ResourceList implements OnInit {
     if (this.filters.universityId)    params['universityId'] = this.filters.universityId;
     if (this.filters.areaId)          params['areaId']       = this.filters.areaId;
     if (this.filters.type)            params['type']         = this.filters.type;
+    if (this.filters.resourceYear)    params['resourceYear'] = Number(this.filters.resourceYear);
 
     this.libraryService.search(params).subscribe({
       next: paged => {
@@ -183,5 +234,20 @@ export class ResourceList implements OnInit {
 
   formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('es-PE', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  private groupKey(resource: ResourceResponse, mode: ResourceGroupMode): { key: string; label: string } {
+    if (mode === 'type') {
+      return { key: resource.resourceType, label: this.typeLabel(resource.resourceType) };
+    }
+    if (mode === 'year') {
+      const year = resource.resourceYear;
+      return year ? { key: String(year), label: String(year) } : { key: 'unknown', label: 'Año desconocido' };
+    }
+    if (mode === 'university') {
+      const university = this.universities().find(u => u.id === resource.universityId);
+      return { key: resource.universityId, label: university?.name ?? 'Universidad' };
+    }
+    return { key: 'all', label: 'Todos los recursos' };
   }
 }

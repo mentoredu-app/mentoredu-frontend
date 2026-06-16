@@ -17,47 +17,55 @@
     }
   </div>
 
-  <div class="library-toolbar">
-    <div class="search-field">
-      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Buscar por titulo, autor o descripcion"
-        [(ngModel)]="filters.q"
-        (ngModelChange)="triggerSearch()"
-      />
-      @if (filters.q) {
-        <button class="search-clear" (click)="filters.q = ''; triggerSearch()" aria-label="Limpiar busqueda">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      }
-    </div>
-
-    <button class="btn-filter-toggle" type="button" (click)="toggleFilters()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 5h18"/>
-        <path d="M6 12h12"/>
-        <path d="M10 19h4"/>
-      </svg>
-      Filtrar
-      @if (activeFilterCount() > 0) {
-        <span>{{ activeFilterCount() }}</span>
-      }
-    </button>
-  </div>
-
   <div class="library-content">
     <section class="library-results">
+      <div class="library-toolbar">
+        <div class="search-field">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar por titulo, autor o descripcion"
+            [(ngModel)]="filters.q"
+            (ngModelChange)="triggerSearch()"
+          />
+          @if (filters.q) {
+            <button class="search-clear" (click)="filters.q = ''; triggerSearch()" aria-label="Limpiar busqueda">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          }
+        </div>
+
+        <label class="toolbar-select">
+          <span>Ordenar</span>
+          <select [ngModel]="sortMode()" (ngModelChange)="setSortMode($event)">
+            <option value="recent">Mas recientes</option>
+            <option value="oldest">Mas antiguos</option>
+            <option value="title">Titulo A-Z</option>
+            <option value="size">Mas pesados</option>
+            <option value="year">Ano</option>
+          </select>
+        </label>
+
+        <label class="toolbar-select">
+          <span>Agrupar</span>
+          <select [ngModel]="groupMode()" (ngModelChange)="setGroupMode($event)">
+            <option value="none">Sin agrupar</option>
+            <option value="type">Tipo</option>
+            <option value="year">Ano</option>
+            <option value="university">Universidad</option>
+          </select>
+        </label>
+      </div>
+
       @if (isLoading()) {
         <div class="loading-center">
           <app-loading-spinner size="lg" />
@@ -75,57 +83,71 @@
                 : 'Aun no hay recursos publicados'"
           />
         } @else {
-          <div class="resource-grid">
-            @for (resource of displayedResources(); track resource.id; let i = $index) {
-              <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
-
-                <div class="resource-card__icon" aria-hidden="true">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <rect x="7" y="13" width="10" height="6" rx="1"></rect>
-                    <text x="12" y="17" font-size="5" text-anchor="middle" fill="currentColor"
-                      font-family="Arial, Helvetica, sans-serif">PDF</text>
-                  </svg>
+          <div class="resource-groups">
+            @for (group of groupedResources(); track group.key) {
+              @if (groupMode() !== 'none') {
+                <div class="resource-group-header">
+                  <h2>{{ group.label }}</h2>
+                  <span>{{ group.count }}</span>
                 </div>
+              }
 
-                <div class="resource-card__body">
-                  <div class="resource-card__top">
-                    <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
-                      {{ typeLabel(resource.resourceType) }}
-                    </span>
-                    <div class="resource-card__badges">
-                      @if (resource.mySubmission) {
-                        <span class="resolved-badge">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                          {{ resource.mySubmission.status === 'REVIEWED' ? 'Revisada' : 'Resuelta' }}
-                        </span>
-                      }
-                      @if (resource.authorId === authState.user()?.id) {
-                        <span class="mine-badge">Mio</span>
-                      }
-                      <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
+              <div class="resource-grid">
+                @for (resource of group.resources; track resource.id; let i = $index) {
+                  <article class="resource-card" [style.--index]="i % 12" [routerLink]="['/library', resource.id]">
+
+                    <div class="resource-card__icon" aria-hidden="true">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <rect x="7" y="13" width="10" height="6" rx="1"></rect>
+                        <text x="12" y="17" font-size="5" text-anchor="middle" fill="currentColor"
+                          font-family="Arial, Helvetica, sans-serif">PDF</text>
+                      </svg>
                     </div>
-                  </div>
 
-                  <h2 class="resource-card__title">{{ resource.title }}</h2>
+                    <div class="resource-card__body">
+                      <div class="resource-card__top">
+                        <span class="resource-type-badge resource-type-badge--{{ resource.resourceType.toLowerCase() }}">
+                          {{ typeLabel(resource.resourceType) }}
+                        </span>
+                        <div class="resource-card__badges">
+                          @if (resource.resourceYear) {
+                            <span class="year-badge">{{ resource.resourceYear }}</span>
+                          }
+                          @if (resource.mySubmission) {
+                            <span class="resolved-badge">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                              </svg>
+                              {{ resource.mySubmission.status === 'REVIEWED' ? 'Revisada' : 'Resuelta' }}
+                            </span>
+                          }
+                          @if (resource.authorId === authState.user()?.id) {
+                            <span class="mine-badge">Mio</span>
+                          }
+                          <span class="resource-size">{{ formatSize(resource.sizeBytes) }}</span>
+                        </div>
+                      </div>
 
-                  <div class="resource-card__footer">
-                    <a class="resource-card__author resource-card__author--link"
-                       [routerLink]="['/profiles', resource.authorId]"
-                       (click)="$event.stopPropagation()">
-                      {{ resource.authorName }}
-                    </a>
-                    <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
-                    <app-report-button targetType="RESOURCE" [targetId]="resource.id" />
-                  </div>
-                </div>
+                      <h2 class="resource-card__title">{{ resource.title }}</h2>
 
-              </article>
+                      <div class="resource-card__footer">
+                        <a class="resource-card__author resource-card__author--link"
+                           [routerLink]="['/profiles', resource.authorId]"
+                           (click)="$event.stopPropagation()">
+                          {{ resource.authorName }}
+                        </a>
+                        <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
+                        <app-report-button targetType="RESOURCE" [targetId]="resource.id" />
+                      </div>
+                    </div>
+
+                  </article>
+                }
+              </div>
             }
           </div>
         }
@@ -141,74 +163,96 @@
       }
     </section>
 
-    <aside class="filters-panel" [class.filters-panel--open]="filtersOpen()" aria-label="Filtros de biblioteca">
+    <aside class="filters-panel" [class.filters-panel--collapsed]="!filtersOpen()" aria-label="Filtros de biblioteca">
       <div class="filters-panel__header">
-        <div>
-          <h2>Filtrar por</h2>
-          @if (hasActiveFilters || showMySubmissions()) {
-            <p>{{ activeFilterCount() }} filtros activos</p>
-          }
-        </div>
+        <button type="button" class="filters-panel__toggle" (click)="toggleFilters()" [attr.aria-expanded]="filtersOpen()">
+          <span>
+            Filtrar por
+            @if (activeFilterCount() > 0) {
+              <strong>{{ activeFilterCount() }}</strong>
+            }
+          </span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <h2>Filtrar por</h2>
+        @if (hasActiveFilters || showMySubmissions()) {
+          <p>{{ activeFilterCount() }} filtros activos</p>
+        }
         @if (hasActiveFilters || showMySubmissions()) {
           <button type="button" class="filters-panel__clear" (click)="clearFilters()">Limpiar</button>
         }
       </div>
 
-      <div class="filter-section">
-        <h3>Tipo</h3>
-        <label class="filter-option">
-          <input type="radio" name="resourceType" [ngModel]="filters.type" value="" (ngModelChange)="filters.type = ''; triggerSearch()">
-          <span>Todos</span>
-        </label>
-        @for (rt of resourceTypes; track rt) {
+      <div class="filters-panel__content">
+        <div class="filter-section">
+          <h3>Tipo</h3>
           <label class="filter-option">
-            <input type="radio" name="resourceType" [ngModel]="filters.type" [value]="rt" (ngModelChange)="filters.type = rt; triggerSearch()">
-            <span>{{ typeLabels[rt] }}</span>
+            <input type="radio" name="resourceType" [ngModel]="filters.type" value="" (ngModelChange)="filters.type = ''; triggerSearch()">
+            <span>Todos</span>
           </label>
+          @for (rt of resourceTypes; track rt) {
+            <label class="filter-option">
+              <input type="radio" name="resourceType" [ngModel]="filters.type" [value]="rt" (ngModelChange)="filters.type = rt; triggerSearch()">
+              <span>{{ typeLabels[rt] }}</span>
+            </label>
+          }
+        </div>
+
+        <div class="filter-section">
+          <h3>Universidad y area</h3>
+          <label class="filter-field">
+            <span>Universidad</span>
+            <select class="filter-select"
+                    [(ngModel)]="filters.universityId"
+                    (ngModelChange)="onUniversityChange()">
+              <option value="">Todas</option>
+              @for (uni of universities(); track uni.id) {
+                <option [value]="uni.id">{{ uni.name }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="filter-field">
+            <span>Area</span>
+            <select class="filter-select"
+                    [(ngModel)]="filters.areaId"
+                    (ngModelChange)="triggerSearch()"
+                    [disabled]="areas().length === 0">
+              <option value="">Todas</option>
+              @for (area of areas(); track area.id) {
+                <option [value]="area.id">{{ area.name }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="filter-field">
+            <span>Ano</span>
+            <input
+              class="filter-select"
+              type="number"
+              min="1900"
+              max="2100"
+              placeholder="Todos"
+              [(ngModel)]="filters.resourceYear"
+              (ngModelChange)="triggerSearch()"
+            />
+          </label>
+        </div>
+
+        @if (isStudent()) {
+          <div class="filter-section">
+            <h3>Resoluciones</h3>
+            <button
+              class="resolution-toggle"
+              [class.resolution-toggle--active]="showMySubmissions()"
+              (click)="showMySubmissions.set(!showMySubmissions())"
+              type="button">
+              <img src="document-resolution-purple.svg" alt="" width="15" height="15" />
+              Mis resoluciones
+            </button>
+          </div>
         }
       </div>
-
-      <div class="filter-section">
-        <h3>Universidad y area</h3>
-        <label class="filter-field">
-          <span>Universidad</span>
-          <select class="filter-select"
-                  [(ngModel)]="filters.universityId"
-                  (ngModelChange)="onUniversityChange()">
-            <option value="">Todas</option>
-            @for (uni of universities(); track uni.id) {
-              <option [value]="uni.id">{{ uni.name }}</option>
-            }
-          </select>
-        </label>
-
-        <label class="filter-field">
-          <span>Area</span>
-          <select class="filter-select"
-                  [(ngModel)]="filters.areaId"
-                  (ngModelChange)="triggerSearch()"
-                  [disabled]="areas().length === 0">
-            <option value="">Todas</option>
-            @for (area of areas(); track area.id) {
-              <option [value]="area.id">{{ area.name }}</option>
-            }
-          </select>
-        </label>
-      </div>
-
-      @if (isStudent()) {
-        <div class="filter-section">
-          <h3>Resoluciones</h3>
-          <button
-            class="resolution-toggle"
-            [class.resolution-toggle--active]="showMySubmissions()"
-            (click)="showMySubmissions.set(!showMySubmissions())"
-            type="button">
-            <img src="document-resolution-purple.svg" alt="" width="15" height="15" />
-            Mis resoluciones
-          </button>
-        </div>
-      }
     </aside>
   </div>
 

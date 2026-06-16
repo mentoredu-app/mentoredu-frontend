@@ -28,6 +28,7 @@ export interface ResourceResponse {
   id: string;
   title: string;
   resourceType: ResourceType;
+  resourceYear?: number | null;
   description?: string;
   universityId: string;
   areaId: string;
@@ -47,6 +48,7 @@ export interface ResourceResponse {
 export interface PublishResourceRequest {
   title: string;
   resourceType: ResourceType;
+  resourceYear?: number | null;
   universityId: string;
   areaId: string;
   careerId?: string;
@@ -79,6 +81,7 @@ export interface SearchResourceParams {
   careerId?: string;
   courseId?: string;
   authorId?: string;
+  resourceYear?: number;
   page?: number;
   size?: number;
 }

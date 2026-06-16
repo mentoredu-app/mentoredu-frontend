@@ -38,14 +38,6 @@
         Foro
       </a>
 
-      <a routerLink="/notifications" routerLinkActive="sidebar__link--active" class="sidebar__link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-        Notificaciones
-      </a>
     </nav>
 
     <div class="sidebar__footer">
@@ -111,14 +103,6 @@
           </svg>
           Foro
         </a>
-        <a routerLink="/notifications" routerLinkActive="mobile-nav__link--active" class="mobile-nav__link" (click)="closeSidebar()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          Notificaciones
-        </a>
       </nav>
 
       <div class="mobile-nav__footer">
@@ -172,17 +156,19 @@
         <a routerLink="/library" routerLinkActive="topbar__link--active"
           [routerLinkActiveOptions]="{exact:true}" class="topbar__link">Biblioteca</a>
         <a routerLink="/forum"   routerLinkActive="topbar__link--active" class="topbar__link">Foro</a>
-        <a routerLink="/notifications" routerLinkActive="topbar__link--active" class="topbar__link topbar__link--bell">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          Notificaciones
-        </a>
       </nav>
 
       <!-- User menu -->
+      <a routerLink="/notifications" class="topbar__notification" aria-label="Notificaciones">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        @if (unreadNotifications() > 0) {
+          <span class="topbar__notification-dot" aria-hidden="true"></span>
+        }
+      </a>
       <div class="user-menu" [class.user-menu--open]="menuOpen()">
 
         <button class="user-menu__trigger" (click)="toggleMenu()" aria-label="Menú de usuario">

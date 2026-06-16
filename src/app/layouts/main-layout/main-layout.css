@@ -64,10 +64,43 @@
   background: color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
+.topbar__notification {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-left: auto;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  text-decoration: none;
+  transition: color 150ms var(--ease-out), border-color 150ms var(--ease-out), background 150ms var(--ease-out);
+}
+
+.topbar__notification:hover {
+  color: var(--color-primary);
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+}
+
+.topbar__notification-dot {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 9px;
+  height: 9px;
+  background: #ef4444;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+}
+
 /* ── User menu ───────────────────────────────────── */
 .user-menu {
   position: relative;
-  margin-left: auto;
+  margin-left: 0;
 }
 
 .user-menu__trigger {
@@ -391,7 +424,7 @@
   }
 
   .user-menu {
-    margin-left: auto;
+    margin-left: 0;
   }
 
   .mobile-nav__backdrop {

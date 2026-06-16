@@ -51,6 +51,7 @@ export class ResourceUpload implements OnInit {
   readonly metaForm = this.fb.nonNullable.group({
     title:              ['', [Validators.required, Validators.maxLength(200)]],
     resourceType:       ['' as ResourceType, [Validators.required]],
+    resourceYear:       ['', [Validators.min(1900), Validators.max(2100)]],
     universityId:       ['', [Validators.required]],
     areaId:             ['', [Validators.required]],
     careerId:           [''],
@@ -62,6 +63,7 @@ export class ResourceUpload implements OnInit {
   readonly selectedType = signal<ResourceType | ''>('');
   readonly requiresCourse = computed(() => TYPES_REQUIRING_COURSE.includes(this.selectedType() as ResourceType));
   readonly isPractica = computed(() => this.selectedType() === 'PRACTICA');
+  readonly requiresYear = computed(() => this.selectedType() === 'EXAMEN_COMPLETO' || this.selectedType() === 'EXAMEN_SECCION');
 
   readonly isAllowedRole = computed(() => {
     const r = this.authState.role();
@@ -76,6 +78,7 @@ export class ResourceUpload implements OnInit {
     this.metaForm.get('resourceType')!.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(type => {
       this.selectedType.set(type as ResourceType | '');
       const courseCtrl = this.metaForm.get('courseId')!;
+      const yearCtrl = this.metaForm.get('resourceYear')!;
       if (TYPES_REQUIRING_COURSE.includes(type as ResourceType)) {
         courseCtrl.addValidators(Validators.required);
       } else {
@@ -83,6 +86,12 @@ export class ResourceUpload implements OnInit {
         courseCtrl.setValue('');
       }
       courseCtrl.updateValueAndValidity();
+      yearCtrl.setValidators([
+        Validators.min(1900),
+        Validators.max(2100),
+        ...(this.requiresYear() ? [Validators.required] : []),
+      ]);
+      yearCtrl.updateValueAndValidity();
       if (type !== 'PRACTICA') {
         this.metaForm.get('aceptaResoluciones')!.setValue(false);
       }
@@ -172,14 +181,19 @@ export class ResourceUpload implements OnInit {
       if (this.requiresCourse() && !this.metaForm.get('courseId')!.value) {
         this.toast.error('El tipo seleccionado requiere especificar un curso.');
       }
+      if (this.requiresYear() && !this.metaForm.get('resourceYear')!.value) {
+        this.toast.error('Los examenes requieren especificar el ano.');
+      }
       return;
     }
 
     const raw = this.metaForm.getRawValue();
+    const resourceYear = raw.resourceYear ? Number(raw.resourceYear) : undefined;
     this.isPublishing.set(true);
     this.libraryService.publish({
       title:              raw.title,
       resourceType:       raw.resourceType,
+      resourceYear,
       universityId:       raw.universityId,
       areaId:             raw.areaId,
       careerId:           raw.careerId  || undefined,
@@ -220,6 +234,7 @@ export class ResourceUpload implements OnInit {
     if (!ctrl || !ctrl.invalid || !ctrl.touched) return '';
     if (ctrl.hasError('required'))  return 'Este campo es obligatorio';
     if (ctrl.hasError('maxlength')) return `Máximo ${ctrl.errors?.['maxlength'].requiredLength} caracteres`;
+    if (ctrl.hasError('min') || ctrl.hasError('max')) return 'Ingresa un ano entre 1900 y 2100';
     return '';
   }
 
