@@ -4,11 +4,13 @@ import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { AuthStateService } from '../../../core/services/auth-state.service';
+import { CatalogService } from '../../../services/catalog.service';
 import { CommunityService } from '../../../services/community.service';
 import { FileUploadService } from '../../../services/file-upload.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { DocImagePreview } from '../../../shared/components/doc-image-preview/doc-image-preview';
+import { University } from '../../../models/catalog.model';
 import {
   VerificationResponse, VerificationEntityType,
   VERIFICATION_STATUS_LABELS, DOCUMENT_TYPE_LABELS, DOCUMENT_TYPES,
@@ -22,6 +24,7 @@ import {
 })
 export class VerificationRequest implements OnInit {
   private fb                = inject(FormBuilder);
+  private catalogService    = inject(CatalogService);
   private communityService  = inject(CommunityService);
   private fileUploadService = inject(FileUploadService);
   readonly authState        = inject(AuthStateService);
@@ -32,6 +35,7 @@ export class VerificationRequest implements OnInit {
   readonly myRequests    = signal<VerificationResponse[]>([]);
   readonly latestRequest = signal<VerificationResponse | null>(null);
   readonly showForm      = signal(false);
+  readonly universities  = signal<University[]>([]);
 
   readonly statusLabels       = VERIFICATION_STATUS_LABELS;
   readonly documentTypeLabels = DOCUMENT_TYPE_LABELS;
@@ -55,7 +59,12 @@ export class VerificationRequest implements OnInit {
 
     this.form = this.fb.group({
       entityType: [{ value: entityType, disabled: true }],
+      universityId: ['', Validators.required],
       documents:  this.fb.array([this.createDocumentGroup()]),
+    });
+
+    this.catalogService.getUniversities().subscribe({
+      next: universities => this.universities.set(universities),
     });
 
     this.communityService.getMyVerifications(0, 5).subscribe({
@@ -118,12 +127,13 @@ export class VerificationRequest implements OnInit {
       next: uploadResults => {
         const role = this.authState.role();
         const entityType: VerificationEntityType = role === 'ACADEMY' ? 'ACADEMY' : 'TEACHER';
+        const universityId = this.form.get('universityId')!.value as string;
         const documents = uploadResults.map((result, i) => ({
           documentType: this.getDocGroup(i).get('documentType')!.value as string,
           fileUrl:      result.fileUrl,
         }));
 
-        this.communityService.requestVerification({ entityType, documents }).subscribe({
+        this.communityService.requestVerification({ entityType, universityId, documents }).subscribe({
           next: res => {
             this.toast.success('Solicitud de verificación enviada correctamente');
             this.myRequests.update(list => [res, ...list]);
@@ -161,6 +171,7 @@ export class VerificationRequest implements OnInit {
     while (this.documents.length > 1) this.documents.removeAt(1);
     const role = this.authState.role();
     this.form.get('entityType')?.setValue(role === 'ACADEMY' ? 'ACADEMY' : 'TEACHER');
+    this.form.get('universityId')?.reset('');
     this.documents.at(0).reset({ documentType: 'DNI' });
     this.pendingFiles.set([null]);
   }
@@ -181,5 +192,10 @@ export class VerificationRequest implements OnInit {
 
   fileName(index: number): string {
     return this.pendingFiles()[index]?.name ?? '';
+  }
+
+  universityName(id?: string): string {
+    if (!id) return '';
+    return this.universities().find(u => u.id === id)?.name ?? 'Universidad no registrada';
   }
 }

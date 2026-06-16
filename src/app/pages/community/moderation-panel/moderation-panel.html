@@ -41,6 +41,7 @@
                 <div class="request-card__info">
                   <span class="request-name">{{ entityLabel(req.entityType) }}</span>
                   <span class="request-meta">{{ entityLabel(req.entityType) }} · {{ formatDate(req.submittedAt) }}</span>
+                  <span class="request-meta">Universidad: {{ universityName(req.universityId) }}</span>
                 </div>
               </div>
               <div class="request-card__right">
@@ -57,6 +58,11 @@
 
             @if (isExpanded(req.id)) {
               <div class="request-card__detail">
+                <div>
+                  <p class="detail-label">Universidad declarada</p>
+                  <p class="detail-notes">{{ universityName(req.universityId) }}</p>
+                </div>
+
                 <div>
                   <p class="detail-label">Documentos adjuntos</p>
                   <div class="detail-docs-grid" (click)="$event.stopPropagation()">

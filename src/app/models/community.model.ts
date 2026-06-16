@@ -27,6 +27,7 @@ export interface VerificationDocument {
 
 export interface CreateVerificationRequest {
   entityType: VerificationEntityType;
+  universityId?: string;
   documents: VerificationDocument[];
 }
 
@@ -39,6 +40,7 @@ export interface VerificationResponse {
   id: string;
   userId: string;          // UUID del solicitante (sin nombre)
   entityType: VerificationEntityType;
+  universityId?: string;
   documents: VerificationDocument[];
   status: VerificationStatus;
   notes: string | null;

@@ -97,6 +97,11 @@
   font-size: 0.8rem;
   color: var(--color-text-muted);
 }
+.status-card__meta {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
 .status-card__notes {
   font-size: 0.875rem;
   color: var(--color-text-muted);
@@ -177,6 +182,10 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text);
+}
+
+.required {
+  color: var(--color-error);
 }
 
 .field-hint {
