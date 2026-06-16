@@ -10,6 +10,11 @@ import { FileUploadService, resolveFileUrl } from '../../../services/file-upload
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { Area, Career, University } from '../../../models/catalog.model';
+import {
+  TEACHER_PROFILE_MAX_LENGTH,
+  buildTeacherProfileBio,
+  toTeacherProfileDetails,
+} from '../teacher-profile-details';
 
 @Component({
   selector: 'app-profile-edit',
@@ -61,7 +66,11 @@ export class ProfileEdit implements OnInit {
   });
 
   readonly teacherForm = this.fb.nonNullable.group({
-    bioProfessional: ['', [Validators.maxLength(2000)]],
+    universities: ['', [Validators.maxLength(320)]],
+    specialty:    ['', [Validators.maxLength(180)]],
+    courses:      ['', [Validators.maxLength(300)]],
+    experience:   ['', [Validators.maxLength(420)]],
+    summary:      ['', [Validators.maxLength(520)]],
   });
 
   readonly academyForm = this.fb.nonNullable.group({
@@ -128,7 +137,7 @@ export class ProfileEdit implements OnInit {
       this.profileService.getMyTeacherProfile().subscribe({
         next: tp => {
           this.hasTeacherProfile = true;
-          this.teacherForm.patchValue({ bioProfessional: tp.bioProfessional ?? '' });
+          this.teacherForm.patchValue(toTeacherProfileDetails(tp));
         },
         error: () => { this.hasTeacherProfile = false; },
       });
@@ -278,7 +287,22 @@ export class ProfileEdit implements OnInit {
       }
 
     } else if (role === 'TEACHER') {
-      const data = { bioProfessional: this.teacherForm.getRawValue().bioProfessional || undefined };
+      this.teacherForm.markAllAsTouched();
+      if (this.teacherForm.invalid) return;
+      const bioProfessional = buildTeacherProfileBio(this.teacherForm.getRawValue());
+      if ((bioProfessional?.length ?? 0) > TEACHER_PROFILE_MAX_LENGTH) {
+        this.toast.error('El perfil docente supera los 2000 caracteres.');
+        return;
+      }
+      const raw = this.teacherForm.getRawValue();
+      const data = {
+        bioProfessional,
+        universities: raw.universities || undefined,
+        specialty:    raw.specialty    || undefined,
+        courses:      raw.courses      || undefined,
+        experience:   raw.experience   || undefined,
+        summary:      raw.summary      || undefined,
+      };
       if (this.hasTeacherProfile) {
         request$ = this.profileService.updateTeacherProfile(data);
       } else {
@@ -366,6 +390,6 @@ export class ProfileEdit implements OnInit {
   resolveUrl = resolveFileUrl;
 
   get bioLength(): number {
-    return this.teacherForm.get('bioProfessional')!.value.length;
+    return buildTeacherProfileBio(this.teacherForm.getRawValue())?.length ?? 0;
   }
 }

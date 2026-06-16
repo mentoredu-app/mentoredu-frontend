@@ -136,6 +136,72 @@
   font-size: 0.9375rem; color: var(--color-text-muted); line-height: 1.65;
 }
 
+.teacher-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.teacher-info-block {
+  min-width: 0;
+  padding: 14px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.teacher-info-block--full {
+  grid-column: 1 / -1;
+}
+
+.teacher-info-block__label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.teacher-info-block__value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.45;
+}
+
+.teacher-info-block__value--long {
+  font-weight: 500;
+  color: var(--color-text-muted);
+  white-space: pre-line;
+}
+
+.teacher-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.teacher-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 26px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.teacher-chip--course {
+  background: color-mix(in srgb, var(--color-success) 11%, transparent);
+  color: var(--color-success);
+}
+
 /* ── Info grid ──────────────────────────────────── */
 .info-grid { display: flex; flex-direction: column; gap: 8px; }
 .info-row { display: flex; align-items: baseline; gap: 10px; }
@@ -558,6 +624,42 @@
 .btn-load-more:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Animations ─────────────────────────────────── */
+@media (max-width: 640px) {
+  .profile-view-page {
+    padding: 24px 14px 48px;
+  }
+
+  .profile-hero {
+    flex-direction: column;
+    padding: 22px;
+  }
+
+  .profile-hero__left {
+    gap: 14px;
+  }
+
+  .profile-hero__avatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .profile-stats,
+  .profile-section,
+  .team-section {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .teacher-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-tabs {
+    padding: 0 16px;
+    overflow-x: auto;
+  }
+}
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }

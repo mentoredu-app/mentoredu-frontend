@@ -58,6 +58,10 @@ export class ProfileService {
     return this.http.get<TeacherProfileResponse>(`${this.base}/teacher/me`);
   }
 
+  getTeacherProfile(userId: string) {
+    return this.http.get<TeacherProfileResponse>(`${this.base}/teacher/${userId}`);
+  }
+
   // Academy
   createAcademyProfile(request: CreateAcademyProfileRequest) {
     return this.http.post<AcademyProfileResponse>(`${this.base}/academy`, request);
