@@ -53,6 +53,7 @@ export class MainLayout implements OnInit {
 
   logout(): void {
     this.closeMenu();
+    this.closeSidebar();
     this.authService.logout();
   }
 }
