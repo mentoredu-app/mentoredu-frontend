@@ -9,6 +9,7 @@ import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { ReportButton } from '../../../shared/components/report-button/report-button';
 import { ThreadResponse, ThreadStatus } from '../../../models/forum.model';
 import { University, Course } from '../../../models/catalog.model';
+import { resolveFileUrl } from '../../../services/file-upload.service';
 
 interface ThreadFilters {
   universityId: string;
@@ -134,6 +135,16 @@ export class ThreadList implements OnInit {
 
   formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('es-PE', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  authorAvatarUrl(thread: ThreadResponse): string | null {
+    return resolveFileUrl(thread.authorAvatarUrl);
+  }
+
+  authorInitials(displayName: string): string {
+    const parts = displayName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    return parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
   }
 
   excerpt(body: string, max = 120): string {

@@ -86,13 +86,25 @@
 
             <div class="thread-card__footer">
               @if (thread.authorId) {
-                <a class="thread-card__author thread-card__author--link"
+                <a class="thread-card__identity thread-card__identity--link"
                   [routerLink]="['/profiles', thread.authorId]"
                   (click)="$event.stopPropagation()">
-                  {{ thread.authorDisplay }}
+                  <span class="thread-card__avatar" aria-hidden="true">
+                    @if (authorAvatarUrl(thread); as avatarUrl) {
+                      <img [src]="avatarUrl" [alt]="thread.authorDisplay" />
+                    } @else {
+                      <span>{{ authorInitials(thread.authorDisplay) }}</span>
+                    }
+                  </span>
+                  <span class="thread-card__author">{{ thread.authorDisplay }}</span>
                 </a>
               } @else {
-                <span class="thread-card__author">{{ thread.authorDisplay }}</span>
+                <span class="thread-card__identity">
+                  <span class="thread-card__avatar thread-card__avatar--anonymous" aria-hidden="true">
+                    <span>{{ authorInitials(thread.authorDisplay) }}</span>
+                  </span>
+                  <span class="thread-card__author">{{ thread.authorDisplay }}</span>
+                </span>
               }
               <span class="thread-card__date">{{ formatDate(thread.createdAt) }}</span>
               <app-report-button targetType="THREAD" [targetId]="thread.id" />

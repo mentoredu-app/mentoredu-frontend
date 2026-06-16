@@ -8,6 +8,7 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { ReportButton } from '../../../shared/components/report-button/report-button';
 import { AnswerResponse, CommentResponse, ReactionType, ThreadResponse } from '../../../models/forum.model';
+import { resolveFileUrl } from '../../../services/file-upload.service';
 
 @Component({
   selector: 'app-thread-detail',
@@ -339,5 +340,15 @@ export class ThreadDetail implements OnInit {
 
   formatDateShort(iso: string): string {
     return new Date(iso).toLocaleDateString('es-PE', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  authorAvatarUrl(author: { authorAvatarUrl?: string | null }): string | null {
+    return resolveFileUrl(author.authorAvatarUrl);
+  }
+
+  authorInitials(displayName: string): string {
+    const parts = displayName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    return parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
   }
 }
