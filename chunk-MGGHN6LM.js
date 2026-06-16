@@ -1,1 +1,0 @@
-import{H as r,R as o,aa as s,f as n}from"./chunk-RSRGUALB.js";function x(t){t||(t=o(s));let i=new n(e=>{if(t.destroyed){e.next();return}return t.onDestroy(e.next.bind(e))});return e=>e.pipe(r(i))}export{x as a};

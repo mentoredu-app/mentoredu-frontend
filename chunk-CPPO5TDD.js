@@ -1,0 +1,1 @@
+import{B as s,d as n,o as r,v as o}from"./chunk-7FQXI7EN.js";function x(t){t||(t=o(s));let i=new n(e=>{if(t.destroyed){e.next();return}return t.onDestroy(e.next.bind(e))});return e=>e.pipe(r(i))}export{x as a};
