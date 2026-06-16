@@ -49,6 +49,9 @@
           <div>
             <p class="status-card__label">{{ statusLabels[req.status] }}</p>
             <p class="status-card__date">Enviada el {{ formatDate(req.submittedAt) }}</p>
+            @if (req.universityId) {
+              <p class="status-card__meta">Universidad: {{ universityName(req.universityId) }}</p>
+            }
             @if (req.notes) {
               <p class="status-card__notes">{{ req.notes }}</p>
             }
@@ -89,6 +92,21 @@
             <div class="entity-type-display">
               {{ authState.role() === 'ACADEMY' ? 'Academia' : 'Docente' }}
             </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="verificationUniversity">Universidad <span class="required">*</span></label>
+            <select id="verificationUniversity" class="select"
+              [class.select--error]="form.get('universityId')?.invalid && form.get('universityId')?.touched"
+              formControlName="universityId">
+              <option value="">Selecciona una universidad</option>
+              @for (university of universities(); track university.id) {
+                <option [value]="university.id">{{ university.name }}</option>
+              }
+            </select>
+            @if (form.get('universityId')?.invalid && form.get('universityId')?.touched) {
+              <span class="field-error">Selecciona la universidad vinculada a tu verificación.</span>
+            }
           </div>
 
           <!-- Documentos -->

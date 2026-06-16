@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { SlicePipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { CatalogService } from '../../../services/catalog.service';
 import { CommunityService } from '../../../services/community.service';
 import { resolveFileUrl } from '../../../services/file-upload.service';
 import { DocImagePreview } from '../../../shared/components/doc-image-preview/doc-image-preview';
@@ -16,6 +17,7 @@ import {
 import {
   ReportResponse, ReportStatus, REPORT_TARGET_LABELS,
 } from '../../../models/moderation.model';
+import { University } from '../../../models/catalog.model';
 
 type PanelTab = 'verifications' | 'reports';
 
@@ -27,6 +29,7 @@ type PanelTab = 'verifications' | 'reports';
 })
 export class ModerationPanel implements OnInit {
   private communityService  = inject(CommunityService);
+  private catalogService    = inject(CatalogService);
   private moderationService = inject(ModerationService);
   private toast             = inject(ToastService);
   private fb                = inject(FormBuilder);
@@ -39,6 +42,7 @@ export class ModerationPanel implements OnInit {
   readonly vIsLoadingMore  = signal(false);
   readonly vLoadError      = signal('');
   readonly requests        = signal<VerificationResponse[]>([]);
+  readonly universities    = signal<University[]>([]);
   readonly vHasMore        = signal(false);
   private vPage            = 0;
 
@@ -79,6 +83,9 @@ export class ModerationPanel implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.catalogService.getUniversities().subscribe({
+      next: universities => this.universities.set(universities),
+    });
     this.loadVerifications(0);
   }
 
@@ -255,6 +262,10 @@ export class ModerationPanel implements OnInit {
   docTypeLabel(type: string): string  { return this.documentTypeLabels[type] ?? type; }
   entityLabel(type: string): string   { return type === 'ACADEMY' ? 'Academia' : 'Docente'; }
   targetLabel(type: string): string   { return this.reportTargetLabels[type as keyof typeof this.reportTargetLabels] ?? type; }
+  universityName(id?: string): string {
+    if (!id) return 'Sin universidad registrada';
+    return this.universities().find(u => u.id === id)?.name ?? 'Universidad no registrada';
+  }
 
   formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('es-PE', {
