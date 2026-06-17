@@ -3,12 +3,32 @@
   <!-- Encabezado -->
   <div class="page-header">
     <div class="page-header__text">
-      <h1 class="page-title">Foro</h1>
-      <p class="page-subtitle">Preguntas y respuestas de la comunidad</p>
+      <h1 class="page-title">Foro de preguntas y respuestas</h1>
+      <p class="page-subtitle">
+        Publica tus dudas académicas, crea hilos de discusión y recibe respuestas de la comunidad.
+      </p>
     </div>
-    <a routerLink="/forum/create" class="btn-primary">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nuevo hilo
+
+    <a
+      routerLink="/forum/create"
+      class="btn-primary"
+      aria-label="Publicar una nueva pregunta en el foro"
+      title="Publicar una nueva pregunta en el foro"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+      Publicar pregunta
     </a>
   </div>
 
@@ -16,34 +36,42 @@
   <div class="filters-bar">
     <div class="filter-selects">
 
-      <select class="filter-select"
+      <select
+        class="filter-select"
         [(ngModel)]="filters.universityId"
-        (ngModelChange)="applyFilter()">
+        (ngModelChange)="applyFilter()"
+      >
         <option value="">Universidad</option>
         @for (uni of universities(); track uni.id) {
           <option [value]="uni.id">{{ uni.name }}</option>
         }
       </select>
 
-      <select class="filter-select"
+      <select
+        class="filter-select"
         [(ngModel)]="filters.courseId"
-        (ngModelChange)="applyFilter()">
+        (ngModelChange)="applyFilter()"
+      >
         <option value="">Curso</option>
         @for (course of courses(); track course.id) {
           <option [value]="course.id">{{ course.name }}</option>
         }
       </select>
 
-      <select class="filter-select"
+      <select
+        class="filter-select"
         [(ngModel)]="filters.status"
-        (ngModelChange)="applyFilter()">
+        (ngModelChange)="applyFilter()"
+      >
         <option value="">Estado</option>
         <option value="OPEN">Abiertos</option>
         <option value="CLOSED">Cerrados</option>
       </select>
 
       @if (hasActiveFilters) {
-        <button class="btn-clear-filters" (click)="clearFilters()">Limpiar filtros</button>
+        <button class="btn-clear-filters" type="button" (click)="clearFilters()">
+          Limpiar filtros
+        </button>
       }
 
     </div>
@@ -55,40 +83,61 @@
       <app-loading-spinner size="lg" />
     </div>
   } @else if (loadError()) {
-    <div class="error-banner" role="alert">{{ loadError() }}</div>
+    <div class="error-banner" role="alert">
+      {{ loadError() }}
+    </div>
   } @else if (threads().length === 0) {
     <app-empty-state
-      [message]="hasActiveFilters ? 'No hay hilos que coincidan con los filtros' : 'Sé el primero en publicar una pregunta'"
+      [message]="hasActiveFilters ? 'No hay hilos que coincidan con los filtros' : 'Sé el primero en publicar una pregunta académica'"
     />
   } @else {
     <div class="thread-list">
       @for (thread of threads(); track thread.id; let i = $index) {
-        <article class="thread-card" [style.--index]="i % 15" [routerLink]="['/forum', thread.id]">
+        <article
+          class="thread-card"
+          [style.--index]="i % 15"
+          [routerLink]="['/forum', thread.id]"
+        >
 
           <div class="thread-card__main">
             <div class="thread-card__meta">
-              <span class="thread-status-badge" [class.thread-status-badge--closed]="thread.status === 'CLOSED'">
+              <span
+                class="thread-status-badge"
+                [class.thread-status-badge--closed]="thread.status === 'CLOSED'"
+              >
                 {{ thread.status === 'OPEN' ? 'Abierto' : 'Cerrado' }}
               </span>
+
               @if (myThreadBadge(thread) === 'mine') {
                 <span class="mine-badge">Mío</span>
               }
+
               @if (myThreadBadge(thread) === 'mine-anon') {
                 <span class="mine-badge mine-badge--anon">Mío (Anónimo)</span>
               }
+
               @if (contextLabel(thread)) {
-                <span class="thread-context-tag">{{ contextLabel(thread) }}</span>
+                <span class="thread-context-tag">
+                  {{ contextLabel(thread) }}
+                </span>
               }
             </div>
 
-            <h2 class="thread-card__title">{{ thread.title }}</h2>
-            <p class="thread-card__body">{{ excerpt(thread.body) }}</p>
+            <h2 class="thread-card__title">
+              {{ thread.title }}
+            </h2>
+
+            <p class="thread-card__body">
+              {{ excerpt(thread.body) }}
+            </p>
 
             <div class="thread-card__footer">
               @if (thread.authorId) {
-                <a class="thread-card__identity thread-card__identity--link"
+                <a
+                  class="thread-card__identity thread-card__identity--link"
                   [routerLink]="['/profiles', thread.authorId]"
-                  (click)="$event.stopPropagation()">
+                  (click)="$event.stopPropagation()"
+                >
                   <span class="thread-card__avatar" aria-hidden="true">
                     @if (authorAvatarUrl(thread); as avatarUrl) {
                       <img [src]="avatarUrl" [alt]="thread.authorDisplay" />
@@ -96,25 +145,47 @@
                       <span>{{ authorInitials(thread.authorDisplay) }}</span>
                     }
                   </span>
-                  <span class="thread-card__author">{{ thread.authorDisplay }}</span>
+
+                  <span class="thread-card__author">
+                    {{ thread.authorDisplay }}
+                  </span>
                 </a>
               } @else {
                 <span class="thread-card__identity">
-                  <span class="thread-card__avatar thread-card__avatar--anonymous" aria-hidden="true">
+                  <span
+                    class="thread-card__avatar thread-card__avatar--anonymous"
+                    aria-hidden="true"
+                  >
                     <span>{{ authorInitials(thread.authorDisplay) }}</span>
                   </span>
-                  <span class="thread-card__author">{{ thread.authorDisplay }}</span>
+
+                  <span class="thread-card__author">
+                    {{ thread.authorDisplay }}
+                  </span>
                 </span>
               }
-              <span class="thread-card__date">{{ formatDate(thread.createdAt) }}</span>
+
+              <span class="thread-card__date">
+                {{ formatDate(thread.createdAt) }}
+              </span>
+
               <app-report-button targetType="THREAD" [targetId]="thread.id" />
             </div>
           </div>
 
           <div class="thread-card__side">
             <div class="answer-count">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
           </div>
@@ -125,8 +196,15 @@
 
     @if (hasMore()) {
       <div class="load-more">
-        <button class="btn-load-more" (click)="loadMore()" [disabled]="isLoadingMore()">
-          @if (isLoadingMore()) { <app-loading-spinner size="sm" /> }
+        <button
+          class="btn-load-more"
+          type="button"
+          (click)="loadMore()"
+          [disabled]="isLoadingMore()"
+        >
+          @if (isLoadingMore()) {
+            <app-loading-spinner size="sm" />
+          }
           Cargar más
         </button>
       </div>
