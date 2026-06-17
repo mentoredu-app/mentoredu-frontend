@@ -41,6 +41,7 @@ export interface ResourceResponse {
   aceptaResoluciones: boolean;
   authorId: string;
   authorName: string;
+  authorAvatarUrl?: string | null;
   createdAt: string;
   mySubmission?: SubmissionStatus | null;
 }

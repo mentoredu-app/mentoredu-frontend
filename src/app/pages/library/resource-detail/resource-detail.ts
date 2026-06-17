@@ -11,6 +11,7 @@ import { AuthStateService } from '../../../core/services/auth-state.service';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { ResourceResponse, ResourceType, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
 import { Area, Career, Course, University } from '../../../models/catalog.model';
+import { resolveFileUrl } from '../../../services/file-upload.service';
 
 @Component({
   selector: 'app-resource-detail',
@@ -150,6 +151,16 @@ export class ResourceDetail implements OnInit, OnDestroy {
   // Abre el blob ya cargado en una nueva pestaña (sin nueva petición HTTP)
   openInNewTab(): void {
     if (this.blobUrlRef) window.open(this.blobUrlRef, '_blank');
+  }
+
+  authorAvatarUrl(resource: ResourceResponse): string | null {
+    return resolveFileUrl(resource.authorAvatarUrl);
+  }
+
+  authorInitials(displayName: string): string {
+    const parts = displayName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    return parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
   }
 
   typeLabel(type: ResourceType): string {

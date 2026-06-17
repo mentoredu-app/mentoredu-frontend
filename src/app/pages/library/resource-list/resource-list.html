@@ -135,10 +135,17 @@
                       <h2 class="resource-card__title">{{ resource.title }}</h2>
 
                       <div class="resource-card__footer">
-                        <a class="resource-card__author resource-card__author--link"
+                        <a class="resource-card__author-link"
                            [routerLink]="['/profiles', resource.authorId]"
                            (click)="$event.stopPropagation()">
-                          {{ resource.authorName }}
+                          <span class="author-avatar" aria-hidden="true">
+                            @if (authorAvatarUrl(resource); as avatarUrl) {
+                              <img [src]="avatarUrl" [alt]="resource.authorName" />
+                            } @else {
+                              <span>{{ authorInitials(resource.authorName) }}</span>
+                            }
+                          </span>
+                          <span class="resource-card__author">{{ resource.authorName }}</span>
                         </a>
                         <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
                         <app-report-button targetType="RESOURCE" [targetId]="resource.id" />

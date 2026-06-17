@@ -11,6 +11,7 @@ import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { ReportButton } from '../../../shared/components/report-button/report-button';
 import { ResourceResponse, ResourceType, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
 import { University, Area } from '../../../models/catalog.model';
+import { resolveFileUrl } from '../../../services/file-upload.service';
 
 interface SearchFilters {
   q: string;
@@ -234,6 +235,16 @@ export class ResourceList implements OnInit {
 
   formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('es-PE', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  authorAvatarUrl(resource: ResourceResponse): string | null {
+    return resolveFileUrl(resource.authorAvatarUrl);
+  }
+
+  authorInitials(displayName: string): string {
+    const parts = displayName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    return parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
   }
 
   private groupKey(resource: ResourceResponse, mode: ResourceGroupMode): { key: string; label: string } {

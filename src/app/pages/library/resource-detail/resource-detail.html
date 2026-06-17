@@ -55,7 +55,18 @@
         <dl class="meta-list">
           <div class="meta-row">
             <dt>Autor</dt>
-            <dd>{{ r.authorName }}</dd>
+            <dd>
+              <a class="author-link" [routerLink]="['/profiles', r.authorId]">
+                <span class="author-avatar" aria-hidden="true">
+                  @if (authorAvatarUrl(r); as avatarUrl) {
+                    <img [src]="avatarUrl" [alt]="r.authorName" />
+                  } @else {
+                    <span>{{ authorInitials(r.authorName) }}</span>
+                  }
+                </span>
+                <span class="author-name">{{ r.authorName }}</span>
+              </a>
+            </dd>
           </div>
           <div class="meta-row">
             <dt>Publicado</dt>
