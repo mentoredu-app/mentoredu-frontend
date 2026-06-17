@@ -269,5 +269,14 @@
 /* Responsive */
 @media (max-width: 580px) {
   .notifications-page { padding: 24px 16px 48px; }
-  .notif-card { padding: 14px 14px; gap: 12px; }
+  .notif-card { padding: 14px; gap: 12px; }
+  .notif-icon { width: 32px; height: 32px; }
+  .notif-type { font-size: 0.7rem; }
+  .notif-message { font-size: 0.875rem; }
+  .notif-actions {
+    flex-direction: column;
+    justify-content: center;
+  }
+  .btn-mark-read, .btn-open-target { width: 32px; height: 32px; }
+  .read-dot { margin: 0 12px; }
 }

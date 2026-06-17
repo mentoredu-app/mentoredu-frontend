@@ -131,7 +131,7 @@
 .meta-row {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 12px;
 }
 
@@ -271,4 +271,11 @@
 @media (max-width: 480px) {
   .detail-page { padding: 20px 16px 48px; }
   .pdf-frame { height: 55vh; }
+  .meta-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .meta-row dd {
+    text-align: left;
+  }
 }

@@ -319,8 +319,8 @@
 
 .resource-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
 
 .resource-groups {
@@ -354,13 +354,12 @@
 
 .resource-card {
   background: var(--color-surface);
-  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
-  border-radius: 8px;
-  padding: 18px 18px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
   display: flex;
-  align-items: center;
-  gap: 18px;
-  min-height: 104px;
+  flex-direction: column;
+  gap: 12px;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
   transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
@@ -372,27 +371,21 @@
 }
 
 .resource-card__icon {
-  width: 36px;
-  flex: 0 0 36px;
-}
-
-.resource-card__icon img {
-  display: block;
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
+  display: none;
 }
 
 .resource-card__body {
   display: flex;
   flex-direction: column;
+  gap: 10px;
   width: 100%;
   min-width: 0;
+  height: 100%;
 }
 
 .resource-card__top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   min-width: 0;
@@ -408,30 +401,30 @@
 }
 
 .resource-type-badge {
-  font-size: 0.62rem;
-  font-weight: 800;
+  font-size: 0.68rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
-  padding: 4px 9px;
-  border-radius: 99px;
-  color: #0f5fff;
-  background: #dfe9ff;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  color: #1F6C9F;
+  background: #E1F3FE;
   white-space: nowrap;
 }
 
-.resource-type-badge--practica   { color: #16852e; background: #dcf6e5; }
+.resource-type-badge--practica   { color: #346538; background: #EDF3EC; }
 .resource-type-badge--guia       { color: #956400; background: #FBF3DB; }
 .resource-type-badge--apuntes    { color: #9F2F2D; background: #FDEBEC; }
 
 .resolved-badge,
 .mine-badge,
 .year-badge {
-  font-size: 0.62rem;
-  font-weight: 800;
+  font-size: 0.68rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
-  padding: 4px 8px;
-  border-radius: 99px;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 9999px;
 }
 
 .resolved-badge {
@@ -453,44 +446,42 @@
 }
 
 .resource-size {
-  margin-left: 6px;
-  font-size: 0.78rem;
-  color: color-mix(in srgb, var(--color-text-muted) 82%, transparent);
+  font-size: 0.75rem;
+  color: var(--color-text-subtle);
   white-space: nowrap;
 }
 
 .resource-card__title {
-  margin-top: 5px;
-  font-size: 1rem;
-  font-weight: 800;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: var(--color-text);
-  line-height: 1.25;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
+  margin: 0;
 }
 
 .resource-card__footer {
   margin-top: auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: auto auto;
-  align-items: end;
-  column-gap: 10px;
-  row-gap: 2px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .resource-card__author {
-  grid-column: 1;
-  width: fit-content;
-  max-width: 100%;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-decoration: none;
+  max-width: 150px;
 }
 
 .resource-card__author--link:hover {
@@ -499,7 +490,6 @@
 }
 
 .resource-card__date {
-  grid-column: 1;
   font-size: 0.75rem;
   color: var(--color-text-subtle);
   white-space: nowrap;
@@ -507,9 +497,7 @@
 }
 
 .resource-card__footer app-report-button {
-  grid-column: 2;
-  grid-row: 2;
-  justify-self: end;
+  margin-left: auto;
 }
 
 .load-more {
@@ -640,9 +628,6 @@
   .filter-select { min-width: unset; width: 100%; }
   .resource-grid { grid-template-columns: 1fr; }
   .resource-card {
-    min-height: 100px;
-    padding: 16px;
-    gap: 14px;
+    padding: 18px;
   }
-  .resource-size { margin-left: 0; }
 }
