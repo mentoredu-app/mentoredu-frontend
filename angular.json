@@ -28,7 +28,7 @@
           },
           "configurations": {
             "production": {
-              "baseHref": "/mentoredu-frontend/",
+              "baseHref": "/",
               "budgets": [
                 {
                   "type": "initial",
