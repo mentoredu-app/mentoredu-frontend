@@ -295,6 +295,91 @@
 
 .btn-solutions:active { transform: scale(0.97); }
 
+/* ── Análisis IA ────────────────────────────────── */
+.ai-report {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-report__header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.btn-ai-report {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 150ms var(--ease-out);
+}
+.btn-ai-report:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); }
+
+.btn-ai-report--secondary {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 8px 12px;
+}
+
+.ai-report__loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.ai-report__error {
+  font-size: 0.8125rem;
+  color: var(--color-error);
+  margin: 0;
+}
+
+.ai-report__result {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-report__block {
+  padding: 12px 14px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.ai-report__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 6px;
+}
+
+.ai-report__text {
+  font-size: 0.875rem;
+  color: var(--color-text);
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 860px) {
   .detail-layout {

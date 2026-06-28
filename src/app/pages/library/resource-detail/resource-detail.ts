@@ -8,6 +8,8 @@ import { LibraryService } from '../../../services/library.service';
 import { CatalogService } from '../../../services/catalog.service';
 import { CommunityService } from '../../../services/community.service';
 import { AuthStateService } from '../../../core/services/auth-state.service';
+import { AiService } from '../../../services/ai.service';
+import { ReportInsight } from '../../../models/ai.model';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
 import { ResourceResponse, ResourceType, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
 import { Area, Career, Course, University } from '../../../models/catalog.model';
@@ -26,6 +28,7 @@ export class ResourceDetail implements OnInit, OnDestroy {
   private catalogService    = inject(CatalogService);
   private communityService  = inject(CommunityService);
   private sanitizer         = inject(DomSanitizer);
+  private aiService         = inject(AiService);
   readonly authState        = inject(AuthStateService);
 
   readonly isLoading            = signal(true);
@@ -33,6 +36,9 @@ export class ResourceDetail implements OnInit, OnDestroy {
   readonly resource             = signal<ResourceResponse | null>(null);
   readonly isAssociatedReviewer = signal(false);
   readonly isDownloading = signal(false);
+  readonly isLoadingReport = signal(false);
+  readonly report = signal<ReportInsight | null>(null);
+  readonly reportError = signal('');
 
   // PDF preview — se carga vía HttpClient para incluir el token JWT
   readonly isPdfLoading  = signal(false);
@@ -170,6 +176,34 @@ export class ResourceDetail implements OnInit, OnDestroy {
   formatSize(bytes: number): string {
     if (bytes < 1_048_576) return `${(bytes / 1024).toFixed(0)} KB`;
     return `${(bytes / 1_048_576).toFixed(1)} MB`;
+  }
+
+  canSeeReport(): boolean {
+    const role = this.authState.role();
+    const r = this.resource();
+    if (!r || !r.aceptaResoluciones) return false;
+    return role === 'ADMIN'
+      || r.authorId === this.authState.user()?.id
+      || this.isAssociatedReviewer();
+  }
+
+  generateReport(): void {
+    const r = this.resource();
+    if (!r || this.isLoadingReport()) return;
+    this.isLoadingReport.set(true);
+    this.report.set(null);
+    this.reportError.set('');
+
+    this.aiService.getReport(r.id).subscribe({
+      next: res => {
+        this.report.set(res.insight);
+        this.isLoadingReport.set(false);
+      },
+      error: () => {
+        this.reportError.set('No se pudo generar el análisis. Intenta de nuevo.');
+        this.isLoadingReport.set(false);
+      },
+    });
   }
 
   formatDate(iso: string): string {

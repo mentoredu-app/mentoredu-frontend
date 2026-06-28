@@ -16,3 +16,12 @@ export interface ChatResponse {
 export interface IngestResult {
   chunksIngested: number;
 }
+
+export interface ReportInsight {
+  resumen: string;
+  recomendacion: string;
+}
+
+export interface ReportResponse {
+  insight: ReportInsight;
+}

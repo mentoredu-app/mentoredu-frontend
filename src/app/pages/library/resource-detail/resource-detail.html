@@ -161,6 +161,56 @@
           <p class="owner-note">Publicado por ti</p>
         }
 
+        @if (canSeeReport()) {
+          <div class="divider"></div>
+          <div class="ai-report">
+            <div class="ai-report__header">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <span>Análisis IA de resoluciones</span>
+            </div>
+
+            @if (!report() && !isLoadingReport() && !reportError()) {
+              <button class="btn-ai-report" type="button" (click)="generateReport()">
+                Generar análisis
+              </button>
+            }
+
+            @if (isLoadingReport()) {
+              <div class="ai-report__loading">
+                <app-loading-spinner size="sm" />
+                <span>Analizando resoluciones…</span>
+              </div>
+            }
+
+            @if (reportError()) {
+              <p class="ai-report__error">{{ reportError() }}</p>
+              <button class="btn-ai-report" type="button" (click)="generateReport()">
+                Reintentar
+              </button>
+            }
+
+            @if (report(); as insight) {
+              <div class="ai-report__result">
+                <div class="ai-report__block">
+                  <p class="ai-report__label">Resumen</p>
+                  <p class="ai-report__text">{{ insight.resumen }}</p>
+                </div>
+                <div class="ai-report__block">
+                  <p class="ai-report__label">Recomendación</p>
+                  <p class="ai-report__text">{{ insight.recomendacion }}</p>
+                </div>
+                <button class="btn-ai-report btn-ai-report--secondary" type="button" (click)="generateReport()">
+                  Regenerar
+                </button>
+              </div>
+            }
+          </div>
+        }
+
         @if (r.aceptaResoluciones && (r.authorId === authState.user()?.id || isAssociatedReviewer())) {
           <a [routerLink]="['/library', r.id, 'solutions']" class="btn-solutions">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
