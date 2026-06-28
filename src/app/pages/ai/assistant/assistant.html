@@ -70,7 +70,11 @@
               </svg>
             </span>
           }
-          <span class="chat-msg__bubble">{{ msg.text }}</span>
+          @if (msg.from === 'bot') {
+            <span class="chat-msg__bubble chat-msg__bubble--md" [innerHTML]="msg.text | markdown"></span>
+          } @else {
+            <span class="chat-msg__bubble">{{ msg.text }}</span>
+          }
         </div>
       }
 
