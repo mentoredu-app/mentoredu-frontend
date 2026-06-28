@@ -2,44 +2,39 @@ import { Component, ElementRef, ViewChild, inject, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms';
 import { AuthStateService } from '../../../core/services/auth-state.service';
 import { AiService } from '../../../services/ai.service';
-import { AiMode, ChatMessage } from '../../../models/ai.model';
-
-const GREETING: Record<AiMode, string> = {
-  assistant: 'Hola, soy tu asistente de MentorEdu. Puedo ayudarte a encontrar recursos académicos con lenguaje natural. ¿Qué estás buscando?',
-  support: 'Modo soporte: respondo preguntas sobre cómo usar MentorEdu basándome en la guía oficial.',
-};
+import { AiMode } from '../../../models/ai.model';
+import { MarkdownPipe } from '../../../shared/pipes/markdown.pipe';
 
 @Component({
   selector: 'app-assistant',
-  imports: [FormsModule],
+  imports: [FormsModule, MarkdownPipe],
   templateUrl: './assistant.html',
   styleUrl: './assistant.css',
 })
 export class Assistant {
   @ViewChild('messagesEnd') private messagesEnd!: ElementRef<HTMLDivElement>;
 
-  private aiService = inject(AiService);
+  readonly aiService = inject(AiService);
   readonly authState = inject(AuthStateService);
 
   readonly isAdmin = this.authState.role() === 'ADMIN';
   draft = '';
-  readonly mode = signal<AiMode>('assistant');
   readonly sending = signal(false);
   readonly ingesting = signal(false);
   readonly ingestMsg = signal('');
-  readonly messages = signal<ChatMessage[]>([{ from: 'bot', text: GREETING.assistant }]);
+
+  get mode() { return this.aiService.mode; }
+  get messages() { return this.aiService.messages; }
 
   setMode(newMode: AiMode): void {
-    if (this.mode() === newMode) return;
-    this.mode.set(newMode);
-    this.messages.set([{ from: 'bot', text: GREETING[newMode] }]);
+    this.aiService.setMode(newMode);
   }
 
   send(): void {
     const value = this.draft.trim();
     if (!value || this.sending()) return;
 
-    this.push({ from: 'user', text: value });
+    this.aiService.pushMessage({ from: 'user', text: value });
     this.draft = '';
     this.sending.set(true);
     this.scrollToBottom();
@@ -50,12 +45,12 @@ export class Assistant {
 
     call.subscribe({
       next: res => {
-        this.push({ from: 'bot', text: res.reply });
+        this.aiService.pushMessage({ from: 'bot', text: res.reply });
         this.sending.set(false);
         this.scrollToBottom();
       },
       error: () => {
-        this.push({ from: 'bot', text: 'Ocurrió un error al procesar tu solicitud. Intenta de nuevo.' });
+        this.aiService.pushMessage({ from: 'bot', text: 'Ocurrió un error al procesar tu solicitud. Intenta de nuevo.' });
         this.sending.set(false);
         this.scrollToBottom();
       },
@@ -84,10 +79,6 @@ export class Assistant {
       event.preventDefault();
       this.send();
     }
-  }
-
-  private push(msg: ChatMessage): void {
-    this.messages.update(list => [...list, msg]);
   }
 
   private scrollToBottom(): void {

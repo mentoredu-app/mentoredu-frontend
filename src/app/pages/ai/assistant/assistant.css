@@ -159,6 +159,21 @@
   border-color: transparent;
 }
 
+/* ── Markdown dentro de burbujas del bot ───────── */
+.chat-msg__bubble--md p  { margin: 0 0 6px; }
+.chat-msg__bubble--md p:last-child { margin-bottom: 0; }
+.chat-msg__bubble--md ul { margin: 6px 0; padding-left: 18px; }
+.chat-msg__bubble--md li { margin-bottom: 4px; }
+.chat-msg__bubble--md strong { font-weight: 600; }
+.chat-msg__bubble--md em    { font-style: italic; }
+.chat-msg__bubble--md a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+.chat-msg__bubble--md a:hover { opacity: 0.8; }
+
 /* ── Indicador de escritura ─────────────────────── */
 .chat-msg__bubble--typing {
   display: flex;
