@@ -1,0 +1,116 @@
+<div class="ai-page">
+
+  <div class="ai-header">
+    <div class="ai-header__text">
+      <h1 class="page-title">Asistente IA</h1>
+      <p class="page-subtitle">
+        @if (mode() === 'assistant') {
+          Busca recursos académicos con lenguaje natural.
+        } @else {
+          Resuelve dudas sobre el uso de MentorEdu.
+        }
+      </p>
+    </div>
+
+    <div class="ai-header__actions">
+      <div class="mode-toggle" role="group" aria-label="Modo del asistente">
+        <button class="mode-toggle__btn" [class.mode-toggle__btn--active]="mode() === 'assistant'"
+          type="button" (click)="setMode('assistant')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Asistente
+        </button>
+        <button class="mode-toggle__btn" [class.mode-toggle__btn--active]="mode() === 'support'"
+          type="button" (click)="setMode('support')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Soporte
+        </button>
+      </div>
+
+      @if (isAdmin && mode() === 'support') {
+        <button class="btn-ingest" type="button" [disabled]="ingesting()" (click)="ingest()">
+          @if (ingesting()) {
+            <span class="spinner spinner--sm"></span>
+            Ingiriendo…
+          } @else {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Cargar documentos
+          }
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (ingestMsg()) {
+    <div class="ingest-banner">{{ ingestMsg() }}</div>
+  }
+
+  <div class="chat-window">
+    <div class="chat-messages">
+      @for (msg of messages(); track $index) {
+        <div class="chat-msg" [class.chat-msg--user]="msg.from === 'user'">
+          @if (msg.from === 'bot') {
+            <span class="chat-msg__avatar" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+          }
+          <span class="chat-msg__bubble">{{ msg.text }}</span>
+        </div>
+      }
+
+      @if (sending()) {
+        <div class="chat-msg">
+          <span class="chat-msg__avatar" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </span>
+          <span class="chat-msg__bubble chat-msg__bubble--typing">
+            <span></span><span></span><span></span>
+          </span>
+        </div>
+      }
+
+      <div #messagesEnd></div>
+    </div>
+
+    <form class="chat-form" (ngSubmit)="send()">
+      <textarea
+        class="chat-form__input"
+        [(ngModel)]="draft"
+        name="draft"
+        rows="1"
+        placeholder="{{ mode() === 'assistant' ? 'Ej: busca recursos de cálculo diferencial para ingeniería…' : 'Ej: ¿cómo subo una resolución?' }}"
+        [disabled]="sending()"
+        (keydown)="onKeydown($event)"
+        aria-label="Mensaje"
+      ></textarea>
+      <button class="chat-form__send" type="submit" [disabled]="sending() || !draft.trim()" aria-label="Enviar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+
+</div>

@@ -1,0 +1,248 @@
+.ai-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Encabezado ─────────────────────────────────── */
+.ai-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.ai-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Toggle de modo ─────────────────────────────── */
+.mode-toggle {
+  display: flex;
+  background: var(--color-surface-alt, var(--color-surface));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.mode-toggle__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 150ms var(--ease-out), background 150ms var(--ease-out);
+}
+.mode-toggle__btn:hover { color: var(--color-text); }
+.mode-toggle__btn--active {
+  color: var(--color-primary);
+  background: var(--color-primary-subtle, color-mix(in srgb, var(--color-primary) 10%, transparent));
+  font-weight: 600;
+}
+
+/* ── Botón ingestar ─────────────────────────────── */
+.btn-ingest {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 150ms var(--ease-out);
+  white-space: nowrap;
+}
+.btn-ingest:hover:not(:disabled) { background: var(--color-primary-hover); }
+.btn-ingest:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Banner de ingesta ──────────────────────────── */
+.ingest-banner {
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* ── Ventana de chat ────────────────────────────── */
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, var(--radius-md));
+  background: var(--color-surface);
+  overflow: hidden;
+  min-height: 480px;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  min-height: 380px;
+  max-height: 560px;
+}
+
+/* ── Mensajes ───────────────────────────────────── */
+.chat-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 80%;
+}
+
+.chat-msg--user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chat-msg__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary-subtle, color-mix(in srgb, var(--color-primary) 12%, transparent));
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.chat-msg__bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-msg--user .chat-msg__bubble {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* ── Indicador de escritura ─────────────────────── */
+.chat-msg__bubble--typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+}
+
+.chat-msg__bubble--typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  animation: typing-dot 1.2s infinite;
+}
+.chat-msg__bubble--typing span:nth-child(2) { animation-delay: 0.2s; }
+.chat-msg__bubble--typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30%            { opacity: 1;    transform: translateY(-3px); }
+}
+
+/* ── Formulario ─────────────────────────────────── */
+.chat-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.chat-form__input {
+  flex: 1;
+  resize: none;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color 150ms var(--ease-out);
+  max-height: 120px;
+  line-height: 1.5;
+}
+.chat-form__input:focus { border-color: var(--color-primary); }
+.chat-form__input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.chat-form__send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 150ms var(--ease-out), transform 150ms var(--ease-out);
+}
+.chat-form__send:hover:not(:disabled) { background: var(--color-primary-hover); }
+.chat-form__send:active:not(:disabled) { transform: scale(0.94); }
+.chat-form__send:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Spinner ────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.spinner--sm { width: 13px; height: 13px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsivo ─────────────────────────────────── */
+@media (max-width: 600px) {
+  .ai-page { padding: 24px 16px; }
+  .chat-msg { max-width: 92%; }
+  .ai-header { flex-direction: column; gap: 12px; }
+}
