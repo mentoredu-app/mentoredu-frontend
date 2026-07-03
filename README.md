@@ -8,6 +8,10 @@ Aplicación web principal de la plataforma MentorEdu. Desarrollada en Angular 21
 - TypeScript
 - Netlify (hosting)
 
+## Versión desplegada
+
+`v1.0.0` — [ver tag](https://github.com/mentoredu-app/mentoredu-frontend/releases/tag/v1.0.0)
+
 ## Live
 
 https://mentor-edu-frontend.netlify.app
