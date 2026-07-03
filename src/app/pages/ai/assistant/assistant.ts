@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthStateService } from '../../../core/services/auth-state.service';
 import { AiService } from '../../../services/ai.service';
@@ -11,7 +11,7 @@ import { MarkdownPipe } from '../../../shared/pipes/markdown.pipe';
   templateUrl: './assistant.html',
   styleUrl: './assistant.css',
 })
-export class Assistant {
+export class Assistant implements OnInit {
   @ViewChild('messagesEnd') private messagesEnd!: ElementRef<HTMLDivElement>;
 
   readonly aiService = inject(AiService);
@@ -22,12 +22,34 @@ export class Assistant {
   readonly sending = signal(false);
   readonly ingesting = signal(false);
   readonly ingestMsg = signal('');
+  readonly suggestions = signal<string[]>([]);
 
   get mode() { return this.aiService.mode; }
   get messages() { return this.aiService.messages; }
 
+  ngOnInit(): void {
+    if (this.mode() === 'assistant') {
+      this.loadSuggestions();
+    }
+  }
+
   setMode(newMode: AiMode): void {
     this.aiService.setMode(newMode);
+    if (newMode === 'assistant' && !this.suggestions().length) {
+      this.loadSuggestions();
+    }
+  }
+
+  sendSuggestion(text: string): void {
+    this.draft = text;
+    this.send();
+  }
+
+  private loadSuggestions(): void {
+    this.aiService.getSuggestions().subscribe({
+      next: res => this.suggestions.set(res.suggestions),
+      error: () => this.suggestions.set([]),
+    });
   }
 
   send(): void {

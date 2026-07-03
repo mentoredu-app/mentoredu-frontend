@@ -57,6 +57,14 @@
     <div class="ingest-banner">{{ ingestMsg() }}</div>
   }
 
+  @if (mode() === 'assistant' && suggestions().length && messages().length <= 1) {
+    <div class="suggestion-chips">
+      @for (s of suggestions(); track s) {
+        <button type="button" class="suggestion-chip" (click)="sendSuggestion(s)">{{ s }}</button>
+      }
+    </div>
+  }
+
   <div class="chat-window">
     <div class="chat-messages">
       @for (msg of messages(); track $index) {

@@ -17,6 +17,10 @@ export interface IngestResult {
   chunksIngested: number;
 }
 
+export interface SuggestionsResponse {
+  suggestions: string[];
+}
+
 export interface ReportInsight {
   resumen: string;
   recomendacion: string;
