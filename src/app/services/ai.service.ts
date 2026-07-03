@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AiMode, ChatMessage, ChatResponse, IngestResult, ReportResponse } from '../models/ai.model';
+import { AiMode, ChatMessage, ChatResponse, IngestResult, ReportResponse, SuggestionsResponse } from '../models/ai.model';
 
 const GREETING: Record<AiMode, string> = {
   assistant: 'Hola, soy tu asistente de MentorEdu. Puedo ayudarte a encontrar recursos académicos con lenguaje natural. ¿Qué estás buscando?',
@@ -41,5 +41,9 @@ export class AiService {
 
   getReport(resourceId: string): Observable<ReportResponse> {
     return this.http.get<ReportResponse>(`${this.base}/report/${resourceId}`);
+  }
+
+  getSuggestions(): Observable<SuggestionsResponse> {
+    return this.http.get<SuggestionsResponse>(`${this.base}/assistant/suggestions`);
   }
 }
