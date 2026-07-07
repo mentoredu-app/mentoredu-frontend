@@ -29,6 +29,8 @@ export class MarkdownPipe implements PipeTransform {
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
-        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/(?<!["'=])(https?:\/\/[^\s<]+)/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer">Abrir recurso</a>');
   }
 }

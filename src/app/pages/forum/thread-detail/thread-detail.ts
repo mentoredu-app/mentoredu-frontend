@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthStateService } from '../../../core/services/auth-state.service';
 import { ForumService } from '../../../services/forum.service';
@@ -18,6 +18,7 @@ import { resolveFileUrl } from '../../../services/file-upload.service';
 })
 export class ThreadDetail implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private forumService = inject(ForumService);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
@@ -32,6 +33,7 @@ export class ThreadDetail implements OnInit {
   readonly isLoadingAnswers = signal(false);
   readonly isSubmitting = signal(false);
   readonly isClosing = signal(false);
+  readonly mutatingIds = signal<Set<string>>(new Set());
 
   // Estado de reacciones: key = 'thread_{id}' | 'answer_{id}', value = tipo activo o null
   private readonly reactions = signal<Record<string, ReactionType | null>>({});
@@ -163,6 +165,151 @@ export class ThreadDetail implements OnInit {
         } else {
           this.toast.error('Error al cerrar el hilo. Intenta de nuevo.');
         }
+      },
+    });
+  }
+
+  canManageThread(): boolean {
+    const t = this.thread();
+    if (!t) return false;
+    if (this.authState.role() === 'ADMIN') return true;
+    const userId = this.authState.user()?.id;
+    if (!userId) return false;
+    if (t.authorId === userId) return true;
+    return this.ownsThreadFromLocalStorage(t.id, userId);
+  }
+
+  canManageAnswer(answer: AnswerResponse): boolean {
+    return this.authState.role() === 'ADMIN' || answer.authorId === this.authState.user()?.id;
+  }
+
+  canManageComment(comment: CommentResponse): boolean {
+    return this.authState.role() === 'ADMIN' || comment.authorId === this.authState.user()?.id;
+  }
+
+  editThread(): void {
+    const t = this.thread();
+    if (!t || this.isMutating(t.id)) return;
+    const title = window.prompt('Nuevo titulo del hilo:', t.title);
+    if (title === null) return;
+    const body = window.prompt('Nuevo contenido del hilo:', t.body);
+    if (body === null) return;
+
+    this.setMutating(t.id, true);
+    this.forumService.updateThread(t.id, { title: title.trim(), body: body.trim() }).subscribe({
+      next: updated => {
+        this.thread.set(updated);
+        this.setMutating(t.id, false);
+        this.toast.success('Hilo actualizado');
+      },
+      error: err => {
+        this.setMutating(t.id, false);
+        this.toast.error(err.error?.message ?? 'No se pudo actualizar el hilo.');
+      },
+    });
+  }
+
+  deleteThread(): void {
+    const t = this.thread();
+    if (!t || this.isMutating(t.id)) return;
+    if (!window.confirm(`Eliminar el hilo "${t.title}"? Tambien se eliminaran sus respuestas y comentarios.`)) return;
+
+    this.setMutating(t.id, true);
+    this.forumService.deleteThread(t.id).subscribe({
+      next: () => {
+        this.toast.success('Hilo eliminado');
+        this.router.navigate(['/forum']);
+      },
+      error: err => {
+        this.setMutating(t.id, false);
+        this.toast.error(err.error?.message ?? 'No se pudo eliminar el hilo.');
+      },
+    });
+  }
+
+  editAnswer(answer: AnswerResponse): void {
+    if (this.isMutating(answer.id)) return;
+    const body = window.prompt('Editar respuesta:', answer.body);
+    if (body === null) return;
+    const threadId = this.route.snapshot.paramMap.get('id')!;
+
+    this.setMutating(answer.id, true);
+    this.forumService.updateAnswer(threadId, answer.id, { body: body.trim() }).subscribe({
+      next: updated => {
+        this.answers.update(list => list.map(a => a.id === updated.id ? updated : a));
+        this.setMutating(answer.id, false);
+        this.toast.success('Respuesta actualizada');
+      },
+      error: err => {
+        this.setMutating(answer.id, false);
+        this.toast.error(err.error?.message ?? 'No se pudo actualizar la respuesta.');
+      },
+    });
+  }
+
+  deleteAnswer(answer: AnswerResponse): void {
+    if (this.isMutating(answer.id)) return;
+    if (!window.confirm('Eliminar esta respuesta? Tambien se eliminaran sus comentarios.')) return;
+    const threadId = this.route.snapshot.paramMap.get('id')!;
+
+    this.setMutating(answer.id, true);
+    this.forumService.deleteAnswer(threadId, answer.id).subscribe({
+      next: () => {
+        this.answers.update(list => list.filter(a => a.id !== answer.id));
+        this.commentsByAnswer.update(map => {
+          const next = { ...map };
+          delete next[answer.id];
+          return next;
+        });
+        this.setMutating(answer.id, false);
+        this.toast.success('Respuesta eliminada');
+      },
+      error: err => {
+        this.setMutating(answer.id, false);
+        this.toast.error(err.error?.message ?? 'No se pudo eliminar la respuesta.');
+      },
+    });
+  }
+
+  editComment(answerId: string, comment: CommentResponse): void {
+    if (this.isMutating(comment.id)) return;
+    const body = window.prompt('Editar comentario:', comment.body);
+    if (body === null) return;
+
+    this.setMutating(comment.id, true);
+    this.forumService.updateComment(answerId, comment.id, { body: body.trim() }).subscribe({
+      next: updated => {
+        this.commentsByAnswer.update(map => ({
+          ...map,
+          [answerId]: (map[answerId] ?? []).map(c => c.id === updated.id ? updated : c),
+        }));
+        this.setMutating(comment.id, false);
+        this.toast.success('Comentario actualizado');
+      },
+      error: err => {
+        this.setMutating(comment.id, false);
+        this.toast.error(err.error?.message ?? 'No se pudo actualizar el comentario.');
+      },
+    });
+  }
+
+  deleteComment(answerId: string, comment: CommentResponse): void {
+    if (this.isMutating(comment.id)) return;
+    if (!window.confirm('Eliminar este comentario?')) return;
+
+    this.setMutating(comment.id, true);
+    this.forumService.deleteComment(answerId, comment.id).subscribe({
+      next: () => {
+        this.commentsByAnswer.update(map => ({
+          ...map,
+          [answerId]: (map[answerId] ?? []).filter(c => c.id !== comment.id),
+        }));
+        this.setMutating(comment.id, false);
+        this.toast.success('Comentario eliminado');
+      },
+      error: err => {
+        this.setMutating(comment.id, false);
+        this.toast.error(err.error?.message ?? 'No se pudo eliminar el comentario.');
       },
     });
   }
@@ -350,5 +497,24 @@ export class ThreadDetail implements OnInit {
     const parts = displayName.trim().split(/\s+/).filter(Boolean);
     if (parts.length === 0) return '?';
     return parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
+  }
+
+  isMutating(id: string): boolean {
+    return this.mutatingIds().has(id);
+  }
+
+  private setMutating(id: string, value: boolean): void {
+    this.mutatingIds.update(current => {
+      const next = new Set(current);
+      if (value) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  private ownsThreadFromLocalStorage(threadId: string, userId: string): boolean {
+    const raw = localStorage.getItem(`myThreadIds_${userId}`);
+    if (!raw) return false;
+    try { return (JSON.parse(raw) as string[]).includes(threadId); } catch { return false; }
   }
 }

@@ -27,5 +27,6 @@ export interface ReportInsight {
 }
 
 export interface ReportResponse {
+  solutions?: unknown[];
   insight: ReportInsight;
 }

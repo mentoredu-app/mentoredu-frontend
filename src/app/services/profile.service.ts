@@ -74,4 +74,8 @@ export class ProfileService {
   getMyAcademyProfile() {
     return this.http.get<AcademyProfileResponse>(`${this.base}/academy/me`);
   }
+
+  getAcademyProfile(userId: string) {
+    return this.http.get<AcademyProfileResponse>(`${this.base}/academy/${userId}`);
+  }
 }
