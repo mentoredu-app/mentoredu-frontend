@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { resolveFileUrl } from '../../services/file-upload.service';
 import { NotificationService } from '../../services/notification.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -17,6 +18,7 @@ export class MainLayout implements OnInit {
   private authService    = inject(AuthService);
   private profileService = inject(ProfileService);
   private notificationService = inject(NotificationService);
+  private themeService = inject(ThemeService);
 
   readonly menuOpen = signal(false);
   readonly sidebarOpen = signal(false);
