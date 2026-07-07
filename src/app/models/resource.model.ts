@@ -1,12 +1,12 @@
 export type ResourceType = 'EXAMEN_COMPLETO' | 'EXAMEN_SECCION' | 'GUIA' | 'APUNTES' | 'PRACTICA' | 'OTRO';
 
 export const RESOURCE_TYPE_LABELS: Record<ResourceType, string> = {
-  EXAMEN_COMPLETO:  'Examen completo',
-  EXAMEN_SECCION:   'Examen por sección',
-  GUIA:             'Guía',
-  APUNTES:          'Apuntes',
-  PRACTICA:         'Práctica',
-  OTRO:             'Otro',
+  EXAMEN_COMPLETO: 'Examen completo',
+  EXAMEN_SECCION: 'Examen por seccion',
+  GUIA: 'Guia',
+  APUNTES: 'Apuntes',
+  PRACTICA: 'Practica',
+  OTRO: 'Otro',
 };
 
 export const TYPES_REQUIRING_COURSE: ResourceType[] = ['EXAMEN_SECCION', 'PRACTICA', 'OTRO'];
@@ -63,6 +63,13 @@ export interface PublishResourceRequest {
 
 export interface UpdateResourceSettingsRequest {
   aceptaResoluciones: boolean;
+}
+
+export interface UpdateResourceRequest {
+  title?: string;
+  description?: string | null;
+  resourceYear?: number | null;
+  aceptaResoluciones?: boolean;
 }
 
 export interface DownloadResponse {

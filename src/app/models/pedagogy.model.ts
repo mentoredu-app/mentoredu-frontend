@@ -29,7 +29,7 @@ export interface SolutionResponse {
   id: string;
   resourceId: string;
   studentId: string;
-  studentName?: string;
+  studentName: string;
   status: SolutionStatus;
   fileUrl?: string;
   content?: string;
