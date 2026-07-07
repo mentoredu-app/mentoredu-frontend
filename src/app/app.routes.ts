@@ -19,7 +19,8 @@ export const routes: Routes = [
     component: MainLayout,
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'library', pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard) },
       { path: 'library', loadChildren: () => import('./pages/library/library.routes').then(m => m.LIBRARY_ROUTES) },
       { path: 'forum', loadChildren: () => import('./pages/forum/forum.routes').then(m => m.FORUM_ROUTES) },
       { path: 'profiles', loadChildren: () => import('./pages/profiles/profiles.routes').then(m => m.PROFILES_ROUTES) },
@@ -28,6 +29,7 @@ export const routes: Routes = [
       { path: 'community', loadChildren: () => import('./pages/community/community.routes').then(m => m.COMMUNITY_ROUTES) },
       { path: 'admin', loadChildren: () => import('./pages/admin/admin.routes').then(m => m.ADMIN_ROUTES) },
       { path: 'ai', loadChildren: () => import('./pages/ai/ai.routes').then(m => m.AI_ROUTES) },
+      { path: 'settings', loadComponent: () => import('./pages/settings/settings').then(m => m.Settings) },
     ],
   },
   { path: '**', redirectTo: 'login' },

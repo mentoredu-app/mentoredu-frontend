@@ -1,0 +1,95 @@
+<div class="solution-inbox">
+  <header class="inbox-header">
+    <div>
+      <h1>{{ mode() === 'received' ? 'Resoluciones recibidas' : 'Mis resoluciones' }}</h1>
+      <p>
+        {{ mode() === 'received'
+          ? 'Revisa, filtra y evalua las entregas de estudiantes.'
+          : 'Consulta tus envios y feedback recibido.' }}
+      </p>
+    </div>
+
+    <label class="sort-control">
+      <span>Ordenar</span>
+      <select [value]="sortMode()" (change)="setSortMode($any($event.target).value)">
+        <option value="date_desc">Fecha reciente</option>
+        <option value="date_asc">Fecha antigua</option>
+        @if (mode() === 'received') {
+          <option value="resource_asc">Recurso A-Z</option>
+          <option value="student_asc">Alumno A-Z</option>
+        }
+      </select>
+    </label>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-center"><app-loading-spinner size="lg" /></div>
+  } @else if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  } @else if (mode() === 'received') {
+    @if (received().length === 0) {
+      <app-empty-state message="No hay resoluciones recibidas" />
+    } @else {
+      <div class="solution-list solution-list--groups">
+        @for (group of groupedReceived(); track group.resourceId) {
+          <a class="solution-card solution-card--resource" [routerLink]="['/pedagogy', 'received', group.resourceId]">
+            <div class="solution-card__main">
+              <span class="solution-card__avatar solution-card__avatar--resource">{{ group.resourceTitle.charAt(0).toUpperCase() }}</span>
+              <div>
+                <h2>{{ group.resourceTitle }}</h2>
+                <p>{{ studentSummary(group) }}</p>
+                <span>Ultima entrega {{ formatShort(group.latestSubmittedAt) }}</span>
+              </div>
+            </div>
+            <div class="solution-card__meta">
+              <span class="type-chip">{{ group.resourceType }}</span>
+              <span class="score-chip">{{ group.total }} {{ group.total === 1 ? 'entrega' : 'entregas' }}</span>
+              @if (group.pending > 0) {
+                <span class="status-chip">{{ group.pending }} pendientes</span>
+              }
+              @if (group.reviewed > 0) {
+                <span class="status-chip status-chip--reviewed">{{ group.reviewed }} revisadas</span>
+              }
+            </div>
+          </a>
+        }
+      </div>
+    }
+  } @else {
+    @if (mine().length === 0) {
+      <app-empty-state message="Aun no enviaste resoluciones" />
+    } @else {
+      <div class="solution-list">
+        @for (item of sortedMine(); track item.id) {
+          <a class="solution-card" [routerLink]="['/pedagogy', item.resourceId, 'my-solution']">
+            <div class="solution-card__main">
+              <span class="solution-card__avatar">{{ item.resourceTitle.charAt(0).toUpperCase() }}</span>
+              <div>
+                <h2>{{ item.resourceTitle }}</h2>
+                <p>{{ item.resourceType }}</p>
+                <span>Enviada {{ formatShort(item.submittedAt) }}</span>
+              </div>
+            </div>
+            <div class="solution-card__meta">
+              <span class="status-chip" [class.status-chip--reviewed]="item.status === 'REVIEWED'">{{ statusLabel(item.status) }}</span>
+              @if (item.feedbackScore !== null) {
+                <span class="score-chip">{{ item.feedbackScore }}/10</span>
+              }
+            </div>
+          </a>
+        }
+      </div>
+    }
+  }
+
+  @if (hasMore() && !isLoading()) {
+    <div class="load-more">
+      <button type="button" (click)="loadMore()" [disabled]="isLoadingMore()">
+        @if (isLoadingMore()) {
+          <app-loading-spinner size="sm" />
+        }
+        Cargar mas
+      </button>
+    </div>
+  }
+</div>

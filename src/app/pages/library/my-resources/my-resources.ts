@@ -75,6 +75,62 @@ export class MyResources implements OnInit {
     });
   }
 
+  editResource(resource: ResourceResponse, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.isUpdating(resource.id)) return;
+
+    const title = window.prompt('Nuevo titulo del recurso:', resource.title);
+    if (title === null) return;
+    const description = window.prompt('Nueva descripcion:', resource.description ?? '');
+    if (description === null) return;
+    const yearText = window.prompt('Ano del recurso (deja vacio si es desconocido):', resource.resourceYear?.toString() ?? '');
+    if (yearText === null) return;
+
+    const resourceYear = yearText.trim() ? Number(yearText.trim()) : null;
+    if (resourceYear !== null && (!Number.isInteger(resourceYear) || resourceYear < 1900 || resourceYear > 2100)) {
+      this.toast.error('El ano debe estar entre 1900 y 2100.');
+      return;
+    }
+
+    this.updatingIds.update(s => new Set([...s, resource.id]));
+    this.libraryService.update(resource.id, {
+      title: title.trim(),
+      description: description.trim() || null,
+      resourceYear,
+    }).subscribe({
+      next: updated => {
+        this.resources.update(list => list.map(r => r.id === updated.id ? updated : r));
+        this.updatingIds.update(s => { const ns = new Set(s); ns.delete(resource.id); return ns; });
+        this.toast.success('Recurso actualizado');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.updatingIds.update(s => { const ns = new Set(s); ns.delete(resource.id); return ns; });
+        this.toast.error(err.error?.message ?? 'No se pudo actualizar el recurso.');
+      },
+    });
+  }
+
+  deleteResource(resource: ResourceResponse, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.isUpdating(resource.id)) return;
+    if (!window.confirm(`Eliminar "${resource.title}"? Esta accion tambien eliminara sus resoluciones.`)) return;
+
+    this.updatingIds.update(s => new Set([...s, resource.id]));
+    this.libraryService.delete(resource.id).subscribe({
+      next: () => {
+        this.resources.update(list => list.filter(r => r.id !== resource.id));
+        this.updatingIds.update(s => { const ns = new Set(s); ns.delete(resource.id); return ns; });
+        this.toast.success('Recurso eliminado');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.updatingIds.update(s => { const ns = new Set(s); ns.delete(resource.id); return ns; });
+        this.toast.error(err.error?.message ?? 'No se pudo eliminar el recurso.');
+      },
+    });
+  }
+
   readonly totalLabel = computed(() => {
     const count = this.resources().length;
     if (count === 0) return '';

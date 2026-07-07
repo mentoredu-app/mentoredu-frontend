@@ -1,15 +1,16 @@
-import { Component, DestroyRef, OnInit, inject, signal, computed } from '@angular/core';
+﻿import { Component, DestroyRef, OnInit, inject, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProfileService } from '../../../services/profile.service';
 import { resolveFileUrl } from '../../../services/file-upload.service';
+import { CatalogService } from '../../../services/catalog.service';
 import { LibraryService } from '../../../services/library.service';
 import { ForumService } from '../../../services/forum.service';
 import { PedagogyService } from '../../../services/pedagogy.service';
 import { CommunityService } from '../../../services/community.service';
 import { AuthStateService } from '../../../core/services/auth-state.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
-import { ProfileResponse, StudentProfileResponse } from '../../../models/profile.model';
+import { AcademyProfileResponse, ProfileResponse, StudentProfileResponse } from '../../../models/profile.model';
 import { ResourceResponse, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
 import { ThreadResponse } from '../../../models/forum.model';
 import { MySolutionSummaryResponse, ReceivedSolutionResponse } from '../../../models/pedagogy.model';
@@ -34,6 +35,7 @@ export class ProfileView implements OnInit {
   private route            = inject(ActivatedRoute);
   private destroyRef       = inject(DestroyRef);
   private profileService   = inject(ProfileService);
+  private catalogService   = inject(CatalogService);
   private libraryService   = inject(LibraryService);
   private forumService     = inject(ForumService);
   private pedagogyService  = inject(PedagogyService);
@@ -41,18 +43,22 @@ export class ProfileView implements OnInit {
   private authState        = inject(AuthStateService);
   private toast            = inject(ToastService);
 
-  // ── Profile ──────────────────────────────────────
+  // â”€â”€ Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   readonly isLoading    = signal(true);
   readonly profile      = signal<ProfileResponse | null>(null);
   readonly studentExtra = signal<StudentProfileResponse | null>(null);
+  readonly academyDetails = signal<AcademyProfileResponse | null>(null);
   readonly teacherDetails = signal<TeacherProfileDetails | null>(null);
+  readonly targetUniversityName = signal('');
+  readonly targetAreaName = signal('');
+  readonly targetCareerName = signal('');
   readonly notFound     = signal(false);
   readonly isFollowing        = signal(false);
   readonly isFollowLoading    = signal(false);
   readonly associationStatus  = signal<AssociationStatus | 'NONE' | 'LOADING'>('NONE');
   readonly isAssocLoading     = signal(false);
 
-  // ── Tabs ─────────────────────────────────────────
+  // â”€â”€ Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   readonly activeTab = signal<ProfileTab>('threads');
 
   readonly showResourcesTab = computed(() => {
@@ -74,7 +80,7 @@ export class ProfileView implements OnInit {
       role === 'TEACHER';
   });
 
-  // ── Activity data ────────────────────────────────
+  // â”€â”€ Activity data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   readonly tabResources  = signal<ResourceResponse[]>([]);
   readonly tabThreads    = signal<ThreadResponse[]>([]);
   readonly tabSolutions  = signal<MySolutionSummaryResponse[]>([]);
@@ -83,7 +89,7 @@ export class ProfileView implements OnInit {
   readonly hasMore       = signal(false);
   private pages: Record<ProfileTab, number> = { resources: 0, threads: 0, solutions: 0, received: 0 };
 
-  // ── Computed ─────────────────────────────────────
+  // â”€â”€ Computed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   readonly isOwnProfile = computed(() => {
     const user = this.authState.user();
     const p    = this.profile();
@@ -99,7 +105,7 @@ export class ProfileView implements OnInit {
     hasTeacherProfileDetails(this.teacherDetails())
   );
 
-  // ── Equipo docente / academias asociadas ─────────────────────────────────
+  // â”€â”€ Equipo docente / academias asociadas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   readonly teamMembers      = signal<AssociatedMemberResponse[]>([]);
   readonly teamIsLoading    = signal(false);
 
@@ -111,15 +117,18 @@ export class ProfileView implements OnInit {
   };
 
   readonly gradeLevelLabels: Record<string, string> = {
-    '1ro': '1° de secundaria', '2do': '2° de secundaria', '3ro': '3° de secundaria',
-    '4to': '4° de secundaria', '5to': '5° de secundaria',
+    '1ro': '1ro de secundaria',
+    '2do': '2do de secundaria',
+    '3ro': '3ro de secundaria',
+    '4to': '4to de secundaria',
+    '5to': '5to de secundaria',
   };
 
   readonly statusLabels: Record<string, string> = {
     SUBMITTED: 'Enviada', REVIEWED: 'Revisada',
   };
 
-  // ── Lifecycle ────────────────────────────────────
+  // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   ngOnInit(): void {
     this.route.paramMap
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -135,7 +144,11 @@ export class ProfileView implements OnInit {
     this.isLoading.set(true);
     this.profile.set(null);
     this.studentExtra.set(null);
+    this.academyDetails.set(null);
     this.teacherDetails.set(null);
+    this.targetUniversityName.set('');
+    this.targetAreaName.set('');
+    this.targetCareerName.set('');
     this.notFound.set(false);
     this.isFollowing.set(false);
     this.associationStatus.set('NONE');
@@ -158,19 +171,30 @@ export class ProfileView implements OnInit {
 
         if (p.profileType === 'STUDENT' && p.hasStudentProfile) {
           this.profileService.getStudentProfile(p.userId).subscribe({
-            next: s => this.studentExtra.set(s),
+            next: s => {
+              this.studentExtra.set(s);
+              this.resolveStudentCatalogNames(s);
+            },
             error: () => {},
           });
         }
 
         if (p.profileType === 'ACADEMY') {
+          const academyRequest = this.isOwnProfile()
+            ? this.profileService.getMyAcademyProfile()
+            : this.profileService.getAcademyProfile(p.userId);
+          academyRequest.subscribe({
+            next: academy => this.academyDetails.set(academy),
+            error: () => {},
+          });
+
           this.teamIsLoading.set(true);
           this.communityService.getTeachersOfAcademy(p.userId).subscribe({
             next: members => { this.teamMembers.set(members); this.teamIsLoading.set(false); },
             error: () => this.teamIsLoading.set(false),
           });
 
-          // Si el visitante es TEACHER, verificar si ya existe una asociación con esta academia
+          // Si el visitante es TEACHER, verificar si ya existe una asociaciÃ³n con esta academia
           if (this.authState.role() === 'TEACHER' && !this.isOwnProfile()) {
             this.communityService.getMyAssociations().subscribe({
               next: associations => {
@@ -197,7 +221,6 @@ export class ProfileView implements OnInit {
 
         const defaultTab = this.resolveDefaultTab(p, tabParam);
         this.activeTab.set(defaultTab);
-        this.loadTab(defaultTab, p.userId);
       },
       error: err => {
         this.isLoading.set(false);
@@ -213,7 +236,38 @@ export class ProfileView implements OnInit {
     return 'threads';
   }
 
-  // ── Tab switching ─────────────────────────────────
+  private resolveStudentCatalogNames(student: StudentProfileResponse): void {
+    if (!student.targetUniversityId) return;
+
+    this.catalogService.getUniversities().subscribe({
+      next: universities => {
+        this.targetUniversityName.set(
+          universities.find(university => university.id === student.targetUniversityId)?.name ?? ''
+        );
+      },
+      error: () => {},
+    });
+
+    this.catalogService.getAreasByUniversity(student.targetUniversityId).subscribe({
+      next: areas => {
+        this.targetAreaName.set(
+          areas.find(area => area.id === student.targetAreaId)?.name ?? ''
+        );
+      },
+      error: () => {},
+    });
+
+    this.catalogService.getCareersByUniversity(student.targetUniversityId).subscribe({
+      next: careers => {
+        this.targetCareerName.set(
+          careers.find(career => career.id === student.targetCareerId)?.name ?? ''
+        );
+      },
+      error: () => {},
+    });
+  }
+
+  // â”€â”€ Tab switching â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   switchTab(tab: ProfileTab): void {
     if (this.activeTab() === tab) return;
     this.activeTab.set(tab);
@@ -280,7 +334,7 @@ export class ProfileView implements OnInit {
     this.loadTab(tab, this.profile()!.userId);
   }
 
-  // ── Association ───────────────────────────────────
+  // â”€â”€ Association â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   requestAssociation(): void {
     const profileId = this.profile()?.id;
     if (!profileId || this.isAssocLoading()) return;
@@ -289,7 +343,7 @@ export class ProfileView implements OnInit {
       next: () => {
         this.associationStatus.set('PENDING');
         this.isAssocLoading.set(false);
-        this.toast.success('Solicitud de asociación enviada');
+        this.toast.success('Solicitud de asociacion enviada');
       },
       error: (err) => {
         this.isAssocLoading.set(false);
@@ -303,7 +357,7 @@ export class ProfileView implements OnInit {
     });
   }
 
-  // ── Follow ────────────────────────────────────────
+  // â”€â”€ Follow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   toggleFollow(): void {
     const userId = this.profile()?.userId;
     if (!userId || this.isFollowLoading()) return;
@@ -328,7 +382,7 @@ export class ProfileView implements OnInit {
     });
   }
 
-  // ── Helpers ───────────────────────────────────────
+  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   readonly resolveUrl = resolveFileUrl;
 
   formatDate(iso: string): string {
@@ -347,3 +401,4 @@ export class ProfileView implements OnInit {
       .filter(Boolean);
   }
 }
+

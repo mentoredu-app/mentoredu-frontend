@@ -113,8 +113,8 @@ export class NotificationsList implements OnInit {
       }
       case 'solution_submitted':
         return value('resourceId') && value('solutionId')
-          ? ['/pedagogy', value('resourceId')!, 'review', value('solutionId')!]
-          : value('resourceId') ? ['/library', value('resourceId')!, 'solutions'] : ['/library/my-resources'];
+          ? ['/pedagogy', 'received', value('resourceId')!, 'review', value('solutionId')!]
+          : value('resourceId') ? ['/pedagogy', 'received', value('resourceId')!] : ['/library/my-resources'];
       case 'feedback_received':
         return value('resourceId') ? ['/pedagogy', value('resourceId')!, 'my-solution'] : ['/library'];
       case 'verification_processed':

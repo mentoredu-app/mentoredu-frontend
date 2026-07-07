@@ -30,6 +30,14 @@ export class PedagogyService {
     return this.http.post<SolutionResponse>(`${this.resBase}/${resourceId}/solutions`, body);
   }
 
+  updateSolution(resourceId: string, solutionId: string, body: { fileUrl?: string; content?: string }): Observable<SolutionResponse> {
+    return this.http.patch<SolutionResponse>(`${this.resBase}/${resourceId}/solutions/${solutionId}`, body);
+  }
+
+  deleteSolution(resourceId: string, solutionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.resBase}/${resourceId}/solutions/${solutionId}`);
+  }
+
   getMySolution(resourceId: string): Observable<MySolutionWithFeedbackResponse> {
     return this.http.get<MySolutionWithFeedbackResponse>(`${this.resBase}/${resourceId}/solutions/mine`);
   }

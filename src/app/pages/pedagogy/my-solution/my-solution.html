@@ -1,6 +1,5 @@
 <div class="my-solution-page">
 
-  <!-- Back -->
   @if (resource()) {
     <a [routerLink]="['/library', resource()!.id]" class="back-link">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -10,20 +9,17 @@
     </a>
   }
 
-  <!-- Loading -->
   @if (pageState() === 'loading') {
     <div class="loading-center"><app-loading-spinner size="lg" /></div>
   }
 
-  <!-- Error de carga -->
   @else if (pageState() === 'load-error') {
     <div class="error-banner" role="alert">{{ loadError() }}</div>
   }
 
-  <!-- Sin resolución enviada -->
   @else if (pageState() === 'no-solution') {
     <div class="page-header">
-      <h1 class="page-title">Mi resolución</h1>
+      <h1 class="page-title">Mi resolucion</h1>
       @if (resource()) {
         <p class="page-subtitle">{{ resource()!.title }}</p>
       }
@@ -35,33 +31,35 @@
         <line x1="12" y1="18" x2="12" y2="12"/>
         <polyline points="9 15 12 12 15 15"/>
       </svg>
-      <p class="empty-card__title">Aún no enviaste una resolución</p>
-      <p class="empty-card__hint">Envía tu resolución para que el docente pueda revisarla y darte feedback.</p>
+      <p class="empty-card__title">Aun no enviaste una resolucion</p>
+      <p class="empty-card__hint">Envia tu resolucion para que el docente pueda revisarla y darte feedback.</p>
       @if (resource()) {
-        <a [routerLink]="['/pedagogy', resource()!.id, 'submit']" class="btn-submit-now">Enviar resolución</a>
+        <a [routerLink]="['/pedagogy', resource()!.id, 'submit']" class="btn-submit-now">Enviar resolucion</a>
       }
     </div>
   }
 
-  <!-- Resolución cargada -->
   @else if (pageState() === 'ready') {
     @if (data(); as result) {
       <div class="page-header">
         <div class="page-header__top">
-          <h1 class="page-title">Mi resolución</h1>
+          <h1 class="page-title">Mi resolucion</h1>
           <span class="status-badge status-badge--{{ result.solution.status.toLowerCase() }}">
-            {{ result.solution.status === 'REVIEWED' ? 'Revisada' : 'Pendiente de revisión' }}
+            {{ result.solution.status === 'REVIEWED' ? 'Revisada' : 'Pendiente de revision' }}
           </span>
         </div>
         @if (resource()) {
           <p class="page-subtitle">{{ resource()!.title }}</p>
         }
         <p class="page-date">Enviada el {{ formatDate(result.solution.submittedAt) }}</p>
+        <div class="solution-actions">
+          <button type="button" class="btn-manage" [disabled]="isMutating()" (click)="editSolution()">Editar</button>
+          <button type="button" class="btn-manage btn-manage--danger" [disabled]="isMutating()" (click)="deleteSolution()">Eliminar</button>
+        </div>
       </div>
 
-      <!-- Contenido de la resolución -->
       <div class="solution-card">
-        <h2 class="card-label">Tu resolución</h2>
+        <h2 class="card-label">Tu resolucion</h2>
 
         @if (result.solution.content) {
           <p class="solution-text">{{ result.solution.content }}</p>
@@ -73,7 +71,7 @@
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
             </svg>
-            <span>Resolución en PDF</span>
+            <span>Resolucion en PDF</span>
             <button type="button" class="btn-download" [disabled]="isDownloading()" (click)="downloadPdf()">
               @if (isDownloading()) { <app-loading-spinner size="sm" /> } @else { Descargar }
             </button>
@@ -85,7 +83,6 @@
         }
       </div>
 
-      <!-- Feedback recibido -->
       @if (result.feedback; as fb) {
         <div class="feedback-card">
           <h2 class="card-label">Feedback recibido</h2>
@@ -110,9 +107,9 @@
               {{ fb.authorName }}
             </a>
             <span class="feedback-meta__role">
-              {{ fb.authorRole === 'TEACHER' ? '· Docente' : fb.authorRole === 'ACADEMY' ? '· Academia' : '' }}
+              {{ fb.authorRole === 'TEACHER' ? '- Docente' : fb.authorRole === 'ACADEMY' ? '- Academia' : '' }}
             </span>
-            <span class="feedback-meta__dot">·</span>
+            <span class="feedback-meta__dot">-</span>
             <span class="feedback-meta__date">{{ formatDate(fb.createdAt) }}</span>
           </div>
         </div>
@@ -124,7 +121,7 @@
           </svg>
           <div>
             <p class="pending-feedback-card__title">Esperando feedback</p>
-            <p class="pending-feedback-card__hint">El docente aún no ha revisado tu resolución. Recibirás una notificación cuando lo haga.</p>
+            <p class="pending-feedback-card__hint">El docente aun no ha revisado tu resolucion. Recibiras una notificacion cuando lo haga.</p>
           </div>
         </div>
       }

@@ -32,6 +32,11 @@ export interface CreateThreadRequest {
   courseId?: string;
 }
 
+export interface UpdateThreadRequest {
+  title?: string;
+  body?: string;
+}
+
 export interface SearchThreadParams {
   universityId?: string;
   courseId?: string;
@@ -60,6 +65,10 @@ export interface AnswerResponse {
 }
 
 export interface CreateAnswerRequest {
+  body: string;
+}
+
+export interface UpdateBodyRequest {
   body: string;
 }
 

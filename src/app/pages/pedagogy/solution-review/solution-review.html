@@ -1,6 +1,5 @@
 <div class="review-page">
 
-  <!-- Back -->
   <a [routerLink]="solutionsLink" class="back-link">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
@@ -8,35 +7,40 @@
     Volver a resoluciones
   </a>
 
-  <!-- Loading -->
   @if (pageState() === 'loading') {
     <div class="loading-center"><app-loading-spinner size="lg" /></div>
-  }
-
-  <!-- Error -->
-  @else if (pageState() === 'load-error') {
+  } @else if (pageState() === 'load-error') {
     <div class="error-banner" role="alert">{{ loadError() }}</div>
-  }
-
-  <!-- Ya tiene feedback -->
-  @else if (pageState() === 'already-reviewed') {
+  } @else if (pageState() === 'already-reviewed') {
     <div class="page-header">
       <h1 class="page-title">Feedback enviado</h1>
       @if (solution()) {
-        <p class="page-subtitle">Resolución de <strong>{{ solution()!.studentName ?? 'Estudiante' }}</strong></p>
+        <p class="page-subtitle">Resolucion de <strong>{{ solution()!.studentName }}</strong></p>
       }
     </div>
 
     @if (solution(); as sol) {
       <div class="solution-card">
-        <h2 class="card-label">Resolución del estudiante</h2>
+        <h2 class="card-label">Resolucion del estudiante</h2>
         @if (sol.content) {
           <p class="solution-text">{{ sol.content }}</p>
         }
         @if (sol.fileUrl) {
+          @if (previewUrl()) {
+            <div class="pdf-preview">
+              <iframe [src]="previewUrl()" title="Vista previa de resolucion PDF"></iframe>
+            </div>
+          } @else if (isPreviewLoading()) {
+            <div class="pdf-preview__state">
+              <app-loading-spinner size="sm" />
+              <span>Cargando vista previa...</span>
+            </div>
+          } @else if (previewError()) {
+            <div class="pdf-preview__state">{{ previewError() }}</div>
+          }
           <div class="file-row">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span>Resolución en PDF</span>
+            <span>Resolucion en PDF</span>
             <button type="button" class="btn-download" [disabled]="isDownloading()" (click)="downloadPdf()">
               @if (isDownloading()) { <app-loading-spinner size="sm" /> } @else { Descargar }
             </button>
@@ -61,28 +65,36 @@
         <p class="feedback-date">Enviado el {{ formatDate(fb.createdAt) }}</p>
       </div>
     }
-  }
-
-  <!-- Formulario de feedback -->
-  @else if (pageState() === 'form') {
+  } @else if (pageState() === 'form') {
     <div class="page-header">
       <h1 class="page-title">Dar feedback</h1>
       @if (solution()) {
-        <p class="page-subtitle">Resolución de <strong>{{ solution()!.studentName ?? 'Estudiante' }}</strong> · {{ formatDate(solution()!.submittedAt) }}</p>
+        <p class="page-subtitle">Resolucion de <strong>{{ solution()!.studentName }}</strong> - {{ formatDate(solution()!.submittedAt) }}</p>
       }
     </div>
 
-    <!-- Resolución del estudiante -->
     @if (solution(); as sol) {
       <div class="solution-card">
-        <h2 class="card-label">Resolución del estudiante</h2>
+        <h2 class="card-label">Resolucion del estudiante</h2>
         @if (sol.content) {
           <p class="solution-text">{{ sol.content }}</p>
         }
         @if (sol.fileUrl) {
+          @if (previewUrl()) {
+            <div class="pdf-preview">
+              <iframe [src]="previewUrl()" title="Vista previa de resolucion PDF"></iframe>
+            </div>
+          } @else if (isPreviewLoading()) {
+            <div class="pdf-preview__state">
+              <app-loading-spinner size="sm" />
+              <span>Cargando vista previa...</span>
+            </div>
+          } @else if (previewError()) {
+            <div class="pdf-preview__state">{{ previewError() }}</div>
+          }
           <div class="file-row">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span>Resolución en PDF</span>
+            <span>Resolucion en PDF</span>
             <button type="button" class="btn-download" [disabled]="isDownloading()" (click)="downloadPdf()">
               @if (isDownloading()) { <app-loading-spinner size="sm" /> } @else { Descargar }
             </button>
@@ -94,24 +106,21 @@
       </div>
     }
 
-    <!-- Formulario -->
     <div class="form-card" [formGroup]="feedbackForm">
-      <h2 class="card-label">Tu evaluación</h2>
+      <h2 class="card-label">Tu evaluacion</h2>
 
-      <!-- Score -->
       <div class="form-row">
         <div class="form-field score-field">
           <label class="form-label" for="score">
-            Nota <span class="form-label--optional">(opcional, 0 – 10)</span>
+            Nota <span class="form-label--optional">(opcional, 0 a 10)</span>
           </label>
           <input id="score" type="number" class="form-input score-input"
             formControlName="score"
             min="0" max="10" step="0.5"
-            placeholder="—" />
+            placeholder="-" />
         </div>
       </div>
 
-      <!-- Comment -->
       <div class="form-field">
         <label class="form-label" for="comment">
           Comentario <span class="required">*</span>
@@ -120,7 +129,7 @@
           [class.form-textarea--error]="fieldError('body')"
           formControlName="body"
           rows="6"
-          placeholder="Escribe aquí tu retroalimentación al estudiante…"></textarea>
+          placeholder="Escribe aqui tu retroalimentacion al estudiante..."></textarea>
         @if (fieldError('body')) {
           <span class="field-error">{{ fieldError('body') }}</span>
         }
@@ -134,7 +143,7 @@
         <button type="button" class="btn-submit" [disabled]="isSubmitting()" (click)="submit()">
           @if (isSubmitting()) {
             <app-loading-spinner size="sm" />
-            Enviando…
+            Enviando...
           } @else {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -144,10 +153,7 @@
         </button>
       </div>
     </div>
-  }
-
-  <!-- Éxito -->
-  @else if (pageState() === 'success') {
+  } @else if (pageState() === 'success') {
     <div class="page-header">
       <h1 class="page-title">Feedback enviado</h1>
     </div>
@@ -157,8 +163,8 @@
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
         </svg>
       </div>
-      <p class="success-card__title">¡Feedback enviado con éxito!</p>
-      <p class="success-card__hint">El estudiante recibirá una notificación con tu evaluación.</p>
+      <p class="success-card__title">Feedback enviado con exito</p>
+      <p class="success-card__hint">El estudiante recibira una notificacion con tu evaluacion.</p>
       @if (newFeedback(); as fb) {
         @if (fb.score !== null && fb.score !== undefined) {
           <div class="score-chip">Nota: {{ fb.score }} / 10</div>
@@ -167,5 +173,4 @@
       <a [routerLink]="solutionsLink" class="btn-back">Ver todas las resoluciones</a>
     </div>
   }
-
 </div>

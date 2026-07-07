@@ -1,0 +1,60 @@
+<div class="activity-page">
+  <a [routerLink]="['/profiles', userId()]" class="back-link">Volver al perfil</a>
+
+  <header class="activity-header">
+    <div>
+      <h1>{{ kind() === 'resources' ? 'Recursos' : 'Hilos' }}</h1>
+      <p>{{ displayName() }}</p>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-center"><app-loading-spinner size="lg" /></div>
+  } @else if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  } @else if (kind() === 'resources') {
+    @if (resources().length === 0) {
+      <app-empty-state message="Sin recursos publicados" />
+    } @else {
+      <div class="activity-grid">
+        @for (resource of resources(); track resource.id) {
+          <a class="activity-card" [routerLink]="['/library', resource.id]">
+            <div class="activity-card__top">
+              <span class="type-chip type-chip--{{ resource.resourceType.toLowerCase() }}">{{ typeLabels[resource.resourceType] }}</span>
+              <span>{{ formatSize(resource.sizeBytes) }}</span>
+            </div>
+            <h2>{{ resource.title }}</h2>
+            <p>{{ resource.authorName }}</p>
+            <span>{{ formatShort(resource.createdAt) }}</span>
+          </a>
+        }
+      </div>
+    }
+  } @else {
+    @if (threads().length === 0) {
+      <app-empty-state message="Sin hilos publicados" />
+    } @else {
+      <div class="thread-list">
+        @for (thread of threads(); track thread.id) {
+          <a class="thread-item" [routerLink]="['/forum', thread.id]">
+            <div>
+              <h2>{{ thread.title }}</h2>
+              <p>{{ thread.status === 'OPEN' ? 'Abierto' : 'Cerrado' }} · {{ formatShort(thread.createdAt) }}</p>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  }
+
+  @if (hasMore() && !isLoading()) {
+    <div class="load-more">
+      <button type="button" (click)="loadMore()" [disabled]="isLoadingMore()">
+        @if (isLoadingMore()) {
+          <app-loading-spinner size="sm" />
+        }
+        Cargar mas
+      </button>
+    </div>
+  }
+</div>
