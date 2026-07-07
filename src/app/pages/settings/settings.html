@@ -1,0 +1,28 @@
+<div class="settings-page">
+  <header class="settings-header">
+    <div>
+      <h1>Settings</h1>
+      <p>Preferencias de la aplicación para esta sesión local.</p>
+    </div>
+  </header>
+
+  <section class="settings-panel">
+    <div class="setting-row">
+      <div>
+        <h2>Modo oscuro</h2>
+        <p>Reduce brillo y mantiene contraste en biblioteca, foro, perfiles y asistente.</p>
+      </div>
+      <button
+        class="theme-toggle"
+        type="button"
+        [class.theme-toggle--active]="themeService.mode() === 'dark'"
+        [attr.aria-pressed]="themeService.mode() === 'dark'"
+        (click)="themeService.toggle()">
+        <span class="theme-toggle__track">
+          <span class="theme-toggle__thumb"></span>
+        </span>
+        <span>{{ themeService.mode() === 'dark' ? 'Activado' : 'Desactivado' }}</span>
+      </button>
+    </div>
+  </section>
+</div>

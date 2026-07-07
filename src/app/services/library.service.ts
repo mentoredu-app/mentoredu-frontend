@@ -9,6 +9,7 @@ import {
   ResourceFileResponse,
   ResourceResponse,
   SearchResourceParams,
+  UpdateResourceRequest,
   UpdateResourceSettingsRequest,
 } from '../models/resource.model';
 
@@ -47,5 +48,13 @@ export class LibraryService {
 
   updateSettings(id: string, request: UpdateResourceSettingsRequest): Observable<ResourceResponse> {
     return this.http.patch<ResourceResponse>(`${this.base}/${id}/settings`, request);
+  }
+
+  update(id: string, request: UpdateResourceRequest): Observable<ResourceResponse> {
+    return this.http.patch<ResourceResponse>(`${this.base}/${id}`, request);
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}`);
   }
 }

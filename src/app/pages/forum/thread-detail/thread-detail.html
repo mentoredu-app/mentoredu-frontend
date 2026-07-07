@@ -25,6 +25,10 @@
             Cerrar hilo
           </button>
         }
+        @if (canManageThread()) {
+          <button class="btn-manage" type="button" [disabled]="isMutating(thread()!.id)" (click)="editThread()">Editar</button>
+          <button class="btn-manage btn-manage--danger" type="button" [disabled]="isMutating(thread()!.id)" (click)="deleteThread()">Eliminar</button>
+        }
       </div>
     </div>
 
@@ -129,6 +133,10 @@
                 @if (answer.dislikeCount > 0) { <span class="reaction-count">{{ answer.dislikeCount }}</span> }
               </button>
               <span class="reactions-spacer"></span>
+              @if (canManageAnswer(answer)) {
+                <button class="btn-manage" type="button" [disabled]="isMutating(answer.id)" (click)="editAnswer(answer)">Editar</button>
+                <button class="btn-manage btn-manage--danger" type="button" [disabled]="isMutating(answer.id)" (click)="deleteAnswer(answer)">Eliminar</button>
+              }
               <app-report-button targetType="ANSWER" [targetId]="answer.id" />
             </div>
 
@@ -168,6 +176,12 @@
                           <span class="comment-date">{{ formatDateShort(comment.createdAt) }}</span>
                         </div>
                         <p class="comment-body">{{ comment.body }}</p>
+                        @if (canManageComment(comment)) {
+                          <div class="comment-actions">
+                            <button class="btn-manage" type="button" [disabled]="isMutating(comment.id)" (click)="editComment(answer.id, comment)">Editar</button>
+                            <button class="btn-manage btn-manage--danger" type="button" [disabled]="isMutating(comment.id)" (click)="deleteComment(answer.id, comment)">Eliminar</button>
+                          </div>
+                        }
                       </div>
                     }
                   }

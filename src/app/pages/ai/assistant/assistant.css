@@ -190,12 +190,24 @@
 .chat-msg__bubble--md strong { font-weight: 600; }
 .chat-msg__bubble--md em    { font-style: italic; }
 .chat-msg__bubble--md a {
+  display: inline;
   color: var(--color-primary);
+  font-weight: 700;
   text-decoration: underline;
-  text-underline-offset: 2px;
-  word-break: break-all;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  word-break: break-word;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-radius: 5px;
+  padding: 1px 4px;
 }
-.chat-msg__bubble--md a:hover { opacity: 0.8; }
+.chat-msg__bubble--md a:hover {
+  background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+.chat-msg__bubble--md a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
 
 /* ── Indicador de escritura ─────────────────────── */
 .chat-msg__bubble--typing {

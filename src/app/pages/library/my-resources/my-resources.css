@@ -441,6 +441,26 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+.resource-card__action-btn {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 650;
+  cursor: pointer;
+  padding: 0;
+}
+
+.resource-card__action-btn:hover { color: var(--color-primary); }
+
+.resource-card__action-btn--danger { color: var(--color-error); }
+
+.resource-card__action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .resource-card__solutions-link {

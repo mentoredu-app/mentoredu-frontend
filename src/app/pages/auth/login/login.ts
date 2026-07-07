@@ -44,7 +44,7 @@ export class Login {
 
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
-        this.router.navigate(['/library']);
+        this.router.navigate(['/dashboard']);
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading.set(false);

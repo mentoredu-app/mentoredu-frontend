@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AiMode, ChatMessage, ChatResponse, IngestResult, ReportResponse, SuggestionsResponse } from '../models/ai.model';
@@ -39,8 +39,12 @@ export class AiService {
     return this.http.post<IngestResult>(`${this.base}/support/ingest`, {});
   }
 
-  getReport(resourceId: string): Observable<ReportResponse> {
-    return this.http.get<ReportResponse>(`${this.base}/report/${resourceId}`);
+  getReport(resourceId: string, solutionIds: string[] = []): Observable<ReportResponse> {
+    let params = new HttpParams();
+    for (const id of solutionIds) {
+      params = params.append('solutionIds', id);
+    }
+    return this.http.get<ReportResponse>(`${this.base}/report/${resourceId}`, { params });
   }
 
   getSuggestions(): Observable<SuggestionsResponse> {

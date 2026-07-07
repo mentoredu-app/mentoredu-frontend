@@ -61,6 +61,29 @@
   color: var(--color-text-subtle);
 }
 
+.solution-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.btn-manage {
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 0.86rem;
+  font-weight: 750;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-manage--danger { color: var(--color-error); }
+
+.btn-manage:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Status badge */
 .status-badge {
   display: inline-flex;

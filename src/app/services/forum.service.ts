@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { PagedResponse } from '../models/common.model';
-import { AnswerResponse, CommentResponse, CreateAnswerRequest, CreateCommentRequest, CreateThreadRequest, ReactionResponse, ReactionType, SearchThreadParams, ThreadResponse } from '../models/forum.model';
+import { AnswerResponse, CommentResponse, CreateAnswerRequest, CreateCommentRequest, CreateThreadRequest, ReactionResponse, ReactionType, SearchThreadParams, ThreadResponse, UpdateBodyRequest, UpdateThreadRequest } from '../models/forum.model';
 
 @Injectable({ providedIn: 'root' })
 export class ForumService {
@@ -25,8 +25,16 @@ export class ForumService {
     return this.http.post<ThreadResponse>(this.base, request);
   }
 
+  updateThread(threadId: string, request: UpdateThreadRequest) {
+    return this.http.patch<ThreadResponse>(`${this.base}/${threadId}`, request);
+  }
+
   closeThread(threadId: string) {
     return this.http.patch<ThreadResponse>(`${this.base}/${threadId}/close`, {});
+  }
+
+  deleteThread(threadId: string) {
+    return this.http.delete<void>(`${this.base}/${threadId}`);
   }
 
   getAnswers(threadId: string, page = 0, size = 30) {
@@ -37,6 +45,14 @@ export class ForumService {
 
   createAnswer(threadId: string, request: CreateAnswerRequest) {
     return this.http.post<AnswerResponse>(`${this.base}/${threadId}/answers`, request);
+  }
+
+  updateAnswer(threadId: string, answerId: string, request: UpdateBodyRequest) {
+    return this.http.patch<AnswerResponse>(`${this.base}/${threadId}/answers/${answerId}`, request);
+  }
+
+  deleteAnswer(threadId: string, answerId: string) {
+    return this.http.delete<void>(`${this.base}/${threadId}/answers/${answerId}`);
   }
 
   // 201 = reacción añadida/cambiada; 204 = toggle off (sin body)
@@ -55,5 +71,13 @@ export class ForumService {
 
   createComment(answerId: string, request: CreateCommentRequest) {
     return this.http.post<CommentResponse>(`${environment.apiUrl}/answers/${answerId}/comments`, request);
+  }
+
+  updateComment(answerId: string, commentId: string, request: UpdateBodyRequest) {
+    return this.http.patch<CommentResponse>(`${environment.apiUrl}/answers/${answerId}/comments/${commentId}`, request);
+  }
+
+  deleteComment(answerId: string, commentId: string) {
+    return this.http.delete<void>(`${environment.apiUrl}/answers/${answerId}/comments/${commentId}`);
   }
 }

@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -20,6 +20,7 @@ type PageState = 'loading' | 'load-error' | 'no-solution' | 'ready';
 })
 export class MySolution implements OnInit, OnDestroy {
   private route           = inject(ActivatedRoute);
+  private router          = inject(Router);
   private http            = inject(HttpClient);
   private libraryService  = inject(LibraryService);
   private pedagogyService = inject(PedagogyService);
@@ -30,6 +31,7 @@ export class MySolution implements OnInit, OnDestroy {
   readonly resource     = signal<ResourceResponse | null>(null);
   readonly data         = signal<MySolutionWithFeedbackResponse | null>(null);
   readonly isDownloading = signal(false);
+  readonly isMutating    = signal(false);
 
   private resourceId!: string;
   private readonly serverUrl = environment.apiUrl.replace('/api/v1', '');
@@ -88,6 +90,47 @@ export class MySolution implements OnInit, OnDestroy {
       error: () => {
         this.isDownloading.set(false);
         this.toast.error('No se pudo descargar el archivo.');
+      },
+    });
+  }
+
+  editSolution(): void {
+    const current = this.data();
+    if (!current || this.isMutating()) return;
+    const content = window.prompt('Editar texto de tu resolucion:', current.solution.content ?? '');
+    if (content === null) return;
+
+    this.isMutating.set(true);
+    this.pedagogyService.updateSolution(this.resourceId, current.solution.id, {
+      content,
+      fileUrl: current.solution.fileUrl,
+    }).subscribe({
+      next: updated => {
+        this.data.set({ solution: updated, feedback: null });
+        this.isMutating.set(false);
+        this.toast.success('Resolucion actualizada');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isMutating.set(false);
+        this.toast.error(err.error?.message ?? 'No se pudo actualizar tu resolucion.');
+      },
+    });
+  }
+
+  deleteSolution(): void {
+    const current = this.data();
+    if (!current || this.isMutating()) return;
+    if (!window.confirm('Eliminar tu resolucion enviada?')) return;
+
+    this.isMutating.set(true);
+    this.pedagogyService.deleteSolution(this.resourceId, current.solution.id).subscribe({
+      next: () => {
+        this.toast.success('Resolucion eliminada');
+        this.router.navigate(['/library', this.resourceId]);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isMutating.set(false);
+        this.toast.error(err.error?.message ?? 'No se pudo eliminar tu resolucion.');
       },
     });
   }

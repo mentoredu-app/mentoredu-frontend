@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
 import { PedagogyService } from '../../../services/pedagogy.service';
 import { AuthStateService } from '../../../core/services/auth-state.service';
@@ -21,6 +22,7 @@ export class SolutionReview implements OnInit, OnDestroy {
   private route           = inject(ActivatedRoute);
   private fb              = inject(FormBuilder);
   private http            = inject(HttpClient);
+  private sanitizer       = inject(DomSanitizer);
   private pedagogyService = inject(PedagogyService);
   private toast           = inject(ToastService);
   readonly authState      = inject(AuthStateService);
@@ -34,6 +36,9 @@ export class SolutionReview implements OnInit, OnDestroy {
   readonly isSubmitting    = signal(false);
   readonly submitError     = signal('');
   readonly isDownloading   = signal(false);
+  readonly previewUrl      = signal<SafeResourceUrl | null>(null);
+  readonly isPreviewLoading = signal(false);
+  readonly previewError    = signal('');
 
   readonly feedbackForm = this.fb.nonNullable.group({
     body:  ['', [Validators.required, Validators.minLength(5)]],
@@ -52,6 +57,7 @@ export class SolutionReview implements OnInit, OnDestroy {
     this.pedagogyService.getSolutionDetail(this.resourceId, this.solutionId).subscribe({
       next: solution => {
         this.solution.set(solution);
+        if (solution.fileUrl) this.loadPdfPreview(solution.fileUrl);
 
         if (solution.status === 'REVIEWED') {
           // Feedback ya existe — lo cargamos solo en este caso
@@ -129,6 +135,23 @@ export class SolutionReview implements OnInit, OnDestroy {
     });
   }
 
+  private loadPdfPreview(fileUrl: string): void {
+    this.isPreviewLoading.set(true);
+    this.previewError.set('');
+    this.http.get(this.resolveUrl(fileUrl), { responseType: 'blob' }).subscribe({
+      next: blob => {
+        const blobUrl = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+        this.blobUrls.push(blobUrl);
+        this.previewUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl));
+        this.isPreviewLoading.set(false);
+      },
+      error: () => {
+        this.previewError.set('No se pudo cargar la vista previa del PDF.');
+        this.isPreviewLoading.set(false);
+      },
+    });
+  }
+
   downloadPdf(): void {
     const sol = this.solution();
     if (!sol?.fileUrl || this.isDownloading()) return;
@@ -173,6 +196,6 @@ export class SolutionReview implements OnInit, OnDestroy {
   }
 
   get solutionsLink(): string[] {
-    return ['/library', this.resourceId, 'solutions'];
+    return ['/pedagogy', 'received', this.resourceId];
   }
 }

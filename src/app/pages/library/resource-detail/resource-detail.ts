@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { forkJoin, Observable } from 'rxjs';
@@ -11,7 +11,7 @@ import { AuthStateService } from '../../../core/services/auth-state.service';
 import { AiService } from '../../../services/ai.service';
 import { ReportInsight } from '../../../models/ai.model';
 import { LoadingSpinner } from '../../../shared/components/loading-spinner/loading-spinner';
-import { ResourceResponse, ResourceType, RESOURCE_TYPE_LABELS } from '../../../models/resource.model';
+import { ResourceResponse, ResourceType, RESOURCE_TYPE_LABELS, UpdateResourceRequest } from '../../../models/resource.model';
 import { Area, Career, Course, University } from '../../../models/catalog.model';
 import { resolveFileUrl } from '../../../services/file-upload.service';
 
@@ -23,6 +23,7 @@ import { resolveFileUrl } from '../../../services/file-upload.service';
 })
 export class ResourceDetail implements OnInit, OnDestroy {
   private route             = inject(ActivatedRoute);
+  private router            = inject(Router);
   private http              = inject(HttpClient);
   private libraryService    = inject(LibraryService);
   private catalogService    = inject(CatalogService);
@@ -36,6 +37,7 @@ export class ResourceDetail implements OnInit, OnDestroy {
   readonly resource             = signal<ResourceResponse | null>(null);
   readonly isAssociatedReviewer = signal(false);
   readonly isDownloading = signal(false);
+  readonly isMutating    = signal(false);
   readonly isLoadingReport = signal(false);
   readonly report = signal<ReportInsight | null>(null);
   readonly reportError = signal('');
@@ -185,6 +187,78 @@ export class ResourceDetail implements OnInit, OnDestroy {
     return role === 'ADMIN'
       || r.authorId === this.authState.user()?.id
       || this.isAssociatedReviewer();
+  }
+
+  canManageResource(): boolean {
+    const r = this.resource();
+    const userId = this.authState.user()?.id;
+    const role = this.authState.role();
+    return !!r && (role === 'ADMIN' || r.authorId === userId);
+  }
+
+  editResource(): void {
+    const r = this.resource();
+    if (!r || !this.canManageResource() || this.isMutating()) return;
+
+    const title = window.prompt('Titulo del recurso', r.title);
+    if (title === null) return;
+    const cleanTitle = title.trim();
+    if (cleanTitle.length < 3) {
+      window.alert('El titulo debe tener al menos 3 caracteres.');
+      return;
+    }
+
+    const descriptionInput = window.prompt('Descripcion del recurso', r.description ?? '');
+    if (descriptionInput === null) return;
+
+    const yearInput = window.prompt('Ano del recurso. Deja vacio si es desconocido.', r.resourceYear?.toString() ?? '');
+    if (yearInput === null) return;
+
+    let resourceYear: number | null = null;
+    const trimmedYear = yearInput.trim();
+    if (trimmedYear) {
+      const parsed = Number(trimmedYear);
+      if (!Number.isInteger(parsed) || parsed < 1900 || parsed > 2100) {
+        window.alert('El ano debe estar entre 1900 y 2100.');
+        return;
+      }
+      resourceYear = parsed;
+    }
+
+    const request: UpdateResourceRequest = {
+      title: cleanTitle,
+      description: descriptionInput.trim() || null,
+      resourceYear,
+      aceptaResoluciones: r.aceptaResoluciones,
+    };
+
+    this.isMutating.set(true);
+    this.libraryService.update(r.id, request).subscribe({
+      next: updated => {
+        this.resource.set(updated);
+        this.loadCatalogNames(updated);
+        this.isMutating.set(false);
+      },
+      error: () => {
+        window.alert('No se pudo actualizar el recurso.');
+        this.isMutating.set(false);
+      },
+    });
+  }
+
+  deleteResource(): void {
+    const r = this.resource();
+    if (!r || !this.canManageResource() || this.isMutating()) return;
+    if (!window.confirm(`Eliminar "${r.title}"? Esta accion no se puede deshacer.`)) return;
+
+    this.isMutating.set(true);
+    this.libraryService.delete(r.id).subscribe({
+      next: () => this.router.navigateByUrl('/library'),
+      error: () => {
+        window.alert('No se pudo eliminar el recurso.');
+        this.isMutating.set(false);
+      },
+    });
   }
 
   generateReport(): void {

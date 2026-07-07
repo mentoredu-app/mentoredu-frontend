@@ -1,14 +1,14 @@
-<div class="profile-view-page">
+﻿<div class="profile-view-page">
   @if (isLoading()) {
     <div class="loading-center"><app-loading-spinner size="lg" /></div>
 
   } @else if (notFound()) {
     <app-empty-state message="Perfil no encontrado"
-      description="El usuario que buscas no existe o su perfil no está disponible." />
+      description="El usuario que buscas no existe o su perfil no esta disponible." />
 
   } @else if (profile()) {
 
-    <!-- ── Hero ──────────────────────────────────── -->
+    <!-- â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <div class="profile-hero">
       <div class="profile-hero__left">
         @if (profile()!.avatarUrl) {
@@ -31,9 +31,9 @@
           </div>
           <span class="profile-hero__role">{{ roleLabels[profile()!.profileType] }}</span>
           @if (profile()!.city) {
-            <span class="profile-hero__detail">📍 {{ profile()!.city }}</span>
+            <span class="profile-hero__detail">Ciudad: {{ profile()!.city }}</span>
           }
-          <span class="profile-hero__detail">📅 Miembro desde {{ formatDate(profile()!.createdAt) }}</span>
+          <span class="profile-hero__detail">Miembro desde {{ formatDate(profile()!.createdAt) }}</span>
         </div>
       </div>
 
@@ -113,7 +113,7 @@
       }
     </div>
 
-    <!-- ── Stats — oculto para usuarios del sistema ── -->
+    <!-- â”€â”€ Stats â€” oculto para usuarios del sistema â”€â”€ -->
     @if (!isSystemProfile()) {
       <div class="profile-stats">
         <div class="profile-stats__item">
@@ -128,7 +128,7 @@
       </div>
     }
 
-    <!-- ── Bio ───────────────────────────────────── -->
+    <!-- â”€â”€ Bio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     @if (profile()!.bio) {
       <div class="profile-section">
         <p class="profile-bio">{{ profile()!.bio }}</p>
@@ -185,10 +185,10 @@
       </div>
     }
 
-    <!-- ── Info académica (STUDENT) ──────────────── -->
+    <!-- â”€â”€ Info acadÃ©mica (STUDENT) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     @if (profile()!.profileType === 'STUDENT' && studentExtra()) {
       <div class="profile-section">
-        <p class="profile-section__label">Información académica</p>
+        <p class="profile-section__label">Informacion academica</p>
         <div class="info-grid">
           @if (studentExtra()!.gradeLevel) {
             <div class="info-row">
@@ -208,11 +208,57 @@
               <span class="info-row__val">{{ studentExtra()!.studyShift }}</span>
             </div>
           }
+          @if (targetUniversityName()) {
+            <div class="info-row">
+              <span class="info-row__key">Universidad</span>
+              <span class="info-row__val">{{ targetUniversityName() }}</span>
+            </div>
+          }
+          @if (targetAreaName()) {
+            <div class="info-row">
+              <span class="info-row__key">Area</span>
+              <span class="info-row__val">{{ targetAreaName() }}</span>
+            </div>
+          }
+          @if (targetCareerName()) {
+            <div class="info-row">
+              <span class="info-row__key">Carrera</span>
+              <span class="info-row__val">{{ targetCareerName() }}</span>
+            </div>
+          }
         </div>
       </div>
     }
 
-    <!-- ── Equipo docente (academia) / Academia asociada (docente) ── -->
+    @if (profile()!.profileType === 'ACADEMY' && academyDetails()) {
+      <div class="profile-section">
+        <p class="profile-section__label">Perfil institucional</p>
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="info-row__key">Academia</span>
+            <span class="info-row__val">{{ academyDetails()!.academyName }}</span>
+          </div>
+          @if (academyDetails()!.website) {
+            <div class="info-row">
+              <span class="info-row__key">Web</span>
+              <a class="info-row__val info-row__link" [href]="academyDetails()!.website" target="_blank" rel="noopener noreferrer">
+                {{ academyDetails()!.website }}
+              </a>
+            </div>
+          }
+          @if (academyDetails()!.contactEmail) {
+            <div class="info-row">
+              <span class="info-row__key">Contacto</span>
+              <a class="info-row__val info-row__link" [href]="'mailto:' + academyDetails()!.contactEmail">
+                {{ academyDetails()!.contactEmail }}
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- â”€â”€ Equipo docente (academia) / Academia asociada (docente) â”€â”€ -->
     @if (profile()!.profileType === 'ACADEMY' || profile()!.profileType === 'TEACHER') {
       @if (teamIsLoading()) {
         <div class="team-section team-section--loading">
@@ -263,147 +309,59 @@
       }
     }
 
-    <!-- ── Tabs y actividad — ocultos para usuarios del sistema ── -->
+    <!-- â”€â”€ Tabs y actividad â€” ocultos para usuarios del sistema â”€â”€ -->
+    @if (!isSystemProfile()) {
+      <div class="profile-shortcuts">
+        @if (showResourcesTab()) {
+          <a class="profile-shortcut" [routerLink]="['/profiles', profile()!.userId, 'resources']">
+            <span class="profile-shortcut__icon">R</span>
+            <span>
+              <strong>Recursos</strong>
+              <small>Ver publicaciones academicas</small>
+            </span>
+          </a>
+        }
+
+        <a class="profile-shortcut" [routerLink]="['/profiles', profile()!.userId, 'threads']">
+          <span class="profile-shortcut__icon">H</span>
+          <span>
+            <strong>Hilos</strong>
+            <small>Ver participacion en foros</small>
+          </span>
+        </a>
+
+        @if (showSolutionsTab()) {
+          <a class="profile-shortcut" routerLink="/pedagogy/my-solutions">
+            <span class="profile-shortcut__icon">M</span>
+            <span>
+              <strong>Mis resoluciones</strong>
+              <small>Consultar envios y feedback</small>
+            </span>
+          </a>
+        }
+
+        @if (showReceivedTab()) {
+          <a class="profile-shortcut" routerLink="/pedagogy/received">
+            <span class="profile-shortcut__icon">E</span>
+            <span>
+              <strong>Resoluciones recibidas</strong>
+              <small>Evaluar entregas de estudiantes</small>
+            </span>
+          </a>
+        }
+      </div>
+    }
+
     @if (isSystemProfile()) {
       <div class="system-user-notice">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
-        Este usuario es parte del equipo de administración de la plataforma.
+        Este usuario es parte del equipo de administracion de la plataforma.
       </div>
     }
 
-    @if (!isSystemProfile()) {
-
-    <!-- ── Tabs ───────────────────────────────────── -->
-    <div class="profile-tabs">
-      @if (showResourcesTab()) {
-        <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'resources'" (click)="switchTab('resources')">Recursos</button>
-      }
-      <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'threads'" (click)="switchTab('threads')">Hilos</button>
-      @if (showSolutionsTab()) {
-        <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'solutions'" (click)="switchTab('solutions')">Mis resoluciones</button>
-      }
-      @if (showReceivedTab()) {
-        <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'received'" (click)="switchTab('received')">Resoluciones recibidas</button>
-      }
-    </div>
-
-    <!-- ── Panel ──────────────────────────────────── -->
-    <div class="tab-panel">
-      @if (isLoadingTab() && (
-        (activeTab() === 'resources'  && tabResources().length  === 0) ||
-        (activeTab() === 'threads'    && tabThreads().length    === 0) ||
-        (activeTab() === 'solutions'  && tabSolutions().length  === 0) ||
-        (activeTab() === 'received'   && tabReceived().length   === 0)
-      )) {
-        <div class="tab-loading"><app-loading-spinner size="md" /></div>
-
-      } @else if (activeTab() === 'resources') {
-        @if (tabResources().length === 0) {
-          <app-empty-state message="Sin recursos publicados" />
-        } @else {
-          <div class="activity-resource-grid">
-            @for (r of tabResources(); track r.id; let i = $index) {
-              <a class="activity-resource-card" [routerLink]="['/library', r.id]" [style.--index]="i">
-                <div class="activity-resource-card__top">
-                  <span class="res-badge res-badge--{{ r.resourceType.toLowerCase() }}">{{ typeLabels[r.resourceType] }}</span>
-                  <span class="card-meta">{{ formatSize(r.sizeBytes) }}</span>
-                </div>
-                <p class="activity-resource-card__title">{{ r.title }}</p>
-                <span class="card-meta">{{ formatShort(r.createdAt) }}</span>
-              </a>
-            }
-          </div>
-        }
-
-      } @else if (activeTab() === 'threads') {
-        @if (tabThreads().length === 0) {
-          <app-empty-state message="Sin hilos publicados" />
-        } @else {
-          <div class="activity-thread-list">
-            @for (t of tabThreads(); track t.id; let i = $index) {
-              <a class="activity-thread-item" [routerLink]="['/forum', t.id]" [style.--index]="i">
-                <div class="activity-thread-item__top">
-                  <span class="thread-status" [class.thread-status--closed]="t.status === 'CLOSED'">
-                    {{ t.status === 'OPEN' ? 'Abierto' : 'Cerrado' }}
-                  </span>
-                  @if (t.anonymous) { <span class="anon-badge">Anónimo</span> }
-                </div>
-                <p class="activity-thread-item__title">{{ t.title }}</p>
-                <span class="card-meta">{{ formatShort(t.createdAt) }}</span>
-              </a>
-            }
-          </div>
-        }
-
-      } @else if (activeTab() === 'solutions') {
-        @if (tabSolutions().length === 0) {
-          <app-empty-state message="Aún no enviaste resoluciones" />
-        } @else {
-          <div class="activity-solution-list">
-            @for (s of tabSolutions(); track s.id; let i = $index) {
-              <a class="solution-card" [routerLink]="['/library', s.resourceId]" [style.--index]="i">
-                <div class="solution-card__top">
-                  <span class="res-badge res-badge--{{ s.resourceType.toLowerCase() }}">{{ s.resourceType }}</span>
-                  <span class="status-chip" [class.status-chip--reviewed]="s.status === 'REVIEWED'">
-                    {{ statusLabels[s.status] }}
-                  </span>
-                </div>
-                <p class="solution-card__title">{{ s.resourceTitle }}</p>
-                @if (s.feedbackScore !== null) {
-                  <div class="solution-card__score">
-                    <span class="score-label">Nota</span>
-                    <span class="score-value">{{ s.feedbackScore }}/10</span>
-                  </div>
-                }
-                <span class="card-meta">Enviada {{ formatShort(s.submittedAt) }}</span>
-              </a>
-            }
-          </div>
-        }
-
-      } @else {
-        @if (tabReceived().length === 0) {
-          <app-empty-state message="No hay resoluciones recibidas" />
-        } @else {
-          <div class="activity-solution-list">
-            @for (r of tabReceived(); track r.id; let i = $index) {
-              <a class="solution-card" [routerLink]="['/library', r.resourceId]" [style.--index]="i">
-                <div class="solution-card__top">
-                  <span class="res-badge res-badge--{{ r.resourceType.toLowerCase() }}">{{ r.resourceType }}</span>
-                  <span class="status-chip" [class.status-chip--reviewed]="r.status === 'REVIEWED'">
-                    {{ statusLabels[r.status] }}
-                  </span>
-                </div>
-                <p class="solution-card__title">{{ r.resourceTitle }}</p>
-                <a class="solution-card__student"
-                  [routerLink]="['/profiles', r.studentId]"
-                  (click)="$event.stopPropagation()">
-                  {{ r.studentName }}
-                </a>
-                @if (r.feedbackScore !== null) {
-                  <div class="solution-card__score">
-                    <span class="score-label">Nota dada</span>
-                    <span class="score-value">{{ r.feedbackScore }}/10</span>
-                  </div>
-                }
-                <span class="card-meta">Recibida {{ formatShort(r.submittedAt) }}</span>
-              </a>
-            }
-          </div>
-        }
-      }
-
-      @if (hasMore() && !isLoadingTab()) {
-        <div class="tab-load-more">
-          <button class="btn-load-more" (click)="loadMore()">Cargar más</button>
-        </div>
-      }
-    </div>
-
-    } <!-- end @if (!isSystemProfile()) -->
 
   }
 </div>

@@ -122,13 +122,18 @@
                       <div class="resource-card__footer">
                         <span class="resource-card__date">{{ formatDate(resource.createdAt) }}</span>
                         <div class="resource-card__actions">
-                          @if (resource.aceptaResoluciones) {
-                            <a class="resource-card__solutions-link"
-                               [routerLink]="['/library', resource.id, 'solutions']"
-                               (click)="$event.stopPropagation()">
-                              Resoluciones
-                            </a>
-                          }
+                          <button type="button"
+                                  class="resource-card__action-btn"
+                                  [disabled]="isUpdating(resource.id)"
+                                  (click)="editResource(resource, $event)">
+                            Editar
+                          </button>
+                          <button type="button"
+                                  class="resource-card__action-btn resource-card__action-btn--danger"
+                                  [disabled]="isUpdating(resource.id)"
+                                  (click)="deleteResource(resource, $event)">
+                            Eliminar
+                          </button>
                           <a class="resource-card__view-link"
                              [routerLink]="['/library', resource.id]"
                              (click)="$event.stopPropagation()">

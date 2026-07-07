@@ -1,0 +1,83 @@
+<div class="dashboard-page">
+  <header class="dashboard-header">
+    <div>
+      <p class="eyebrow">{{ roleLabel() }}</p>
+      <h1>Hola, {{ userName() }}</h1>
+      <p class="subtitle">Actividad reciente y accesos principales de tu cuenta.</p>
+    </div>
+    <div class="dashboard-actions">
+      <a class="btn btn--primary" [routerLink]="primaryAction().link">{{ primaryAction().label }}</a>
+      <a class="btn" [routerLink]="secondaryAction().link">{{ secondaryAction().label }}</a>
+    </div>
+  </header>
+
+  <section class="metric-grid" aria-label="Resumen">
+    <article class="metric-card">
+      <span class="metric-card__value">{{ recentResources().length }}</span>
+      <span class="metric-card__label">Recursos recientes</span>
+    </article>
+    <article class="metric-card">
+      <span class="metric-card__value">{{ pendingNotifications().length }}</span>
+      <span class="metric-card__label">Notificaciones nuevas</span>
+    </article>
+    <article class="metric-card">
+      <span class="metric-card__value">{{ canManageResources() ? myResources().length : 'Foro' }}</span>
+      <span class="metric-card__label">{{ canManageResources() ? 'Publicaciones tuyas' : 'Participación' }}</span>
+    </article>
+  </section>
+
+  <div class="dashboard-grid">
+    <section class="panel">
+      <div class="panel__header">
+        <h2>Recursos nuevos</h2>
+        <a routerLink="/library">Ver biblioteca</a>
+      </div>
+
+      @if (loading()) {
+        <p class="empty">Cargando recursos...</p>
+      } @else if (recentResources().length) {
+        <div class="resource-list">
+          @for (resource of recentResources(); track resource.id) {
+            <a class="resource-row" [routerLink]="['/library', resource.id]">
+              <span class="resource-row__type">{{ typeLabel(resource) }}</span>
+              <span class="resource-row__title">{{ resource.title }}</span>
+              <span class="resource-row__meta">{{ resource.authorName }} · {{ formatDate(resource.createdAt) }}</span>
+            </a>
+          }
+        </div>
+      } @else {
+        <p class="empty">Aún no hay recursos publicados.</p>
+      }
+    </section>
+
+    <section class="panel">
+      <div class="panel__header">
+        <h2>{{ canManageResources() ? 'Tu actividad' : 'Notificaciones' }}</h2>
+        <a routerLink="/notifications">Ver todo</a>
+      </div>
+
+      @if (canManageResources() && myResources().length) {
+        <div class="resource-list">
+          @for (resource of myResources(); track resource.id) {
+            <a class="resource-row" [routerLink]="['/library', resource.id]">
+              <span class="resource-row__type">{{ typeLabel(resource) }}</span>
+              <span class="resource-row__title">{{ resource.title }}</span>
+              <span class="resource-row__meta">{{ resource.aceptaResoluciones ? 'Acepta resoluciones' : 'Solo lectura' }}</span>
+            </a>
+          }
+        </div>
+      } @else if (pendingNotifications().length) {
+        <div class="notification-list">
+          @for (notification of pendingNotifications(); track notification.id) {
+            <a class="notification-row" routerLink="/notifications">
+              <span class="notification-row__label">{{ notificationLabel(notification) }}</span>
+              <span class="notification-row__text">{{ payloadText(notification) }}</span>
+            </a>
+          }
+        </div>
+      } @else {
+        <p class="empty">No hay actividad pendiente.</p>
+      }
+    </section>
+  </div>
+</div>
