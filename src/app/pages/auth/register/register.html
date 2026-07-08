@@ -3,7 +3,7 @@
 
     <div class="register-card__header">
       <h1 class="register-card__title">Crear cuenta</h1>
-      <p class="register-card__subtitle">Únete a MentorEdu y accede a recursos académicos</p>
+      <p class="register-card__subtitle">Unete a MentorEdu y accede a recursos academicos para tu preparacion.</p>
     </div>
 
     <form class="register-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
@@ -33,7 +33,7 @@
             [class.form-input--error]="fieldError('lastName')"
             type="text"
             formControlName="lastName"
-            placeholder="Pérez"
+            placeholder="Perez"
             autocomplete="family-name"
           />
           @if (fieldError('lastName')) {
@@ -43,7 +43,7 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label" for="email">Correo electrónico</label>
+        <label class="form-label" for="email">Correo electronico</label>
         <input
           id="email"
           class="form-input"
@@ -58,50 +58,113 @@
         }
       </div>
 
-      <div class="form-field">
-        <label class="form-label" for="password">Contraseña</label>
-        <input
-          id="password"
-          class="form-input"
-          [class.form-input--error]="fieldError('password')"
-          type="password"
-          formControlName="password"
-          placeholder="Mínimo 8 caracteres"
-          autocomplete="new-password"
-        />
-        @if (fieldError('password')) {
-          <span class="form-error">{{ fieldError('password') }}</span>
-        }
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="password">Contrasena</label>
+          <div class="password-control">
+            <input
+              id="password"
+              class="form-input password-control__input"
+              [class.form-input--error]="fieldError('password')"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Minimo 8 caracteres"
+              autocomplete="new-password"
+            />
+            @if (form.controls.password.value.length > 0) {
+              <button
+                class="password-control__toggle"
+                type="button"
+                [attr.aria-label]="showPassword() ? 'Ocultar contrasena' : 'Mostrar contrasena'"
+                (click)="showPassword.set(!showPassword())"
+              >
+                @if (showPassword()) {
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                    <path d="M14.12 14.12a3 3 0 0 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                } @else {
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                }
+              </button>
+            }
+          </div>
+          @if (fieldError('password')) {
+            <span class="form-error">{{ fieldError('password') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="confirmPassword">Confirmar</label>
+          <div class="password-control">
+            <input
+              id="confirmPassword"
+              class="form-input password-control__input"
+              [class.form-input--error]="confirmPasswordError()"
+              [type]="showConfirmPassword() ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              placeholder="Repite tu contrasena"
+              autocomplete="new-password"
+            />
+            @if (form.controls.confirmPassword.value.length > 0) {
+              <button
+                class="password-control__toggle"
+                type="button"
+                [attr.aria-label]="showConfirmPassword() ? 'Ocultar confirmacion' : 'Mostrar confirmacion'"
+                (click)="showConfirmPassword.set(!showConfirmPassword())"
+              >
+                @if (showConfirmPassword()) {
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                    <path d="M14.12 14.12a3 3 0 0 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                } @else {
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                }
+              </button>
+            }
+          </div>
+          @if (confirmPasswordError()) {
+            <span class="form-error">{{ confirmPasswordError() }}</span>
+          }
+        </div>
       </div>
 
-      <div class="form-field">
-        <label class="form-label" for="confirmPassword">Confirmar contraseña</label>
-        <input
-          id="confirmPassword"
-          class="form-input"
-          [class.form-input--error]="confirmPasswordError()"
-          type="password"
-          formControlName="confirmPassword"
-          placeholder="Repite tu contraseña"
-          autocomplete="new-password"
-        />
-        @if (confirmPasswordError()) {
-          <span class="form-error">{{ confirmPasswordError() }}</span>
-        }
-      </div>
+      <p class="password-hint">Usa minimo 8 caracteres, una mayuscula, una minuscula y un numero.</p>
 
-      <div class="form-field">
-        <label class="form-label" for="role">Soy</label>
-        <select
-          id="role"
-          class="form-input form-select"
-          formControlName="role"
-        >
-          <option value="STUDENT">Estudiante</option>
-          <option value="TEACHER">Docente</option>
-          <option value="ACADEMY">Academia</option>
-        </select>
-      </div>
+      <fieldset class="role-field">
+        <legend class="form-label">Soy</legend>
+        <div class="role-options">
+          <label class="role-option" [class.role-option--active]="form.controls.role.value === 'STUDENT'">
+            <input type="radio" formControlName="role" value="STUDENT">
+            <span class="role-option__title">Estudiante</span>
+          </label>
+
+          <label class="role-option" [class.role-option--active]="form.controls.role.value === 'TEACHER'">
+            <input type="radio" formControlName="role" value="TEACHER">
+            <span class="role-option__title">Docente</span>
+          </label>
+
+          <label class="role-option" [class.role-option--active]="form.controls.role.value === 'ACADEMY'">
+            <input type="radio" formControlName="role" value="ACADEMY">
+            <span class="role-option__title">Academia</span>
+          </label>
+        </div>
+      </fieldset>
 
       @if (serverError()) {
         <div class="form-server-error" role="alert">{{ serverError() }}</div>
@@ -123,8 +186,8 @@
     </form>
 
     <p class="register-card__footer">
-      ¿Ya tienes cuenta?
-      <a routerLink="/login" class="register-card__link">Inicia sesión</a>
+      Ya tienes cuenta?
+      <a routerLink="/login" class="register-card__link">Inicia sesion</a>
     </p>
 
   </div>
