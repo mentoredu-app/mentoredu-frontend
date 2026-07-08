@@ -24,7 +24,7 @@
     </div>
 
     <div class="benefits-grid" aria-label="Beneficios de MentorEdu">
-      <article class="benefit-card">
+      <article class="benefit-card" aria-labelledby="benefit-resources-title">
         <span class="benefit-card__icon" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -32,26 +32,26 @@
             <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
           </svg>
         </span>
-        <h2>Recursos organizados</h2>
+        <h2 id="benefit-resources-title">Recursos organizados</h2>
         <p>Centraliza materiales, prácticas y guías para estudiar o enseñar con mayor continuidad.</p>
       </article>
 
-      <article class="benefit-card">
+      <article class="benefit-card" aria-labelledby="benefit-community-title">
         <span class="benefit-card__icon" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
           </svg>
         </span>
-        <h2>Comunidad académica</h2>
+        <h2 id="benefit-community-title">Comunidad académica</h2>
         <p>Conecta consultas, respuestas y participación entre estudiantes, docentes y academias.</p>
       </article>
     </div>
 
-    <aside class="ai-highlight" aria-label="Asistencia inteligente">
+    <aside class="ai-highlight" aria-labelledby="ai-highlight-title">
       <div>
         <span class="ai-highlight__label">Spring AI</span>
-        <h2>Asistencia inteligente integrada</h2>
+        <h2 id="ai-highlight-title">Asistencia inteligente integrada</h2>
       </div>
       <p>
         Asistencia inteligente con Spring AI para responder consultas, guiar procesos académicos y mejorar la interacción del usuario.
@@ -59,15 +59,15 @@
     </aside>
   </section>
 
-  <div class="login-card">
+  <section class="login-card" aria-labelledby="login-title">
 
     <div class="login-card__header">
       <img src="logo.png" class="login-card__logo" alt="" aria-hidden="true" width="36" height="36">
-      <h2 class="login-card__title">Bienvenido de nuevo</h2>
-      <p class="login-card__subtitle">Inicia sesión para acceder a tus recursos, foros y herramientas académicas.</p>
+      <h2 id="login-title" class="login-card__title">Bienvenido de nuevo</h2>
+      <p id="login-description" class="login-card__subtitle">Inicia sesión para acceder a tus recursos, foros y herramientas académicas.</p>
     </div>
 
-    <form class="login-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <form class="login-form" [formGroup]="form" (ngSubmit)="submit()" aria-describedby="login-description" novalidate>
 
       <div class="form-field">
         <label class="form-label" for="email">Correo electrónico</label>
@@ -79,16 +79,20 @@
           formControlName="email"
           placeholder="juan@ejemplo.com"
           autocomplete="email"
+          inputmode="email"
+          [attr.aria-invalid]="fieldError('email') ? 'true' : 'false'"
+          [attr.aria-describedby]="fieldError('email') ? 'email-help email-error' : 'email-help'"
         />
+        <span id="email-help" class="form-help">Usa el correo registrado en MentorEdu.</span>
         @if (fieldError('email')) {
-          <span class="form-error">{{ fieldError('email') }}</span>
+          <span id="email-error" class="form-error">{{ fieldError('email') }}</span>
         }
       </div>
 
       <div class="form-field">
         <div class="form-label-row">
           <label class="form-label" for="password">Contraseña</label>
-          <a routerLink="/forgot-password" class="form-forgot">¿Olvidaste tu contraseña?</a>
+          <a routerLink="/forgot-password" class="form-forgot" aria-label="Recuperar contraseña">¿Olvidaste tu contraseña?</a>
         </div>
         <input
           id="password"
@@ -98,20 +102,24 @@
           formControlName="password"
           placeholder="Tu contraseña"
           autocomplete="current-password"
+          [attr.aria-invalid]="fieldError('password') ? 'true' : 'false'"
+          [attr.aria-describedby]="fieldError('password') ? 'password-help password-error' : 'password-help'"
         />
+        <span id="password-help" class="form-help">Debe tener al menos 8 caracteres.</span>
         @if (fieldError('password')) {
-          <span class="form-error">{{ fieldError('password') }}</span>
+          <span id="password-error" class="form-error">{{ fieldError('password') }}</span>
         }
       </div>
 
       @if (serverError()) {
-        <div class="form-server-error" role="alert">{{ serverError() }}</div>
+        <div class="form-server-error" role="alert" aria-live="polite">{{ serverError() }}</div>
       }
 
       <button
         type="submit"
         class="btn-primary"
         [disabled]="isLoading()"
+        [attr.aria-busy]="isLoading()"
       >
         @if (isLoading()) {
           <app-loading-spinner size="sm" />
@@ -128,5 +136,5 @@
       <a routerLink="/register" class="login-card__link">Regístrate</a>
     </p>
 
-  </div>
+  </section>
 </div>
