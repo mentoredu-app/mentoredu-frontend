@@ -3,18 +3,20 @@
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
-  padding: 24px 16px;
-  background: var(--color-bg);
+  padding: 32px 16px;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 34%),
+    linear-gradient(180deg, var(--color-bg), color-mix(in srgb, var(--color-primary) 3%, var(--color-bg)));
 }
 
 .register-card {
   width: 100%;
-  max-width: 460px;
+  max-width: 500px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 40px;
-  box-shadow: var(--shadow-md);
+  padding: 36px;
+  box-shadow: var(--shadow-lg);
 
   opacity: 1;
   transform: translateY(0);
@@ -27,12 +29,19 @@
 }
 
 .register-card__header {
+  position: relative;
   margin-bottom: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.register-card__header::before {
+  content: none;
 }
 
 .register-card__title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.7rem;
+  font-weight: 800;
   color: var(--color-text);
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -43,12 +52,13 @@
   font-size: 0.9rem;
   color: var(--color-text-muted);
   line-height: 1.5;
+  max-width: 360px;
 }
 
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .form-row {
@@ -63,18 +73,59 @@
   gap: 6px;
 }
 
+.password-hint {
+  margin-top: -6px;
+  color: var(--color-text-subtle);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.password-control {
+  position: relative;
+}
+
+.password-control__input {
+  padding-right: 44px;
+}
+
+.password-control__toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--color-text-subtle);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: color 160ms var(--ease-out), background 160ms var(--ease-out);
+}
+
+.password-control__toggle:hover {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
 .form-label {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.82rem;
+  font-weight: 700;
   color: var(--color-text);
+  letter-spacing: 0.01em;
 }
 
 .form-input {
   width: 100%;
-  padding: 10px 14px;
+  min-height: 44px;
+  padding: 11px 14px;
   font-size: 0.9375rem;
   color: var(--color-text);
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-bg) 70%, var(--color-surface));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   outline: none;
@@ -88,6 +139,7 @@
 
 .form-input:focus {
   border-color: var(--color-primary);
+  background: var(--color-surface);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
 }
 
@@ -105,6 +157,58 @@
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 36px;
+}
+
+.role-field {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.role-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.role-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 12px;
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-bg) 70%, var(--color-surface));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 160ms var(--ease-out), background 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+}
+
+.role-option:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+}
+
+.role-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.role-option--active {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.role-option__title {
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 800;
 }
 
 .form-error {
@@ -128,10 +232,11 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 11px 20px;
-  margin-top: 4px;
+  min-height: 46px;
+  padding: 12px 20px;
+  margin-top: 6px;
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #ffffff;
   background: var(--color-primary);
   border: none;
@@ -154,7 +259,9 @@
 }
 
 .register-card__footer {
-  margin-top: 24px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border);
   text-align: center;
   font-size: 0.875rem;
   color: var(--color-text-muted);
@@ -172,11 +279,22 @@
 }
 
 @media (max-width: 480px) {
+  .register-page {
+    align-items: flex-start;
+    padding: 18px 12px;
+  }
+
   .register-card {
-    padding: 28px 20px;
+    padding: 26px 18px;
   }
 
   .form-row {
     grid-template-columns: 1fr;
   }
+
+  .role-options {
+    grid-template-columns: 1fr;
+  }
+
+  .role-option { min-height: 48px; }
 }
