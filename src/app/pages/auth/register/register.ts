@@ -36,6 +36,8 @@ export class Register {
 
   readonly isLoading   = signal(false);
   readonly serverError = signal('');
+  readonly showPassword = signal(false);
+  readonly showConfirmPassword = signal(false);
 
   readonly form = this.fb.nonNullable.group(
     {
